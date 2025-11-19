@@ -1,155 +1,153 @@
-# brackets-viewer.js
+# OneUp Brackets Viewer
 
-[![npm](https://img.shields.io/npm/v/brackets-viewer.svg)](https://www.npmjs.com/package/brackets-viewer)
-[![Downloads](https://img.shields.io/npm/dt/brackets-viewer.svg)](https://www.npmjs.com/package/brackets-viewer)
-[![jsDelivr](https://data.jsdelivr.com/v1/package/npm/brackets-viewer/badge?style=rounded)](https://www.jsdelivr.com/package/npm/brackets-viewer)
-[![Package Quality](https://packagequality.com/shield/brackets-viewer.svg)](https://packagequality.com/#?package=brackets-viewer)
+A lightweight viewer for tournament brackets that consumes the exact DTOs exposed by the OneUp public API. It renders single elimination, double elimination (including losers bracket feeds), round-robin, and Swiss stages without requiring the legacy `StageResponse` structure — you only need a `StageStructureResponse` plus the stage format.
 
-A simple library to display tournament brackets (round-robin, swiss, single elimination, double elimination).
+## Highlights
 
-It contains all the logic needed to display tournaments.
+- Supports every structure the public API returns: `SINGLE_ELIMINATION`, `DOUBLE_ELIMINATION`, `ROUND_ROBIN`, `SWISS` (FFA is not rendered).
+- Accepts backend DTOs directly. No manual mapping or custom wiring is required; just pass the API response into `convertStageStructureToViewerData`.
+- Bundled demo and data-generation script so you can preview all four formats using the same seed sizes as the default tournaments.
 
-### Features
+---
 
-- Supports translation ([i18next](https://www.i18next.com/)), which also allows you to change the vocabulary
-- It was developed in vanilla JS, so you can [use it in any framework](https://github.com/Drarig29/brackets-viewer.js/discussions/74)
-- A full working example of creating and displaying brackets (see [`./demo/with-ui.html`](demo/with-ui.html))
-- Themes supported, with CSS variables (see [`./demo/themes`](/demo/themes))
-- Display participant images next to their name ([example](https://github.com/Drarig29/brackets-viewer.js/blob/668aae1ed9db41ab21665459635cd6b71cad247c/demo/with-api.html#L34-L38))
-- Do actions when a match is clicked ([example](https://github.com/Drarig29/brackets-viewer.js/blob/ed31fc4fc43336d3543411f802a8b1d9d592d467/demo/with-api.html#L53), [feature request](https://github.com/Drarig29/brackets-viewer.js/discussions/80))
-- Custom round names: do you want to say "Semi Finals" instead of "Round 2"? ([example](https://github.com/Drarig29/brackets-viewer.js/blob/e548e5ac8369d2a692366718c04b24b32190866c/demo/with-api.html#L46-L59), [feature request](https://github.com/Drarig29/brackets-viewer.js/discussions/93))
+## Quick Start
 
-![Screenshot](screenshot.png)
+1. **Install** (from your local checkout or git reference – the package exposes a `prepare` script that builds `dist/`):
 
-## How to use?
+   ```bash
+   npm install brackets-viewer   # replace with file: or git+https dependency as needed
+   ```
 
-Import the library from npm using [jsDelivr](https://www.jsdelivr.com/) (you can replace `@latest` to lock a specific version):
+2. **Include the bundle** wherever you render the viewer (either import from your bundler or drop the built files on the page):
 
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/brackets-viewer@latest/dist/brackets-viewer.min.css" />
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/brackets-viewer@latest/dist/brackets-viewer.min.js"></script>
-```
+   ```html
+   <link rel="stylesheet" href="/node_modules/brackets-viewer/dist/brackets-viewer.min.css" />
+   <script type="text/javascript" src="/node_modules/brackets-viewer/dist/brackets-viewer.min.js"></script>
+   ```
 
-Or from GitHub with (you can replace `@master` by any branch name, tag name or commit id):
+3. **Render a stage** using the structure and standings returned by the OneUp API:
 
-```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Drarig29/brackets-viewer.js@master/dist/brackets-viewer.min.css" />
-<script type="text/javascript" src="https://cdn.jsdelivr.net/gh/Drarig29/brackets-viewer.js@master/dist/brackets-viewer.min.js"></script>
-```
+   ```ts
+   import {
+     renderBracket,
+     convertStageStructureToViewerData,
+     type StageStructureResponse,
+     type StageStandingsResponse,
+   } from 'brackets-viewer';
 
-Now, you can use it with data generated using [brackets-manager](https://github.com/Drarig29/brackets-manager.js) or with crafted data following the [brackets-model](https://github.com/Drarig29/brackets-model).
+   const structure: StageStructureResponse = await getStageStructure(slug, stageId);
+   const standings: StageStandingsResponse | undefined = await getStageStandings(slug, stageId);
 
-**Usage:**
+   const viewerData = convertStageStructureToViewerData(structure, standings, {
+     stageName: 'Playoffs',
+     stageNumber: 1,
+   });
 
-This will find a **unique** element with a `.brackets-viewer` class, and **append** to it:
+   await renderBracket('#tournament-bracket', viewerData, {
+     selector: '#tournament-bracket',
+     clear: true,
+   });
+   ```
 
-```js
-window.bracketsViewer.render({
-  stages: data.stage,
-  matches: data.match,
-  matchGames: data.match_game,
-  participants: data.participant,
-});
-```
+   The global build exposes the same API at `window.bracketsViewer.render(...)` and `window.bracketsViewerDTO.convertStageStructureToViewerData(...)`.
 
-If you want to clear the container's content before rendering again, use this:
+---
 
-```js
-window.bracketsViewer.render({
-  stages: data.stage,
-  matches: data.match,
-  matchGames: data.match_game,
-  participants: data.participant,
-}, {
-  clear: true,
-});
-```
+## DTO Requirements
 
-If you have multiple elements with a `.brackets-viewer` class, you must provide a `selector`:
+All the models live under `src/api/models`. The viewer only needs a `StageStructureResponse` and an optional `StageStandingsResponse`. The structure DTO mirrors the backend OpenAPI schema:
 
-```js
-window.bracketsViewer.render({
-  stages: data.stage,
-  matches: data.match,
-  matchGames: data.match_game,
-  participants: data.participant,
-}, {
-  selector: '#example',
-});
-```
+| Field | Description |
+| ----- | ----------- |
+| `stageId` | UUID of the stage. |
+| `stageType` | One of `SINGLE_ELIMINATION`, `DOUBLE_ELIMINATION`, `ROUND_ROBIN`, `SWISS`. |
+| `stageItems[]` | Each item maps to a group/bracket (winners bracket, losers bracket, finals, Swiss groups, etc.). |
+| `stageItems[].rounds[]` | Ordered rounds per group. |
+| `rounds[].matches[]` | Matches belonging to the round; each match includes `id`, `matchIndex`, `status`, `slots[]`. |
+| `matches[].slots[]` | Participant slots, seed metadata, and `sourceRank`/`sourceStageItemId`. |
+| `stageItems[].edges[]` | `fromMatchId` → `toMatchId` advancement links. Required for double elimination. |
 
-See the [full documentation](https://drarig29.github.io/brackets-docs/reference/viewer/interfaces/Config.html) for the `render()` configuration.
+The converter ignores everything else. If you send the backend response verbatim, it already includes populated `sourceRank` values and `edges`, so losers bracket feeds and Swiss pairings render automatically.
 
-## Theming
+### Minimal Example
 
-The viewer styles are driven by CSS variables prefixed with `--bv-*` (backgrounds, text, highlights, borders, spacing, etc.). You can override them on any `.brackets-viewer` container or on theme-specific classes. Pass `theme` in the config to automatically add a `.bv-theme-{theme}` class to the root element:
-
-```ts
-import { renderBracket } from 'brackets-viewer';
-
-renderBracket('#my-bracket', data, { theme: 'dashboard' });
-```
-
-Then define the variables in your stylesheet (Tailwind, plain CSS, etc.):
-
-```css
-.brackets-viewer.bv-theme-dashboard {
-  --bv-bg-color: #0f172a;
-  --bv-text-color: #f8fafc;
-  --bv-border-color: #1e293b;
-  --bv-win-color: #22c55e;
-  --bv-lose-color: #ef4444;
-  /* extend or override any other --bv-* token */
+```json
+{
+  "stageId": "4cfe40e7-50f5-4c16-9ee3-da4211fde700",
+  "stageType": "SINGLE_ELIMINATION",
+  "stageItems": [
+    {
+      "id": "a71fd9d2-0435-4fe7-9e7d-023605623f8a",
+      "groupIndex": 1,
+      "rounds": [
+        {
+          "number": 1,
+          "bracketGroup": "WINNERS_BRACKET",
+          "matches": [
+            {
+              "id": "af599158-f292-4302-9e2d-4f31d67d9a5b",
+              "matchIndex": 0,
+              "status": "UNSCHEDULED",
+              "slots": [
+                { "slot": 1, "teamName": "Team 1", "sourceRank": 1 },
+                { "slot": 2, "teamName": "Team 16", "sourceRank": 16 }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
 
-The default values and an example dark theme live in `src/style.scss` if you need a reference to the available tokens.
+Give that structure (plus optional standings) to the converter and the viewer takes care of everything else.
 
-## Mapping backend DTOs
+---
 
-If your backend exposes stage structures using the OpenAPI schema shown in the docs, you can convert that response to the viewer's `ViewerData` shape with `convertStageStructureToViewerData`. The helper is exported from the package and also attached to the global build at `window.bracketsViewerDTO.convertStageStructureToViewerData`.
+## Demo & Sample Data
 
-```ts
-import {
-  convertStageStructureToViewerData,
-  type StageStructureResponse,
-  type StageStandingsResponse,
-} from 'brackets-viewer';
+The repository ships with demo fixtures that mirror the four default tournaments (16-team SE, 32-team DE, 10-team RR, 12-team Swiss). Regenerate them whenever you need a fresh snapshot:
 
-const viewerData = convertStageStructureToViewerData(
-  stageStructureResponse,
-  stageStandingsResponse,
-  { stageName: 'Quarterfinals', stageNumber: 2 },
-);
-
-renderBracket('#target', viewerData, { theme: 'dashboard' });
+```bash
+node scripts/generate-demo-data.js
 ```
 
-See `demo/with-api.html` + `demo/api-data.json` for a runnable example that mirrors the OpenAPI DTOs.
+Then open the showcase/demo pages:
 
-## Demos
+```bash
+npm run watch-demo   # serves demo/ and watches dist/
+```
 
-To quickly test, you can also try the demos by visiting `./demo/index.html`.
+- `demo/with-showcase.html` cycles through all formats using the DTO converter.
+- `demo/with-api.html` renders the Swiss sample via `demo/api-data.json`.
 
-`demo/with-api.html` uses the DTO sample stored in `demo/api-data.json`, so it works offline without `json-server`. `demo/with-showcase.html` lets you pick any supported format (round-robin, swiss, single/double elim) and renders multiple mock tournaments straight from DTO data if you want to eyeball different layouts. If you still want to spin up `json-server` for the legacy `demo/db.json` file (used by the storage demo), you can:
+---
 
-- Run the npm script named `db` to serve the static database file `./demo/db.json`
+## Development
 
-  ```bash
-  npm run db
-  ```
+- `npm run build` – bundles JS/CSS to `dist/`.
+- `npm test` – type-checks the DTO models used in the converter and exercises the Swiss sample.
+- `npm run start` – watch mode for the core bundle.
 
-- Or point `json-server` to your own generated data
+When consuming the viewer from another project, make sure you run `npm run build` (or rely on the `prepare` hook) so the `dist/` artifacts exist before installing.
 
-  ```bash
-  npx json-server --watch path/to/brackets-manager/db.json
-  ```
+---
 
-## Credits
+## Stage Type Reference
 
-This library has been created to be used by the [Nantarena](https://nantarena.net/).
+| Stage type | Description |
+| ---------- | ----------- |
+| `SINGLE_ELIMINATION` | One bracket + optional consolation final. |
+| `DOUBLE_ELIMINATION` | Winners bracket, losers bracket, finals group (grand + reset). Requires populated `edges`. |
+| `ROUND_ROBIN` | Multiple groups; viewer automatically renders a ranking table per group when standings are provided. |
+| `SWISS` | Single group of Swiss rounds; supports ranking tables when standings are present. |
+| `FFA` | Not supported by the viewer. The converter will throw an error if you pass this type. |
 
-It has been inspired by:
+Send exactly these enum values in `StageStructureResponse.stageType` and the converter handles the rest.
 
-- [Toornament](https://www.toornament.com/en_US/) (design inspiration)
-- [Responsive Tournament Bracket](https://codepen.io/jimmyhayek/full/yJkdEB) (connection between matches in plain CSS)
+---
+
+## Need Help?
+
+If you need the viewer to render a new format (e.g., FFA) or you run into data mismatches, make sure the backend is returning `sourceRank` values and `edges`. Those two fields drive all bracket connections. Otherwise, file an issue or update `scripts/generate-demo-data.js` to match the structure you expect.***
