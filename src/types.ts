@@ -4,12 +4,20 @@ import { InMemoryDatabase } from 'brackets-memory-db';
 import { BracketsViewer } from './main';
 import { BracketsManager } from 'brackets-manager';
 import { ToI18nKey, TFunction } from './lang';
+import type { StageStructureResponse, StageStandingsResponse, StageStructureConversionOptions } from './dto/types';
 
 export type { ToI18nKey, TFunction };
 
 declare global {
     interface Window {
         bracketsViewer: BracketsViewer,
+        bracketsViewerDTO: {
+            convertStageStructureToViewerData: (
+                structure: StageStructureResponse,
+                standings?: StageStandingsResponse,
+                options?: StageStructureConversionOptions
+            ) => ViewerData
+        },
         inMemoryDatabase: InMemoryDatabase,
         bracketsManager: BracketsManager,
         stageFormCreator: (configuration: FormConfiguration, submitCallable: CallbackFunction) => void,

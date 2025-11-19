@@ -1,6 +1,7 @@
 import { InMemoryDatabase } from 'brackets-memory-db';
 import { BracketsManager } from 'brackets-manager';
 import { BracketsViewer } from './main';
+import { convertStageStructureToViewerData } from './dto/converter';
 import type { Config, ViewerData } from './types';
 
 const viewer = new BracketsViewer();
@@ -41,9 +42,14 @@ export function renderBracket(container: HTMLElement | string, data: ViewerData,
 }
 
 window.bracketsViewer = viewer;
-window.bracketsViewer.render = (data, cfg) => renderBracket('.brackets-viewer', data, cfg ?? {});
+window.bracketsViewer.render = (data: ViewerData, cfg?: Partial<Config>): Promise<void> =>
+    renderBracket('.brackets-viewer', data, cfg ?? {});
+window.bracketsViewerDTO = {
+    convertStageStructureToViewerData,
+};
 window.inMemoryDatabase = new InMemoryDatabase();
 window.bracketsManager = new BracketsManager(window.inMemoryDatabase);
 
 export { BracketsViewer };
 export * from './types';
+export * from './dto';

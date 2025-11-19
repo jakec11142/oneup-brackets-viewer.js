@@ -14,7 +14,7 @@
         "prepare": "npm run build",
         "prepublishOnly": "npm run build",
         "lint": "eslint '**/*.{js,ts}' --fix",
-        "test": "exit 0",
+        "test": "tsc -p tsconfig.tests.json && node .test-dist/tests/dto-converter.test.js",
         "watch-demo": "browser-sync demo . --watch dist",
         "tsc": "tsc --emitDeclarationOnly"
     },

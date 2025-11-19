@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./.test-dist",
+    "noEmit": false,
+    "emitDeclarationOnly": false,
+    "declaration": false,
+    "skipLibCheck": true,
+    "types": [
+      "brackets-model",
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts"
+  ],
+  "exclude": [
+    "dist",
+    ".test-dist"
+  ]
+}

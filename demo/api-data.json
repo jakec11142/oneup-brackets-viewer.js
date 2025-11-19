@@ -1,0 +1,169 @@
+{
+  "structure": {
+    "stageId": "1",
+    "stageType": "SINGLE_ELIMINATION",
+    "stageItems": [
+      {
+        "id": "wb-1",
+        "groupIndex": 1,
+        "rounds": [
+          {
+            "number": 1,
+            "bracketGroup": "WINNER_BRACKET",
+            "matches": [
+              {
+                "id": "match-1",
+                "matchIndex": 1,
+                "status": "COMPLETED",
+                "completed": true,
+                "slots": [
+                  {
+                    "slot": 1,
+                    "teamName": "Owls",
+                    "gamesWon": 2,
+                    "winner": true,
+                    "sourceRank": 1
+                  },
+                  {
+                    "slot": 2,
+                    "teamName": "Foxes",
+                    "gamesWon": 0,
+                    "sourceRank": 4
+                  }
+                ]
+              },
+              {
+                "id": "match-2",
+                "matchIndex": 2,
+                "status": "COMPLETED",
+                "completed": true,
+                "slots": [
+                  {
+                    "slot": 1,
+                    "teamName": "Bears",
+                    "gamesWon": 1,
+                    "sourceRank": 2
+                  },
+                  {
+                    "slot": 2,
+                    "teamName": "Wolves",
+                    "gamesWon": 2,
+                    "winner": true,
+                    "sourceRank": 3
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "number": 2,
+            "bracketGroup": "WINNER_BRACKET",
+            "matches": [
+              {
+                "id": "match-3",
+                "matchIndex": 1,
+                "status": "COMPLETED",
+                "completed": true,
+                "slots": [
+                  {
+                    "slot": 1,
+                    "teamName": "Owls",
+                    "gamesWon": 2,
+                    "winner": true
+                  },
+                  {
+                    "slot": 2,
+                    "teamName": "Wolves",
+                    "gamesWon": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "final-1",
+        "groupIndex": 2,
+        "rounds": [
+          {
+            "number": 1,
+            "bracketGroup": "FINAL_GROUP",
+            "matches": [
+              {
+                "id": "match-4",
+                "matchIndex": 1,
+                "status": "COMPLETED",
+                "completed": true,
+                "slots": [
+                  {
+                    "slot": 1,
+                    "teamName": "Foxes",
+                    "gamesWon": 2,
+                    "winner": true
+                  },
+                  {
+                    "slot": 2,
+                    "teamName": "Bears",
+                    "gamesWon": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "standings": {
+    "stageId": "1",
+    "stageType": "SINGLE_ELIMINATION",
+    "groups": [
+      {
+        "groupIndex": 1,
+        "entries": [
+          {
+            "rank": 1,
+            "teamName": "Owls",
+            "wins": 2,
+            "losses": 0,
+            "draws": 0,
+            "points": 6,
+            "scoreFor": 4,
+            "scoreAgainst": 1
+          },
+          {
+            "rank": 2,
+            "teamName": "Wolves",
+            "wins": 1,
+            "losses": 1,
+            "draws": 0,
+            "points": 3,
+            "scoreFor": 3,
+            "scoreAgainst": 3
+          },
+          {
+            "rank": 3,
+            "teamName": "Foxes",
+            "wins": 1,
+            "losses": 1,
+            "draws": 0,
+            "points": 3,
+            "scoreFor": 2,
+            "scoreAgainst": 3
+          },
+          {
+            "rank": 4,
+            "teamName": "Bears",
+            "wins": 0,
+            "losses": 2,
+            "draws": 0,
+            "points": 0,
+            "scoreFor": 2,
+            "scoreAgainst": 4
+          }
+        ]
+      }
+    ]
+  }
+}
