@@ -2,11 +2,13 @@
 
 A lightweight viewer for tournament brackets that consumes the exact DTOs exposed by the OneUp public API. It renders single elimination, double elimination (including losers bracket feeds), round-robin, and Swiss stages without requiring the legacy `StageResponse` structure — you only need a `StageStructureResponse` plus the stage format.
 
-## Highlights
+## Features
 
-- Supports every structure the public API returns: `SINGLE_ELIMINATION`, `DOUBLE_ELIMINATION`, `ROUND_ROBIN`, `SWISS` (FFA is not rendered).
-- Accepts backend DTOs directly. No manual mapping or custom wiring is required; just pass the API response into `convertStageStructureToViewerData`.
-- Bundled demo and data-generation script so you can preview all four formats using the same seed sizes as the default tournaments.
+- **Full Format Support**: Renders `SINGLE_ELIMINATION`, `DOUBLE_ELIMINATION`, `ROUND_ROBIN`, and `SWISS` tournament formats
+- **Zero Mapping Required**: Accepts OneUp API DTOs directly—just pass `StageStructureResponse` to `convertStageStructureToViewerData`
+- **Automatic Bracket Connections**: Handles losers bracket feeds, consolation finals, and Swiss pairings automatically via `sourceRank` and `edges`
+- **Theme Support**: Includes light and dark mode tokens for seamless integration
+- **Live Demo**: Bundled examples with data generation scripts for all four supported formats
 
 ---
 
@@ -150,4 +152,4 @@ Send exactly these enum values in `StageStructureResponse.stageType` and the con
 
 ## Need Help?
 
-If you need the viewer to render a new format (e.g., FFA) or you run into data mismatches, make sure the backend is returning `sourceRank` values and `edges`. Those two fields drive all bracket connections. Otherwise, file an issue or update `scripts/generate-demo-data.js` to match the structure you expect.***
+If you need the viewer to render a new format (e.g., FFA) or you run into data mismatches, make sure the backend is returning `sourceRank` values and `edges`. Those two fields drive all bracket connections. Otherwise, file an issue or update `scripts/generate-demo-data.js` to match the structure you expect.
