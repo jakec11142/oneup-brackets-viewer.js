@@ -8,7 +8,6 @@
         "dist/"
     ],
     "scripts": {
-        "db": "npx json-server --watch demo/db.json",
         "build": "npx webpack --mode production && npm run tsc",
         "start": "npx webpack --watch --mode development",
         "prepare": "npm run build",
@@ -16,7 +15,7 @@
         "lint": "eslint '**/*.{js,ts}' --fix",
         "test": "tsc -p tsconfig.tests.json && node .test-dist/tests/dto-converter.test.js",
         "watch-demo": "browser-sync demo . --watch dist",
-        "dev": "browser-sync demo . --watch dist",
+        "dev": "npx concurrently --kill-others \"npm:start\" \"npm:watch-demo\"",
         "tsc": "tsc --emitDeclarationOnly"
     },
     "repository": {

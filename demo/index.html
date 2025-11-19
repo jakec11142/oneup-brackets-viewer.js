@@ -1,18 +1,23 @@
+<!doctype html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8">
-    <title>Demo index</title>
+  <meta charset="utf-8" />
+  <title>Brackets Viewer Demo</title>
+  <link rel="stylesheet" href="../dist/brackets-viewer.min.css" />
+  <script src="../dist/brackets-viewer.min.js"></script>
+  <link rel="stylesheet" href="./themes/light.css" />
+  <style>
+    body { margin:0; padding:20px; background:#f5f5f5; font-family:sans-serif; }
+    #format-buttons { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+    #format-buttons button { padding:8px 16px; border:1px solid #ccc; border-radius:4px; background:#fff; cursor:pointer; font-size:14px; }
+    #format-buttons button:hover { background:#f0f0f0; }
+    #format-buttons button[aria-pressed="true"] { background:#212121; color:#fff; border-color:#212121; }
+    #viewer-root { background:#fff; border-radius:8px; padding:20px; box-shadow:0 6px 24px rgba(15,23,42,.1); }
+  </style>
 </head>
-
-<body style="background: gray;">
-    <p>Here is a list of demos you can try:</p>
-    <ul>
-        <li><a href="./with-api.html">with-api</a>: you need to `npm run db` before</li>
-        <li><a href="./with-ui.html">with-ui</a>: you can create stages with a demo UI</li>
-        <li><a href="./with-local-storage.html?id=0">with-local-storage</a>: simple example to read, uses data generated
-            by <a href="./with-ui.html">with-ui</a></li>
-    </ul>
+<body>
+  <nav id="format-buttons"></nav>
+  <section id="viewer-root" class="brackets-viewer"></section>
+  <script type="module" src="./dev-demo.js"></script>
 </body>
-
 </html>
