@@ -141,6 +141,12 @@ export interface Config {
      * @default '.brackets-viewer'
      */
     selector?: string,
+    /**
+     * Theme identifier. Applies a `.bv-theme-{theme}` class to the container so CSS variables can be overridden.
+     * 
+     * @default undefined
+     */
+    theme?: string,
 
     /**
      * Where the position of a participant is placed relative to its name.

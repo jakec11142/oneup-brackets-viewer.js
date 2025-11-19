@@ -80,6 +80,31 @@ window.bracketsViewer.render({
 
 See the [full documentation](https://drarig29.github.io/brackets-docs/reference/viewer/interfaces/Config.html) for the `render()` configuration.
 
+## Theming
+
+The viewer styles are driven by CSS variables prefixed with `--bv-*` (backgrounds, text, highlights, borders, spacing, etc.). You can override them on any `.brackets-viewer` container or on theme-specific classes. Pass `theme` in the config to automatically add a `.bv-theme-{theme}` class to the root element:
+
+```ts
+import { renderBracket } from 'brackets-viewer';
+
+renderBracket('#my-bracket', data, { theme: 'dashboard' });
+```
+
+Then define the variables in your stylesheet (Tailwind, plain CSS, etc.):
+
+```css
+.brackets-viewer.bv-theme-dashboard {
+  --bv-bg-color: #0f172a;
+  --bv-text-color: #f8fafc;
+  --bv-border-color: #1e293b;
+  --bv-win-color: #22c55e;
+  --bv-lose-color: #ef4444;
+  /* extend or override any other --bv-* token */
+}
+```
+
+The default values and an example dark theme live in `src/style.scss` if you need a reference to the available tokens.
+
 ## Demos
 
 To quickly test, you can also try the demos by visiting `./demo/index.html`.

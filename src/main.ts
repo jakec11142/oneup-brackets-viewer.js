@@ -122,6 +122,13 @@ export class BracketsViewer {
         }));
 
         const target = findRoot(config?.selector);
+        Array.from(target.classList)
+            .filter(cls => cls.startsWith('bv-theme-'))
+            .forEach(cls => target.classList.remove(cls));
+
+        if (config?.theme)
+            target.classList.add(`bv-theme-${config.theme}`);
+
         if (config?.clear)
             target.innerHTML = '';
 
