@@ -1,19 +1,25 @@
 /**
  * Script to fix the data files and integrate them into showcase-data.json
  */
+/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 const fs = require('fs');
 const path = require('path');
 
-// Helper to extract teams from structure for standings
+/**
+ * Helper to extract teams from structure for standings
+ *
+ * @param {object} structure - The stage structure
+ * @returns {string[]} Array of team names
+ */
 function extractTeamsFromStructure(structure) {
     const teams = new Set();
-    structure.stageItems.forEach(item => {
-        item.rounds.forEach(round => {
-            round.matches.forEach(match => {
-                match.slots.forEach(slot => {
-                    if (slot.teamName && slot.teamName !== 'TBD') {
+    structure.stageItems.forEach((item) => {
+        item.rounds.forEach((round) => {
+            round.matches.forEach((match) => {
+                match.slots.forEach((slot) => {
+                    if (slot.teamName && slot.teamName !== 'TBD')
                         teams.add(slot.teamName);
-                    }
                 });
             });
         });
@@ -21,12 +27,18 @@ function extractTeamsFromStructure(structure) {
     return Array.from(teams).sort();
 }
 
-// Helper to create standings from structure
+/**
+ * Helper to create standings from structure
+ *
+ * @param {object} structure - The stage structure
+ * @param {string[]} teams - Array of team names
+ * @returns {object} Standings object
+ */
 function createStandings(structure, teams) {
     const standings = {
         stageId: structure.stageId,
         stageType: structure.stageType,
-        groups: []
+        groups: [],
     };
 
     // For single elimination and double elimination, all teams are in one group
@@ -41,8 +53,8 @@ function createStandings(structure, teams) {
                 draws: 0,
                 points: 0,
                 scoreFor: 0,
-                scoreAgainst: 0
-            }))
+                scoreAgainst: 0,
+            })),
         });
     }
 
@@ -65,7 +77,7 @@ const rrStandings = JSON.parse(rrStandingsStr);
 const roundRobinSample = {
     label: 'Real Data - Round Robin (10 teams, 2 groups)',
     structure: rrStructure,
-    standings: rrStandings
+    standings: rrStandings,
 };
 
 console.log('✓ Round Robin: structure has', rrStructure.stageItems.length, 'groups, standings has', rrStandings.groups.length, 'groups');
@@ -86,7 +98,7 @@ const swissStandings = JSON.parse(swissStandingsStr);
 const swissSample = {
     label: 'Real Data - Swiss (12 teams, 5 rounds)',
     structure: swissStructure,
-    standings: swissStandings
+    standings: swissStandings,
 };
 
 console.log('✓ Swiss: structure has', swissStructure.stageItems.length, 'groups, standings has', swissStandings.groups.length, 'groups');
@@ -101,7 +113,7 @@ const seStandings = createStandings(seStructure, seTeams);
 const singleElimSample = {
     label: 'Real Data - Single Elimination (16 teams)',
     structure: seStructure,
-    standings: seStandings
+    standings: seStandings,
 };
 
 console.log('✓ Single Elimination: extracted', seTeams.length, 'teams');
@@ -116,7 +128,7 @@ const deStandings = createStandings(deStructure, deTeams);
 const doubleElimSample = {
     label: 'Real Data - Double Elimination (32 teams)',
     structure: deStructure,
-    standings: deStandings
+    standings: deStandings,
 };
 
 console.log('✓ Double Elimination: extracted', deTeams.length, 'teams');
