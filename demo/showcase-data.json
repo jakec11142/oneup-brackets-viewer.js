@@ -1,124 +1,618 @@
 {
   "roundRobin": [
     {
-      "label": "RR - 3 teams - simple",
+      "label": "CSGO Round Robin Warmup",
       "structure": {
-        "stageId": "rr-simple",
+        "stageId": "a3182d47-1f65-4a97-8109-970445718a94",
         "stageType": "ROUND_ROBIN",
         "stageItems": [
           {
-            "id": "rr-group-a",
+            "id": "27ec1aae-6695-471c-8ead-a65ba4f4e7b4",
             "groupIndex": 1,
             "rounds": [
               {
                 "number": 1,
+                "bracketGroup": null,
                 "matches": [
                   {
-                    "id": "rr-match-1",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "600a606b-69e0-452f-a695-8df8efb8f927",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Alpha", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Bravo", "gamesWon": 1 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 9",
+                        "gamesWon": 0,
+                        "sourceRank": 9
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 3",
+                        "gamesWon": 0,
+                        "sourceRank": 3
+                      }
+                    ]
+                  },
+                  {
+                    "id": "a360084c-0452-4c54-b43e-d0672dfa6ea3",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 7",
+                        "gamesWon": 0,
+                        "sourceRank": 7
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 5",
+                        "gamesWon": 0,
+                        "sourceRank": 5
+                      }
                     ]
                   }
                 ]
               },
               {
                 "number": 2,
+                "bracketGroup": null,
                 "matches": [
                   {
-                    "id": "rr-match-2",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "bd45fb19-8b23-4144-9a01-544f6e6515ac",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Charlie", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Alpha", "gamesWon": 0 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 1",
+                        "gamesWon": 0,
+                        "sourceRank": 1
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 5",
+                        "gamesWon": 0,
+                        "sourceRank": 5
+                      }
+                    ]
+                  },
+                  {
+                    "id": "88c5bc32-2ea2-444a-bcc1-fbe4f67ae536",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 9",
+                        "gamesWon": 0,
+                        "sourceRank": 9
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 7",
+                        "gamesWon": 0,
+                        "sourceRank": 7
+                      }
                     ]
                   }
                 ]
               },
               {
                 "number": 3,
+                "bracketGroup": null,
                 "matches": [
                   {
-                    "id": "rr-match-3",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "19f04b96-4072-41df-8f21-ba39df72d792",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Bravo", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Charlie", "gamesWon": 1 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 3",
+                        "gamesWon": 0,
+                        "sourceRank": 3
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 7",
+                        "gamesWon": 0,
+                        "sourceRank": 7
+                      }
+                    ]
+                  },
+                  {
+                    "id": "3c8b6723-9bea-47f9-97ac-7dfeb7bfefec",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 1",
+                        "gamesWon": 0,
+                        "sourceRank": 1
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 9",
+                        "gamesWon": 0,
+                        "sourceRank": 9
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 4,
+                "bracketGroup": null,
+                "matches": [
+                  {
+                    "id": "f41b401f-fdba-4633-bc0f-ed75459304ae",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 5",
+                        "gamesWon": 0,
+                        "sourceRank": 5
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 9",
+                        "gamesWon": 0,
+                        "sourceRank": 9
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9147b41a-35af-49fe-b943-73c6f373952f",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 3",
+                        "gamesWon": 0,
+                        "sourceRank": 3
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 1",
+                        "gamesWon": 0,
+                        "sourceRank": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 5,
+                "bracketGroup": null,
+                "matches": [
+                  {
+                    "id": "0cd9ba2e-48a8-4b70-90b0-780b77ff0f95",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 7",
+                        "gamesWon": 0,
+                        "sourceRank": 7
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 1",
+                        "gamesWon": 0,
+                        "sourceRank": 1
+                      }
+                    ]
+                  },
+                  {
+                    "id": "f9842660-60cb-4bbb-baa7-944f2ca6349c",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 5",
+                        "gamesWon": 0,
+                        "sourceRank": 5
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 3",
+                        "gamesWon": 0,
+                        "sourceRank": 3
+                      }
                     ]
                   }
                 ]
               }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "label": "RR - 4 teams - double cycle",
-      "structure": {
-        "stageId": "rr-double",
-        "stageType": "ROUND_ROBIN",
-        "stageItems": [
+            ],
+            "edges": []
+          },
           {
-            "id": "rr-group-b",
-            "groupIndex": 1,
+            "id": "824ebd02-8c7c-4fe6-ab82-a535bd6c5015",
+            "groupIndex": 2,
             "rounds": [
               {
                 "number": 1,
+                "bracketGroup": null,
                 "matches": [
                   {
-                    "id": "rr2-match-1",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "206f0cb2-a2d7-40ab-9d3d-92a64004f831",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Red", "gamesWon": 1 },
-                      { "slot": 2, "teamName": "Blue", "gamesWon": 2, "winner": true }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 10",
+                        "gamesWon": 0,
+                        "sourceRank": 10
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 4",
+                        "gamesWon": 0,
+                        "sourceRank": 4
+                      }
                     ]
                   },
                   {
-                    "id": "rr2-match-2",
-                    "matchIndex": 2,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "3f046c44-46ee-4c2f-9649-422be2abfbc9",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Green", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Yellow", "gamesWon": 0 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 8",
+                        "gamesWon": 0,
+                        "sourceRank": 8
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 6",
+                        "gamesWon": 0,
+                        "sourceRank": 6
+                      }
                     ]
                   }
                 ]
               },
               {
                 "number": 2,
+                "bracketGroup": null,
                 "matches": [
                   {
-                    "id": "rr2-match-3",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "c650c4f7-4b4d-49d7-927c-0f6b980490af",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Red", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Green", "gamesWon": 1 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 2",
+                        "gamesWon": 0,
+                        "sourceRank": 2
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 6",
+                        "gamesWon": 0,
+                        "sourceRank": 6
+                      }
                     ]
                   },
                   {
-                    "id": "rr2-match-4",
-                    "matchIndex": 2,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "dec7e790-1e26-425c-a54e-76ad0e771c45",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Blue", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Yellow", "gamesWon": 0 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 10",
+                        "gamesWon": 0,
+                        "sourceRank": 10
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 8",
+                        "gamesWon": 0,
+                        "sourceRank": 8
+                      }
                     ]
                   }
                 ]
+              },
+              {
+                "number": 3,
+                "bracketGroup": null,
+                "matches": [
+                  {
+                    "id": "de8839a4-e083-4290-b391-9306b5cd016d",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 4",
+                        "gamesWon": 0,
+                        "sourceRank": 4
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 8",
+                        "gamesWon": 0,
+                        "sourceRank": 8
+                      }
+                    ]
+                  },
+                  {
+                    "id": "a8564863-5202-4dcc-8da0-ab35ab597796",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 2",
+                        "gamesWon": 0,
+                        "sourceRank": 2
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 10",
+                        "gamesWon": 0,
+                        "sourceRank": 10
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 4,
+                "bracketGroup": null,
+                "matches": [
+                  {
+                    "id": "6b0efeca-b5a4-4f06-9b39-eb315026eb6a",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 6",
+                        "gamesWon": 0,
+                        "sourceRank": 6
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 10",
+                        "gamesWon": 0,
+                        "sourceRank": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "18489f76-bf99-4ed5-8a36-91d999ab93f7",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 4",
+                        "gamesWon": 0,
+                        "sourceRank": 4
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 2",
+                        "gamesWon": 0,
+                        "sourceRank": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 5,
+                "bracketGroup": null,
+                "matches": [
+                  {
+                    "id": "4d52cdc9-b544-4f58-a22f-7495df532fd2",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 8",
+                        "gamesWon": 0,
+                        "sourceRank": 8
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 2",
+                        "gamesWon": 0,
+                        "sourceRank": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9b8a93d0-92d7-4bfa-bcec-d7b7c69d0d78",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 6",
+                        "gamesWon": 0,
+                        "sourceRank": 6
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 4",
+                        "gamesWon": 0,
+                        "sourceRank": 4
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "edges": []
+          }
+        ]
+      },
+      "standings": {
+        "stageId": "a3182d47-1f65-4a97-8109-970445718a94",
+        "stageType": "ROUND_ROBIN",
+        "groups": [
+          {
+            "groupIndex": 1,
+            "entries": [
+              {
+                "rank": 1,
+                "teamName": "Team 9",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 2,
+                "teamName": "Team 3",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 3,
+                "teamName": "Team 7",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 4,
+                "teamName": "Team 5",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 5,
+                "teamName": "Team 1",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              }
+            ]
+          },
+          {
+            "groupIndex": 2,
+            "entries": [
+              {
+                "rank": 1,
+                "teamName": "Team 10",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 2,
+                "teamName": "Team 4",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 3,
+                "teamName": "Team 8",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 4,
+                "teamName": "Team 6",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 5,
+                "teamName": "Team 2",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
               }
             ]
           }
@@ -128,134 +622,746 @@
   ],
   "swiss": [
     {
-      "label": "Swiss - 4 teams - 3 rounds",
+      "label": "CSGO Swiss Trials",
       "structure": {
-        "stageId": "swiss-4",
+        "stageId": "586412e0-55d9-4dd2-a134-096dc0cfd41a",
         "stageType": "SWISS",
         "stageItems": [
           {
-            "id": "swiss-a",
+            "id": "2c6296f5-6cea-46df-bf6a-a22747d95f69",
             "groupIndex": 1,
             "rounds": [
               {
                 "number": 1,
+                "bracketGroup": "SWISS",
                 "matches": [
                   {
-                    "id": "swissA-1",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "4f359d89-79ab-4450-b35e-b654eeb107ae",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Alpha", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Bravo", "gamesWon": 0 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 1",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 12",
+                        "gamesWon": 0
+                      }
                     ]
                   },
                   {
-                    "id": "swissA-2",
-                    "matchIndex": 2,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "af41562a-9360-46f8-8404-0eb5a484e664",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Charlie", "gamesWon": 1 },
-                      { "slot": 2, "teamName": "Delta", "gamesWon": 2, "winner": true }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 2",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 11",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "c065dc03-af0e-423f-b39f-47919e1378ce",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 3",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 10",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ece66a5a-bac4-4ed1-a5b5-0e54d9b600e6",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 4",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 9",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "3ac365c1-f664-4f56-90e2-f3c8e9d27bc3",
+                    "matchIndex": 4,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 5",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 8",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "1db1d3dc-32d2-4560-96f7-30739a981ad9",
+                    "matchIndex": 5,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 6",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 7",
+                        "gamesWon": 0
+                      }
                     ]
                   }
                 ]
               },
               {
                 "number": 2,
+                "bracketGroup": "SWISS",
                 "matches": [
                   {
-                    "id": "swissA-3",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "ccaa2be1-06b5-43f6-91d8-ef5362ef706b",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Alpha", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Delta", "gamesWon": 1 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 1",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 11",
+                        "gamesWon": 0
+                      }
                     ]
                   },
                   {
-                    "id": "swissA-4",
-                    "matchIndex": 2,
-                    "status": "COMPLETED",
-                    "completed": true,
+                    "id": "950abaed-bcc6-4eb3-8563-4e5ee53ab5eb",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Bravo", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Charlie", "gamesWon": 0 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 12",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 2",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "f23e8375-89a2-479b-a520-bd2d7874a3ba",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 3",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 9",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "15ef8550-fb5e-4ca9-b663-e377c677b944",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 4",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 10",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "43495bdd-4088-4c0d-b081-63782cf1baa3",
+                    "matchIndex": 4,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 5",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 7",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "e04c639b-ad77-4113-ba35-63c92fc093d8",
+                    "matchIndex": 5,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 6",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 8",
+                        "gamesWon": 0
+                      }
                     ]
                   }
                 ]
               },
               {
                 "number": 3,
+                "bracketGroup": "SWISS",
                 "matches": [
                   {
-                    "id": "swissA-5",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
+                    "id": "4fb9c646-9cc8-49a6-add8-b968509d0f4c",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Alpha", "gamesWon": 1 },
-                      { "slot": 2, "teamName": "Bravo", "gamesWon": 2, "winner": true }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 1",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 10",
+                        "gamesWon": 0
+                      }
                     ]
                   },
                   {
-                    "id": "swissA-6",
-                    "matchIndex": 2,
-                    "status": "COMPLETED",
+                    "id": "9600509d-c9fa-430d-888f-9d809940a516",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Charlie", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Delta", "gamesWon": 1 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 11",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 3",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "0aa19b37-2989-4444-9413-e3fc8d5c5533",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 12",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 4",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "e6326d31-04bd-45ac-8bd3-5fb147f6bba8",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 9",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 5",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "d084d7e4-db77-4436-bbcc-083621587c21",
+                    "matchIndex": 4,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 8",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 6",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "8b6549b1-5b70-45cc-9c0b-88c53e675fcf",
+                    "matchIndex": 5,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 7",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 2",
+                        "gamesWon": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 4,
+                "bracketGroup": "SWISS",
+                "matches": [
+                  {
+                    "id": "703e81e2-ccf4-45a0-9d97-184ed33a2b5a",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 1",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 9",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "408e3af5-17da-4bbc-829c-9b6c251fd7c7",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 10",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 4",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "0c278a25-1cde-40a2-8460-ea44aea08162",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 11",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 5",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "dd46402e-a622-4adf-8d7c-91b26c7a7350",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 12",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 6",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "937c6653-2668-464f-a9f1-6085be622c2c",
+                    "matchIndex": 4,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 8",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 2",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "b2d6173b-5848-4c8a-b213-73e8decae6e3",
+                    "matchIndex": 5,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 7",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 3",
+                        "gamesWon": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 5,
+                "bracketGroup": "SWISS",
+                "matches": [
+                  {
+                    "id": "d06e3f94-f5b4-43a4-9183-a07012da7c6f",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 1",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 8",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "696aa8bb-fcd7-4d44-b639-21ffe3e374f9",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 9",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 4",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "34d45933-688f-4db5-9aac-b3e713cc6d21",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 10",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 5",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "510239ac-4e1f-4a28-8ae9-78b3c95e6063",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 11",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 6",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "dba6bd4a-5e7a-42c1-b809-33a7dafb60d3",
+                    "matchIndex": 4,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 12",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 7",
+                        "gamesWon": 0
+                      }
+                    ]
+                  },
+                  {
+                    "id": "1c1217fb-9baf-482a-bd8a-9fd4b81b2f58",
+                    "matchIndex": 5,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 2",
+                        "gamesWon": 0
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 3",
+                        "gamesWon": 0
+                      }
                     ]
                   }
                 ]
               }
-            ]
+            ],
+            "edges": []
           }
         ]
-      }
-    },
-    {
-      "label": "Swiss - 6 teams - 4 rounds",
-      "structure": {
-        "stageId": "swiss-6",
+      },
+      "standings": {
+        "stageId": "586412e0-55d9-4dd2-a134-096dc0cfd41a",
         "stageType": "SWISS",
-        "stageItems": [
+        "groups": [
           {
-            "id": "swiss-b",
             "groupIndex": 1,
-            "rounds": [
+            "entries": [
               {
-                "number": 1,
-                "matches": [
-                  {
-                    "id": "swissB-1",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
-                    "slots": [
-                      { "slot": 1, "teamName": "Moon", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Sun", "gamesWon": 1 }
-                    ]
-                  },
-                  {
-                    "id": "swissB-2",
-                    "matchIndex": 2,
-                    "status": "COMPLETED",
-                    "slots": [
-                      { "slot": 1, "teamName": "Star", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Cloud", "gamesWon": 0 }
-                    ]
-                  },
-                  {
-                    "id": "swissB-3",
-                    "matchIndex": 3,
-                    "status": "COMPLETED",
-                    "slots": [
-                      { "slot": 1, "teamName": "Snow", "gamesWon": 1 },
-                      { "slot": 2, "teamName": "Rain", "gamesWon": 2, "winner": true }
-                    ]
-                  }
-                ]
+                "rank": 1,
+                "teamName": "Team 1",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 2,
+                "teamName": "Team 2",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 3,
+                "teamName": "Team 3",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 4,
+                "teamName": "Team 4",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 5,
+                "teamName": "Team 5",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 6,
+                "teamName": "Team 6",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 7,
+                "teamName": "Team 7",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 8,
+                "teamName": "Team 8",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 9,
+                "teamName": "Team 9",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 10,
+                "teamName": "Team 10",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 11,
+                "teamName": "Team 11",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 12,
+                "teamName": "Team 12",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
               }
             ]
           }
@@ -265,89 +1371,513 @@
   ],
   "singleElimination": [
     {
-      "label": "Single Elim - 4 teams",
+      "label": "CSGO Single Elim Showcase",
       "structure": {
-        "stageId": "se-4",
+        "stageId": "4cfe40e7-50f5-4c16-9ee3-da4211fde700",
         "stageType": "SINGLE_ELIMINATION",
         "stageItems": [
           {
-            "id": "se-upper",
+            "id": "a71fd9d2-0435-4fe7-9e7d-023605623f8a",
             "groupIndex": 1,
             "rounds": [
               {
                 "number": 1,
+                "bracketGroup": "WINNERS_BRACKET",
                 "matches": [
                   {
-                    "id": "se-match-1",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
+                    "id": "4aaf0c57-d9d2-4a87-aeb8-c130fa9a27e7",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "A", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "D", "gamesWon": 0 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 1",
+                        "gamesWon": 0,
+                        "sourceRank": 1
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 16",
+                        "gamesWon": 0,
+                        "sourceRank": 16
+                      }
                     ]
                   },
                   {
-                    "id": "se-match-2",
-                    "matchIndex": 2,
-                    "status": "COMPLETED",
+                    "id": "38d3babc-4f4d-4403-bcab-526e91b1e36b",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "B", "gamesWon": 1 },
-                      { "slot": 2, "teamName": "C", "gamesWon": 2, "winner": true }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 8",
+                        "gamesWon": 0,
+                        "sourceRank": 8
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 9",
+                        "gamesWon": 0,
+                        "sourceRank": 9
+                      }
+                    ]
+                  },
+                  {
+                    "id": "e0f24f14-ec83-4d98-b646-b1c7e3077f16",
+                    "matchIndex": 2,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 4",
+                        "gamesWon": 0,
+                        "sourceRank": 4
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 13",
+                        "gamesWon": 0,
+                        "sourceRank": 13
+                      }
+                    ]
+                  },
+                  {
+                    "id": "32ac2a8b-51f6-4a0d-8321-70fde476198c",
+                    "matchIndex": 3,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 5",
+                        "gamesWon": 0,
+                        "sourceRank": 5
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 12",
+                        "gamesWon": 0,
+                        "sourceRank": 12
+                      }
+                    ]
+                  },
+                  {
+                    "id": "57ec1654-64f4-44a2-a9d7-e86cb8accc2a",
+                    "matchIndex": 4,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 2",
+                        "gamesWon": 0,
+                        "sourceRank": 2
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 15",
+                        "gamesWon": 0,
+                        "sourceRank": 15
+                      }
+                    ]
+                  },
+                  {
+                    "id": "51a3bd31-6753-4667-843b-1c0cddea2421",
+                    "matchIndex": 5,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 7",
+                        "gamesWon": 0,
+                        "sourceRank": 7
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 10",
+                        "gamesWon": 0,
+                        "sourceRank": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "735f4376-be07-41be-9d1e-d54ad3aa51b9",
+                    "matchIndex": 6,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 3",
+                        "gamesWon": 0,
+                        "sourceRank": 3
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 14",
+                        "gamesWon": 0,
+                        "sourceRank": 14
+                      }
+                    ]
+                  },
+                  {
+                    "id": "5b8c26ef-dcc2-4fc6-9740-fcd9e90e33dd",
+                    "matchIndex": 7,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 6",
+                        "gamesWon": 0,
+                        "sourceRank": 6
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 11",
+                        "gamesWon": 0,
+                        "sourceRank": 11
+                      }
                     ]
                   }
                 ]
               },
               {
                 "number": 2,
+                "bracketGroup": "WINNERS_BRACKET",
                 "matches": [
                   {
-                    "id": "se-match-3",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
+                    "id": "f1daccfa-00e8-4799-99a2-b61f0adbcf24",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "A", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "C", "gamesWon": 1 }
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "14fa5252-d148-4e86-b2a8-5ed7d6a1d24c",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "7d033ac6-b3e2-4ea2-8c79-d0442ecaed53",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "28446835-523a-4c16-9bcc-28ef46654d8f",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 3,
+                "bracketGroup": "WINNERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "fb158a44-0cb1-47c8-bbbd-52fc455671aa",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "20a2d9d6-f688-48b5-8759-91f2580b2618",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 4,
+                "bracketGroup": "WINNERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "0494bb39-cefa-4cbe-aa97-d2596e652359",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
                     ]
                   }
                 ]
               }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "label": "Single Elim - 6 teams (byes)",
-      "structure": {
-        "stageId": "se-6",
-        "stageType": "SINGLE_ELIMINATION",
-        "stageItems": [
+            ],
+            "edges": []
+          },
           {
-            "id": "se-upper-bye",
-            "groupIndex": 1,
+            "id": "278ceb97-2531-4057-8996-cd25ac8e7753",
+            "groupIndex": 2,
             "rounds": [
               {
                 "number": 1,
+                "bracketGroup": "FINALS",
                 "matches": [
                   {
-                    "id": "se6-match-1",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
+                    "id": "0c5ebe6a-8692-4e7a-b6d7-60a6c45a7cf8",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Seed 3", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Seed 6", "gamesWon": 1 }
-                    ]
-                  },
-                  {
-                    "id": "se6-match-2",
-                    "matchIndex": 2,
-                    "status": "COMPLETED",
-                    "slots": [
-                      { "slot": 1, "teamName": "Seed 4", "gamesWon": 0 },
-                      { "slot": 2, "teamName": "Seed 5", "gamesWon": 2, "winner": true }
+                      {
+                        "slot": 1,
+                        "sourceRank": 1
+                      },
+                      {
+                        "slot": 2,
+                        "sourceRank": 2
+                      }
                     ]
                   }
                 ]
+              }
+            ],
+            "edges": []
+          }
+        ]
+      },
+      "standings": {
+        "stageId": "4cfe40e7-50f5-4c16-9ee3-da4211fde700",
+        "stageType": "SINGLE_ELIMINATION",
+        "groups": [
+          {
+            "groupIndex": 1,
+            "entries": [
+              {
+                "rank": 1,
+                "teamName": "Team 1",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 2,
+                "teamName": "Team 2",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 3,
+                "teamName": "Team 3",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 4,
+                "teamName": "Team 4",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 5,
+                "teamName": "Team 5",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 6,
+                "teamName": "Team 6",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 7,
+                "teamName": "Team 7",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 8,
+                "teamName": "Team 8",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 9,
+                "teamName": "Team 9",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 10,
+                "teamName": "Team 10",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 11,
+                "teamName": "Team 11",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 12,
+                "teamName": "Team 12",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 13,
+                "teamName": "Team 13",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 14,
+                "teamName": "Team 14",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 15,
+                "teamName": "Team 15",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 16,
+                "teamName": "Team 16",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
               }
             ]
           }
@@ -357,45 +1887,2092 @@
   ],
   "doubleElimination": [
     {
-      "label": "Double Elim - 4 teams",
+      "label": "CSGO Double Elim Championship",
       "structure": {
-        "stageId": "de-4",
+        "stageId": "baab51c7-11ed-4130-89a4-e5dad161db9f",
         "stageType": "DOUBLE_ELIMINATION",
         "stageItems": [
           {
-            "id": "de-wb",
+            "id": "a5f95f29-6bf9-4106-a0db-08ccf1d836a8",
             "groupIndex": 1,
             "rounds": [
               {
                 "number": 1,
-                "bracketGroup": "WINNER_BRACKET",
+                "bracketGroup": "WINNERS_BRACKET",
                 "matches": [
                   {
-                    "id": "de-match-1",
-                    "matchIndex": 1,
-                    "status": "COMPLETED",
+                    "id": "9fb4039d-afb4-49d4-95dd-0fbdfed8f0b9",
+                    "matchIndex": 0,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Alpha", "gamesWon": 2, "winner": true },
-                      { "slot": 2, "teamName": "Delta", "gamesWon": 0 }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 1",
+                        "gamesWon": 0,
+                        "sourceRank": 1
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 32",
+                        "gamesWon": 0,
+                        "sourceRank": 32
+                      }
                     ]
                   },
                   {
-                    "id": "de-match-2",
-                    "matchIndex": 2,
-                    "status": "COMPLETED",
+                    "id": "1672f37f-098a-4f90-93a6-eb21ab490b71",
+                    "matchIndex": 1,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
                     "slots": [
-                      { "slot": 1, "teamName": "Bravo", "gamesWon": 1 },
-                      { "slot": 2, "teamName": "Charlie", "gamesWon": 2, "winner": true }
+                      {
+                        "slot": 1,
+                        "teamName": "Team 16",
+                        "gamesWon": 0,
+                        "sourceRank": 16
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 17",
+                        "gamesWon": 0,
+                        "sourceRank": 17
+                      }
+                    ]
+                  },
+                  {
+                    "id": "e0133818-b10d-411b-816d-5d276b3b4cf0",
+                    "matchIndex": 2,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 8",
+                        "gamesWon": 0,
+                        "sourceRank": 8
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 25",
+                        "gamesWon": 0,
+                        "sourceRank": 25
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ec6d1132-56e0-4335-bae0-8fe3be48269c",
+                    "matchIndex": 3,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 9",
+                        "gamesWon": 0,
+                        "sourceRank": 9
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 24",
+                        "gamesWon": 0,
+                        "sourceRank": 24
+                      }
+                    ]
+                  },
+                  {
+                    "id": "021a3724-a83c-4413-a8e2-f8ee5a99bea8",
+                    "matchIndex": 4,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 4",
+                        "gamesWon": 0,
+                        "sourceRank": 4
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 29",
+                        "gamesWon": 0,
+                        "sourceRank": 29
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9f0168b2-949b-4937-bce1-08578aa49fb9",
+                    "matchIndex": 5,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 13",
+                        "gamesWon": 0,
+                        "sourceRank": 13
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 20",
+                        "gamesWon": 0,
+                        "sourceRank": 20
+                      }
+                    ]
+                  },
+                  {
+                    "id": "247bc4ef-1dbb-43d2-830e-c3a94bebea49",
+                    "matchIndex": 6,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 5",
+                        "gamesWon": 0,
+                        "sourceRank": 5
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 28",
+                        "gamesWon": 0,
+                        "sourceRank": 28
+                      }
+                    ]
+                  },
+                  {
+                    "id": "3d6fe98d-9e0d-4d70-81de-39cf7b22ef71",
+                    "matchIndex": 7,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 12",
+                        "gamesWon": 0,
+                        "sourceRank": 12
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 21",
+                        "gamesWon": 0,
+                        "sourceRank": 21
+                      }
+                    ]
+                  },
+                  {
+                    "id": "e9d5470e-272d-48c4-b5c7-bc11fd5caf7e",
+                    "matchIndex": 8,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 2",
+                        "gamesWon": 0,
+                        "sourceRank": 2
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 31",
+                        "gamesWon": 0,
+                        "sourceRank": 31
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9298881a-94d1-4e54-9f91-01c369477967",
+                    "matchIndex": 9,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 15",
+                        "gamesWon": 0,
+                        "sourceRank": 15
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 18",
+                        "gamesWon": 0,
+                        "sourceRank": 18
+                      }
+                    ]
+                  },
+                  {
+                    "id": "987f178a-c469-46ba-9741-ec2e9d304eed",
+                    "matchIndex": 10,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 7",
+                        "gamesWon": 0,
+                        "sourceRank": 7
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 26",
+                        "gamesWon": 0,
+                        "sourceRank": 26
+                      }
+                    ]
+                  },
+                  {
+                    "id": "351919e1-3523-458d-80fd-f29e81063085",
+                    "matchIndex": 11,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 10",
+                        "gamesWon": 0,
+                        "sourceRank": 10
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 23",
+                        "gamesWon": 0,
+                        "sourceRank": 23
+                      }
+                    ]
+                  },
+                  {
+                    "id": "a89d7348-b1fe-4201-b99f-b6aacd1d0ec6",
+                    "matchIndex": 12,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 3",
+                        "gamesWon": 0,
+                        "sourceRank": 3
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 30",
+                        "gamesWon": 0,
+                        "sourceRank": 30
+                      }
+                    ]
+                  },
+                  {
+                    "id": "228db754-fb95-4756-b214-acda2b54b8ac",
+                    "matchIndex": 13,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 14",
+                        "gamesWon": 0,
+                        "sourceRank": 14
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 19",
+                        "gamesWon": 0,
+                        "sourceRank": 19
+                      }
+                    ]
+                  },
+                  {
+                    "id": "1d30c4db-f15f-4351-afe7-6393fe400486",
+                    "matchIndex": 14,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 6",
+                        "gamesWon": 0,
+                        "sourceRank": 6
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 27",
+                        "gamesWon": 0,
+                        "sourceRank": 27
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9233959e-ecf9-40c3-bea6-30c947bf0709",
+                    "matchIndex": 15,
+                    "status": "SCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "teamName": "Team 11",
+                        "gamesWon": 0,
+                        "sourceRank": 11
+                      },
+                      {
+                        "slot": 2,
+                        "teamName": "Team 22",
+                        "gamesWon": 0,
+                        "sourceRank": 22
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 2,
+                "bracketGroup": "WINNERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "0bcec024-ad4e-4728-a261-7735fa7cd6da",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "0d54d67f-08d9-4f7c-8f93-ecc8344521d3",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ab50ceb9-4cde-4934-ba06-263bcf186781",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "bfd6c709-e21a-4408-a054-ea549b679f56",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "e024e785-f452-4a53-9d09-6467980dc9f1",
+                    "matchIndex": 4,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "21042dc7-99c5-49da-9474-a4b66defea85",
+                    "matchIndex": 5,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "4b9c1e61-811b-4f4f-9360-15254b1aa793",
+                    "matchIndex": 6,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "558097d0-c41e-42bc-8651-376be577f516",
+                    "matchIndex": 7,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 3,
+                "bracketGroup": "WINNERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "f9847901-fdd2-4e32-93d1-d88369f53fb9",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "cf2a1e3b-45bf-40e7-9d67-9846baceaee3",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ace87ea5-b837-4290-bf5a-1ab6cf01b3cd",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ebf7a336-fe3e-4572-a6de-e3a3506be4a3",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 4,
+                "bracketGroup": "WINNERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "efe73845-0a96-42bc-bca0-c8be7c413148",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "760a2e3e-3ea4-466f-b17e-a70282bf5ac8",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 5,
+                "bracketGroup": "WINNERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "62ba833c-50bd-4703-91cc-3c0b410978ba",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
                     ]
                   }
                 ]
               }
+            ],
+            "edges": [
+              {
+                "fromMatchId": "9fb4039d-afb4-49d4-95dd-0fbdfed8f0b9",
+                "fromRank": 1,
+                "toMatchId": "0bcec024-ad4e-4728-a261-7735fa7cd6da",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "1672f37f-098a-4f90-93a6-eb21ab490b71",
+                "fromRank": 1,
+                "toMatchId": "0bcec024-ad4e-4728-a261-7735fa7cd6da",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "e0133818-b10d-411b-816d-5d276b3b4cf0",
+                "fromRank": 1,
+                "toMatchId": "0d54d67f-08d9-4f7c-8f93-ecc8344521d3",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "ec6d1132-56e0-4335-bae0-8fe3be48269c",
+                "fromRank": 1,
+                "toMatchId": "0d54d67f-08d9-4f7c-8f93-ecc8344521d3",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "021a3724-a83c-4413-a8e2-f8ee5a99bea8",
+                "fromRank": 1,
+                "toMatchId": "ab50ceb9-4cde-4934-ba06-263bcf186781",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "9f0168b2-949b-4937-bce1-08578aa49fb9",
+                "fromRank": 1,
+                "toMatchId": "ab50ceb9-4cde-4934-ba06-263bcf186781",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "247bc4ef-1dbb-43d2-830e-c3a94bebea49",
+                "fromRank": 1,
+                "toMatchId": "bfd6c709-e21a-4408-a054-ea549b679f56",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "3d6fe98d-9e0d-4d70-81de-39cf7b22ef71",
+                "fromRank": 1,
+                "toMatchId": "bfd6c709-e21a-4408-a054-ea549b679f56",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "e9d5470e-272d-48c4-b5c7-bc11fd5caf7e",
+                "fromRank": 1,
+                "toMatchId": "e024e785-f452-4a53-9d09-6467980dc9f1",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "9298881a-94d1-4e54-9f91-01c369477967",
+                "fromRank": 1,
+                "toMatchId": "e024e785-f452-4a53-9d09-6467980dc9f1",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "987f178a-c469-46ba-9741-ec2e9d304eed",
+                "fromRank": 1,
+                "toMatchId": "21042dc7-99c5-49da-9474-a4b66defea85",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "351919e1-3523-458d-80fd-f29e81063085",
+                "fromRank": 1,
+                "toMatchId": "21042dc7-99c5-49da-9474-a4b66defea85",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "a89d7348-b1fe-4201-b99f-b6aacd1d0ec6",
+                "fromRank": 1,
+                "toMatchId": "4b9c1e61-811b-4f4f-9360-15254b1aa793",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "228db754-fb95-4756-b214-acda2b54b8ac",
+                "fromRank": 1,
+                "toMatchId": "4b9c1e61-811b-4f4f-9360-15254b1aa793",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "1d30c4db-f15f-4351-afe7-6393fe400486",
+                "fromRank": 1,
+                "toMatchId": "558097d0-c41e-42bc-8651-376be577f516",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "9233959e-ecf9-40c3-bea6-30c947bf0709",
+                "fromRank": 1,
+                "toMatchId": "558097d0-c41e-42bc-8651-376be577f516",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "0bcec024-ad4e-4728-a261-7735fa7cd6da",
+                "fromRank": 1,
+                "toMatchId": "f9847901-fdd2-4e32-93d1-d88369f53fb9",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "0d54d67f-08d9-4f7c-8f93-ecc8344521d3",
+                "fromRank": 1,
+                "toMatchId": "f9847901-fdd2-4e32-93d1-d88369f53fb9",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "ab50ceb9-4cde-4934-ba06-263bcf186781",
+                "fromRank": 1,
+                "toMatchId": "cf2a1e3b-45bf-40e7-9d67-9846baceaee3",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "bfd6c709-e21a-4408-a054-ea549b679f56",
+                "fromRank": 1,
+                "toMatchId": "cf2a1e3b-45bf-40e7-9d67-9846baceaee3",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "e024e785-f452-4a53-9d09-6467980dc9f1",
+                "fromRank": 1,
+                "toMatchId": "ace87ea5-b837-4290-bf5a-1ab6cf01b3cd",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "21042dc7-99c5-49da-9474-a4b66defea85",
+                "fromRank": 1,
+                "toMatchId": "ace87ea5-b837-4290-bf5a-1ab6cf01b3cd",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "4b9c1e61-811b-4f4f-9360-15254b1aa793",
+                "fromRank": 1,
+                "toMatchId": "ebf7a336-fe3e-4572-a6de-e3a3506be4a3",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "558097d0-c41e-42bc-8651-376be577f516",
+                "fromRank": 1,
+                "toMatchId": "ebf7a336-fe3e-4572-a6de-e3a3506be4a3",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "f9847901-fdd2-4e32-93d1-d88369f53fb9",
+                "fromRank": 1,
+                "toMatchId": "efe73845-0a96-42bc-bca0-c8be7c413148",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "cf2a1e3b-45bf-40e7-9d67-9846baceaee3",
+                "fromRank": 1,
+                "toMatchId": "efe73845-0a96-42bc-bca0-c8be7c413148",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "ace87ea5-b837-4290-bf5a-1ab6cf01b3cd",
+                "fromRank": 1,
+                "toMatchId": "760a2e3e-3ea4-466f-b17e-a70282bf5ac8",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "ebf7a336-fe3e-4572-a6de-e3a3506be4a3",
+                "fromRank": 1,
+                "toMatchId": "760a2e3e-3ea4-466f-b17e-a70282bf5ac8",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "efe73845-0a96-42bc-bca0-c8be7c413148",
+                "fromRank": 1,
+                "toMatchId": "62ba833c-50bd-4703-91cc-3c0b410978ba",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "760a2e3e-3ea4-466f-b17e-a70282bf5ac8",
+                "fromRank": 1,
+                "toMatchId": "62ba833c-50bd-4703-91cc-3c0b410978ba",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "9fb4039d-afb4-49d4-95dd-0fbdfed8f0b9",
+                "fromRank": 2,
+                "toMatchId": "cf952e28-e8dd-4898-9c45-74d63ea87e11",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "1672f37f-098a-4f90-93a6-eb21ab490b71",
+                "fromRank": 2,
+                "toMatchId": "cf952e28-e8dd-4898-9c45-74d63ea87e11",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "e0133818-b10d-411b-816d-5d276b3b4cf0",
+                "fromRank": 2,
+                "toMatchId": "5c72e496-9f2c-447d-bebe-e72d085fa87d",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "ec6d1132-56e0-4335-bae0-8fe3be48269c",
+                "fromRank": 2,
+                "toMatchId": "5c72e496-9f2c-447d-bebe-e72d085fa87d",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "021a3724-a83c-4413-a8e2-f8ee5a99bea8",
+                "fromRank": 2,
+                "toMatchId": "2e235215-e374-450f-83a7-76f797941100",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "9f0168b2-949b-4937-bce1-08578aa49fb9",
+                "fromRank": 2,
+                "toMatchId": "2e235215-e374-450f-83a7-76f797941100",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "247bc4ef-1dbb-43d2-830e-c3a94bebea49",
+                "fromRank": 2,
+                "toMatchId": "aa1b77a4-89e3-4017-9eaf-f7a03ca0fb77",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "3d6fe98d-9e0d-4d70-81de-39cf7b22ef71",
+                "fromRank": 2,
+                "toMatchId": "aa1b77a4-89e3-4017-9eaf-f7a03ca0fb77",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "e9d5470e-272d-48c4-b5c7-bc11fd5caf7e",
+                "fromRank": 2,
+                "toMatchId": "d0b84a4d-2ee0-4e76-bd39-8d9a7443b493",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "9298881a-94d1-4e54-9f91-01c369477967",
+                "fromRank": 2,
+                "toMatchId": "d0b84a4d-2ee0-4e76-bd39-8d9a7443b493",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "987f178a-c469-46ba-9741-ec2e9d304eed",
+                "fromRank": 2,
+                "toMatchId": "754e0c0b-a586-4947-a01f-f8f7ae1d2881",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "351919e1-3523-458d-80fd-f29e81063085",
+                "fromRank": 2,
+                "toMatchId": "754e0c0b-a586-4947-a01f-f8f7ae1d2881",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "a89d7348-b1fe-4201-b99f-b6aacd1d0ec6",
+                "fromRank": 2,
+                "toMatchId": "9a907365-5827-49c1-85f5-280210471905",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "228db754-fb95-4756-b214-acda2b54b8ac",
+                "fromRank": 2,
+                "toMatchId": "9a907365-5827-49c1-85f5-280210471905",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "1d30c4db-f15f-4351-afe7-6393fe400486",
+                "fromRank": 2,
+                "toMatchId": "030bc422-af42-4957-b173-6d597989e347",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "9233959e-ecf9-40c3-bea6-30c947bf0709",
+                "fromRank": 2,
+                "toMatchId": "030bc422-af42-4957-b173-6d597989e347",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "0bcec024-ad4e-4728-a261-7735fa7cd6da",
+                "fromRank": 2,
+                "toMatchId": "4d71596d-2986-472f-9f00-d0bdf02ff76a",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "0d54d67f-08d9-4f7c-8f93-ecc8344521d3",
+                "fromRank": 2,
+                "toMatchId": "9f1e9a0c-d2d4-41b9-85ea-de0e1dfba665",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "ab50ceb9-4cde-4934-ba06-263bcf186781",
+                "fromRank": 2,
+                "toMatchId": "7bf0e645-34ff-40dd-881f-3c0231ad85fb",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "bfd6c709-e21a-4408-a054-ea549b679f56",
+                "fromRank": 2,
+                "toMatchId": "95e2329b-bd93-4b26-9f5e-14504ce503bb",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "e024e785-f452-4a53-9d09-6467980dc9f1",
+                "fromRank": 2,
+                "toMatchId": "992a337c-567a-4771-a717-ed3fcb8176d6",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "21042dc7-99c5-49da-9474-a4b66defea85",
+                "fromRank": 2,
+                "toMatchId": "2f0735f1-e6ab-4dd2-948a-21a1b5ebb5b7",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "4b9c1e61-811b-4f4f-9360-15254b1aa793",
+                "fromRank": 2,
+                "toMatchId": "ca0fd321-3261-4f19-b5b0-4de66c4f19b1",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "558097d0-c41e-42bc-8651-376be577f516",
+                "fromRank": 2,
+                "toMatchId": "58049fdd-bb57-468f-93d2-c2ede5813a4d",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "f9847901-fdd2-4e32-93d1-d88369f53fb9",
+                "fromRank": 2,
+                "toMatchId": "0f9eabd2-e6b9-4c1b-9539-eba962199d58",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "cf2a1e3b-45bf-40e7-9d67-9846baceaee3",
+                "fromRank": 2,
+                "toMatchId": "1d6dda31-f7f3-4353-9180-f07654736aa8",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "ace87ea5-b837-4290-bf5a-1ab6cf01b3cd",
+                "fromRank": 2,
+                "toMatchId": "c1826a14-9285-482d-ae5d-525b587a3ce0",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "ebf7a336-fe3e-4572-a6de-e3a3506be4a3",
+                "fromRank": 2,
+                "toMatchId": "f5f7db3e-fd24-4d0a-8c11-21ba3bcf54b7",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "efe73845-0a96-42bc-bca0-c8be7c413148",
+                "fromRank": 2,
+                "toMatchId": "e92ca6fa-0ea9-4891-95a0-20278ba7997f",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "760a2e3e-3ea4-466f-b17e-a70282bf5ac8",
+                "fromRank": 2,
+                "toMatchId": "3c7d7417-8433-4942-b313-ca4a7630cc89",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "62ba833c-50bd-4703-91cc-3c0b410978ba",
+                "fromRank": 2,
+                "toMatchId": "4dc6a149-3635-4863-9340-b35a5ab940df",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "62ba833c-50bd-4703-91cc-3c0b410978ba",
+                "fromRank": 1,
+                "toMatchId": "d95f770d-4bd3-4ffa-be86-236848b80dd8",
+                "toSlot": 1
+              }
             ]
           },
           {
-            "id": "de-lb",
+            "id": "3597d226-4832-421c-87fa-ad99c0460acb",
             "groupIndex": 2,
-            "rounds": []
+            "rounds": [
+              {
+                "number": 1,
+                "bracketGroup": "LOSERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "cf952e28-e8dd-4898-9c45-74d63ea87e11",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 1
+                      },
+                      {
+                        "slot": 2,
+                        "sourceRank": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "5c72e496-9f2c-447d-bebe-e72d085fa87d",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 3
+                      },
+                      {
+                        "slot": 2,
+                        "sourceRank": 4
+                      }
+                    ]
+                  },
+                  {
+                    "id": "2e235215-e374-450f-83a7-76f797941100",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 5
+                      },
+                      {
+                        "slot": 2,
+                        "sourceRank": 6
+                      }
+                    ]
+                  },
+                  {
+                    "id": "aa1b77a4-89e3-4017-9eaf-f7a03ca0fb77",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 7
+                      },
+                      {
+                        "slot": 2,
+                        "sourceRank": 8
+                      }
+                    ]
+                  },
+                  {
+                    "id": "d0b84a4d-2ee0-4e76-bd39-8d9a7443b493",
+                    "matchIndex": 4,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 9
+                      },
+                      {
+                        "slot": 2,
+                        "sourceRank": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "754e0c0b-a586-4947-a01f-f8f7ae1d2881",
+                    "matchIndex": 5,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 11
+                      },
+                      {
+                        "slot": 2,
+                        "sourceRank": 12
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9a907365-5827-49c1-85f5-280210471905",
+                    "matchIndex": 6,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 13
+                      },
+                      {
+                        "slot": 2,
+                        "sourceRank": 14
+                      }
+                    ]
+                  },
+                  {
+                    "id": "030bc422-af42-4957-b173-6d597989e347",
+                    "matchIndex": 7,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 15
+                      },
+                      {
+                        "slot": 2,
+                        "sourceRank": 16
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 2,
+                "bracketGroup": "LOSERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "58049fdd-bb57-468f-93d2-c2ede5813a4d",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 8
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ca0fd321-3261-4f19-b5b0-4de66c4f19b1",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 7
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "2f0735f1-e6ab-4dd2-948a-21a1b5ebb5b7",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 6
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "992a337c-567a-4771-a717-ed3fcb8176d6",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 5
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "95e2329b-bd93-4b26-9f5e-14504ce503bb",
+                    "matchIndex": 4,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 4
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "7bf0e645-34ff-40dd-881f-3c0231ad85fb",
+                    "matchIndex": 5,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 3
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9f1e9a0c-d2d4-41b9-85ea-de0e1dfba665",
+                    "matchIndex": 6,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 2
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "4d71596d-2986-472f-9f00-d0bdf02ff76a",
+                    "matchIndex": 7,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 3,
+                "bracketGroup": "LOSERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "be12ccc4-77cd-4fda-853f-319f99e57c17",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ead4ab16-77bf-4abf-bdee-2aa051192f5a",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9d37814d-8017-41c7-8d76-df3ab99eae95",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "a7fd3ff9-59a9-457b-9d95-73480b0dc534",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 4,
+                "bracketGroup": "LOSERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "c1826a14-9285-482d-ae5d-525b587a3ce0",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 3
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "f5f7db3e-fd24-4d0a-8c11-21ba3bcf54b7",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 4
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "0f9eabd2-e6b9-4c1b-9539-eba962199d58",
+                    "matchIndex": 2,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "1d6dda31-f7f3-4353-9180-f07654736aa8",
+                    "matchIndex": 3,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 2
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 5,
+                "bracketGroup": "LOSERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "09737896-5169-44c8-b76b-b3d8067e5fdb",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "f630a9ff-6bc8-41a9-98cc-4b5caea4fe79",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 6,
+                "bracketGroup": "LOSERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "e92ca6fa-0ea9-4891-95a0-20278ba7997f",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  },
+                  {
+                    "id": "3c7d7417-8433-4942-b313-ca4a7630cc89",
+                    "matchIndex": 1,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 2
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 7,
+                "bracketGroup": "LOSERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "74ae35e8-6ff8-4c6c-93d4-799572af84cf",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 8,
+                "bracketGroup": "LOSERS_BRACKET",
+                "matches": [
+                  {
+                    "id": "4dc6a149-3635-4863-9340-b35a5ab940df",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1,
+                        "sourceRank": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "edges": [
+              {
+                "fromMatchId": "cf952e28-e8dd-4898-9c45-74d63ea87e11",
+                "fromRank": 1,
+                "toMatchId": "58049fdd-bb57-468f-93d2-c2ede5813a4d",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "5c72e496-9f2c-447d-bebe-e72d085fa87d",
+                "fromRank": 1,
+                "toMatchId": "ca0fd321-3261-4f19-b5b0-4de66c4f19b1",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "2e235215-e374-450f-83a7-76f797941100",
+                "fromRank": 1,
+                "toMatchId": "2f0735f1-e6ab-4dd2-948a-21a1b5ebb5b7",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "aa1b77a4-89e3-4017-9eaf-f7a03ca0fb77",
+                "fromRank": 1,
+                "toMatchId": "992a337c-567a-4771-a717-ed3fcb8176d6",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "d0b84a4d-2ee0-4e76-bd39-8d9a7443b493",
+                "fromRank": 1,
+                "toMatchId": "95e2329b-bd93-4b26-9f5e-14504ce503bb",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "754e0c0b-a586-4947-a01f-f8f7ae1d2881",
+                "fromRank": 1,
+                "toMatchId": "7bf0e645-34ff-40dd-881f-3c0231ad85fb",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "9a907365-5827-49c1-85f5-280210471905",
+                "fromRank": 1,
+                "toMatchId": "9f1e9a0c-d2d4-41b9-85ea-de0e1dfba665",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "030bc422-af42-4957-b173-6d597989e347",
+                "fromRank": 1,
+                "toMatchId": "4d71596d-2986-472f-9f00-d0bdf02ff76a",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "58049fdd-bb57-468f-93d2-c2ede5813a4d",
+                "fromRank": 1,
+                "toMatchId": "be12ccc4-77cd-4fda-853f-319f99e57c17",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "ca0fd321-3261-4f19-b5b0-4de66c4f19b1",
+                "fromRank": 1,
+                "toMatchId": "be12ccc4-77cd-4fda-853f-319f99e57c17",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "2f0735f1-e6ab-4dd2-948a-21a1b5ebb5b7",
+                "fromRank": 1,
+                "toMatchId": "ead4ab16-77bf-4abf-bdee-2aa051192f5a",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "992a337c-567a-4771-a717-ed3fcb8176d6",
+                "fromRank": 1,
+                "toMatchId": "ead4ab16-77bf-4abf-bdee-2aa051192f5a",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "95e2329b-bd93-4b26-9f5e-14504ce503bb",
+                "fromRank": 1,
+                "toMatchId": "9d37814d-8017-41c7-8d76-df3ab99eae95",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "7bf0e645-34ff-40dd-881f-3c0231ad85fb",
+                "fromRank": 1,
+                "toMatchId": "9d37814d-8017-41c7-8d76-df3ab99eae95",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "9f1e9a0c-d2d4-41b9-85ea-de0e1dfba665",
+                "fromRank": 1,
+                "toMatchId": "a7fd3ff9-59a9-457b-9d95-73480b0dc534",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "4d71596d-2986-472f-9f00-d0bdf02ff76a",
+                "fromRank": 1,
+                "toMatchId": "a7fd3ff9-59a9-457b-9d95-73480b0dc534",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "be12ccc4-77cd-4fda-853f-319f99e57c17",
+                "fromRank": 1,
+                "toMatchId": "c1826a14-9285-482d-ae5d-525b587a3ce0",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "ead4ab16-77bf-4abf-bdee-2aa051192f5a",
+                "fromRank": 1,
+                "toMatchId": "f5f7db3e-fd24-4d0a-8c11-21ba3bcf54b7",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "9d37814d-8017-41c7-8d76-df3ab99eae95",
+                "fromRank": 1,
+                "toMatchId": "0f9eabd2-e6b9-4c1b-9539-eba962199d58",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "a7fd3ff9-59a9-457b-9d95-73480b0dc534",
+                "fromRank": 1,
+                "toMatchId": "1d6dda31-f7f3-4353-9180-f07654736aa8",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "c1826a14-9285-482d-ae5d-525b587a3ce0",
+                "fromRank": 1,
+                "toMatchId": "09737896-5169-44c8-b76b-b3d8067e5fdb",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "f5f7db3e-fd24-4d0a-8c11-21ba3bcf54b7",
+                "fromRank": 1,
+                "toMatchId": "09737896-5169-44c8-b76b-b3d8067e5fdb",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "0f9eabd2-e6b9-4c1b-9539-eba962199d58",
+                "fromRank": 1,
+                "toMatchId": "f630a9ff-6bc8-41a9-98cc-4b5caea4fe79",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "1d6dda31-f7f3-4353-9180-f07654736aa8",
+                "fromRank": 1,
+                "toMatchId": "f630a9ff-6bc8-41a9-98cc-4b5caea4fe79",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "09737896-5169-44c8-b76b-b3d8067e5fdb",
+                "fromRank": 1,
+                "toMatchId": "e92ca6fa-0ea9-4891-95a0-20278ba7997f",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "f630a9ff-6bc8-41a9-98cc-4b5caea4fe79",
+                "fromRank": 1,
+                "toMatchId": "3c7d7417-8433-4942-b313-ca4a7630cc89",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "e92ca6fa-0ea9-4891-95a0-20278ba7997f",
+                "fromRank": 1,
+                "toMatchId": "74ae35e8-6ff8-4c6c-93d4-799572af84cf",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "3c7d7417-8433-4942-b313-ca4a7630cc89",
+                "fromRank": 1,
+                "toMatchId": "74ae35e8-6ff8-4c6c-93d4-799572af84cf",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "74ae35e8-6ff8-4c6c-93d4-799572af84cf",
+                "fromRank": 1,
+                "toMatchId": "4dc6a149-3635-4863-9340-b35a5ab940df",
+                "toSlot": 2
+              },
+              {
+                "fromMatchId": "4dc6a149-3635-4863-9340-b35a5ab940df",
+                "fromRank": 1,
+                "toMatchId": "d95f770d-4bd3-4ffa-be86-236848b80dd8",
+                "toSlot": 2
+              }
+            ]
+          },
+          {
+            "id": "1591c2f6-5817-47da-8288-bcabb942dcd5",
+            "groupIndex": 3,
+            "rounds": [
+              {
+                "number": 1,
+                "bracketGroup": "FINALS",
+                "matches": [
+                  {
+                    "id": "d95f770d-4bd3-4ffa-be86-236848b80dd8",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2,
+                        "sourceRank": 1
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 2,
+                "bracketGroup": "FINALS",
+                "matches": [
+                  {
+                    "id": "7177f075-13ac-4e57-9f32-f5a67b29d438",
+                    "matchIndex": 0,
+                    "status": "UNSCHEDULED",
+                    "scheduledTime": null,
+                    "completed": false,
+                    "slots": [
+                      {
+                        "slot": 1
+                      },
+                      {
+                        "slot": 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ],
+            "edges": [
+              {
+                "fromMatchId": "d95f770d-4bd3-4ffa-be86-236848b80dd8",
+                "fromRank": 1,
+                "toMatchId": "7177f075-13ac-4e57-9f32-f5a67b29d438",
+                "toSlot": 1
+              },
+              {
+                "fromMatchId": "d95f770d-4bd3-4ffa-be86-236848b80dd8",
+                "fromRank": 2,
+                "toMatchId": "7177f075-13ac-4e57-9f32-f5a67b29d438",
+                "toSlot": 2
+              }
+            ]
+          }
+        ]
+      },
+      "standings": {
+        "stageId": "baab51c7-11ed-4130-89a4-e5dad161db9f",
+        "stageType": "DOUBLE_ELIMINATION",
+        "groups": [
+          {
+            "groupIndex": 1,
+            "entries": [
+              {
+                "rank": 1,
+                "teamName": "Team 1",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 2,
+                "teamName": "Team 2",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 3,
+                "teamName": "Team 3",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 4,
+                "teamName": "Team 4",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 5,
+                "teamName": "Team 5",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 6,
+                "teamName": "Team 6",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 7,
+                "teamName": "Team 7",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 8,
+                "teamName": "Team 8",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 9,
+                "teamName": "Team 9",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 10,
+                "teamName": "Team 10",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 11,
+                "teamName": "Team 11",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 12,
+                "teamName": "Team 12",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 13,
+                "teamName": "Team 13",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 14,
+                "teamName": "Team 14",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 15,
+                "teamName": "Team 15",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 16,
+                "teamName": "Team 16",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 17,
+                "teamName": "Team 17",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 18,
+                "teamName": "Team 18",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 19,
+                "teamName": "Team 19",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 20,
+                "teamName": "Team 20",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 21,
+                "teamName": "Team 21",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 22,
+                "teamName": "Team 22",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 23,
+                "teamName": "Team 23",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 24,
+                "teamName": "Team 24",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 25,
+                "teamName": "Team 25",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 26,
+                "teamName": "Team 26",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 27,
+                "teamName": "Team 27",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 28,
+                "teamName": "Team 28",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 29,
+                "teamName": "Team 29",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 30,
+                "teamName": "Team 30",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 31,
+                "teamName": "Team 31",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              },
+              {
+                "rank": 32,
+                "teamName": "Team 32",
+                "wins": 0,
+                "losses": 0,
+                "draws": 0,
+                "points": 0,
+                "scoreFor": 0,
+                "scoreAgainst": 0
+              }
+            ]
           }
         ]
       }
