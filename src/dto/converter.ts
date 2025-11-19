@@ -1,4 +1,4 @@
-import { StageType, Participant, Id, Stage, StageSettings, Match, ParticipantResult, Status } from 'brackets-model';
+import { Participant, Id, StageSettings, Match, ParticipantResult, Status } from 'brackets-model';
 import { ViewerData } from '../types';
 import {
     StageStructureResponse,
@@ -7,6 +7,7 @@ import {
     MatchSlotResponse,
     StageStructureConversionOptions,
 } from './types';
+import { ViewerStage, ViewerStageType } from '../models';
 
 interface ParticipantAccumulator {
     participants: Participant[];
@@ -15,10 +16,11 @@ interface ParticipantAccumulator {
     nextId: number;
 }
 
-const stageTypeMap: Record<Exclude<StageStructureFormat, 'SWISS' | 'FFA'>, StageType> = {
+const stageTypeMap: Record<Exclude<StageStructureFormat, 'FFA'>, ViewerStageType> = {
     SINGLE_ELIMINATION: 'single_elimination',
     DOUBLE_ELIMINATION: 'double_elimination',
     ROUND_ROBIN: 'round_robin',
+    SWISS: 'swiss',
 };
 
 const statusMap: Record<string, Status> = {
@@ -28,10 +30,11 @@ const statusMap: Record<string, Status> = {
     COMPLETED: Status.Completed,
 };
 
-const defaultStageNames: Record<StageType, string> = {
+const defaultStageNames: Record<ViewerStageType, string> = {
     single_elimination: 'Single Elimination',
     double_elimination: 'Double Elimination',
     round_robin: 'Round Robin',
+    swiss: 'Swiss Stage',
 };
 
 /**
@@ -90,10 +93,10 @@ export function convertStageStructureToViewerData(
 
     const stageSettings: StageSettings = {
         size: accumulator.participants.length || undefined,
-        groupCount: type === 'round_robin' ? stageItems.length || 1 : undefined,
+        groupCount: type === 'round_robin' || type === 'swiss' ? stageItems.length || 1 : undefined,
     };
 
-    const stage: Stage = {
+    const stage: ViewerStage = {
         id: stageId,
         tournament_id: tournamentId,
         name: options.stageName ?? defaultStageNames[type],
@@ -156,11 +159,11 @@ function convertSlot(
     return result;
 }
 
-function mapStageType(type?: StageStructureFormat): StageType {
+function mapStageType(type?: StageStructureFormat): ViewerStageType {
     if (!type)
         throw new Error('StageStructureResponse.stageType is required');
 
-    if (type === 'SWISS' || type === 'FFA')
+    if (type === 'FFA')
         throw new Error(`Stage type ${type} is not supported by the viewer`);
 
     return stageTypeMap[type];

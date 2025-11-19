@@ -1,9 +1,10 @@
 import i18next, { StringMap, TOptions, TFunction } from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-import { Stage, Status, FinalType, GroupType, StageType } from 'brackets-model';
+import { Status, FinalType, GroupType, StageType } from 'brackets-model';
 import { isMajorRound } from './helpers';
 import { OriginHint, RoundNameInfo } from './types';
+import type { ViewerStage } from './models';
 
 import en from './i18n/en/translation.json';
 import fr from './i18n/fr/translation.json';
@@ -221,7 +222,7 @@ export function getGroupName(groupNumber: number): string {
  * @param stage The current stage.
  * @param type Type of the bracket.
  */
-export function getBracketName(stage: Stage, type: GroupType): string | undefined {
+export function getBracketName(stage: ViewerStage, type: GroupType): string | undefined {
     switch (type) {
         case 'winner_bracket':
         case 'loser_bracket':

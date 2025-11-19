@@ -1,5 +1,5 @@
 import './style.scss';
-import { Participant, Match, ParticipantResult, Stage, Status, GroupType, FinalType, Id, type RankingItem } from 'brackets-model';
+import { Participant, Match, ParticipantResult, Status, GroupType, FinalType, Id, type RankingItem, StageType } from 'brackets-model';
 import { splitBy, getOriginAbbreviation, findRoot, completeWithBlankMatches, sortBy, isMatchGame, isMatch, splitByWithLeftovers } from './helpers';
 import * as dom from './dom';
 import * as lang from './lang';
@@ -19,6 +19,7 @@ import {
     InternalViewerData,
     MatchGameWithMetadata,
     ToggleEvent,
+    ViewerStage,
 } from './types';
 
 export class BracketsViewer {
@@ -28,7 +29,7 @@ export class BracketsViewer {
     private participants: Participant[] = [];
     private participantImages: ParticipantImage[] = [];
 
-    private stage!: Stage;
+    private stage!: ViewerStage;
     private config!: Config;
     private skipFirstRound = false;
     private alwaysConnectFirstRound = false;
@@ -195,6 +196,9 @@ export class BracketsViewer {
             case 'round_robin':
                 this.renderRoundRobin(root, stage, matchesByGroup);
                 break;
+            case 'swiss':
+                this.renderSwiss(root, stage, matchesByGroup);
+                break;
             case 'single_elimination':
             case 'double_elimination':
                 this.renderElimination(root, stage, matchesByGroup);
@@ -213,7 +217,7 @@ export class BracketsViewer {
      * @param stage The stage to render.
      * @param matchesByGroup A list of matches for each group.
      */
-    private renderRoundRobin(root: DocumentFragment, stage: Stage, matchesByGroup: MatchWithMetadata[][]): void {
+    private renderRoundRobin(root: DocumentFragment, stage: ViewerStage, matchesByGroup: MatchWithMetadata[][]): void {
         const container = dom.createRoundRobinContainer(stage.id);
         container.append(dom.createTitle(stage.name));
 
@@ -252,13 +256,62 @@ export class BracketsViewer {
     }
 
     /**
+     * Renders a Swiss stage.
+     *
+     * @param root The root element.
+     * @param stage The stage to render.
+     * @param matchesByGroup A list of matches for each group.
+     */
+    private renderSwiss(root: DocumentFragment, stage: ViewerStage, matchesByGroup: MatchWithMetadata[][]): void {
+        const container = dom.createEliminationContainer(stage.id);
+        container.append(dom.createTitle(stage.name));
+
+        let groupNumber = 1;
+
+        for (const groupMatches of matchesByGroup) {
+            if (!groupMatches?.length)
+                continue;
+
+            const groupId = groupMatches[0].group_id;
+            const bracket = dom.createBracketContainer(groupId, lang.getGroupName(groupNumber++));
+            const roundsContainer = dom.createRoundsContainer();
+            const matchesByRound = splitBy(groupMatches, 'round_id').map(matches => sortBy(matches, 'number'));
+
+            matchesByRound.forEach((roundMatches, roundIndex) => {
+                const roundId = roundMatches[0].round_id;
+                const roundName = this.getRoundName({
+                    groupType: 'swiss',
+                    roundNumber: roundIndex + 1,
+                    roundCount: matchesByRound.length,
+                }, lang.getRoundName);
+
+                const roundContainer = dom.createRoundContainer(roundId, roundName);
+
+                for (const match of roundMatches)
+                    roundContainer.append(this.createMatch(match, true));
+
+                roundsContainer.append(roundContainer);
+            });
+
+            bracket.append(roundsContainer);
+
+            if (this.config.showRankingTable)
+                bracket.append(this.createRanking(groupMatches));
+
+            container.append(bracket);
+        }
+
+        root.append(container);
+    }
+
+    /**
      * Renders an elimination stage (single or double).
      *
      * @param root The root element.
      * @param stage The stage to render.
      * @param matchesByGroup A list of matches for each group.
      */
-    private renderElimination(root: DocumentFragment, stage: Stage, matchesByGroup: MatchWithMetadata[][]): void {
+    private renderElimination(root: DocumentFragment, stage: ViewerStage, matchesByGroup: MatchWithMetadata[][]): void {
         const container = dom.createEliminationContainer(stage.id);
         container.append(dom.createTitle(stage.name));
 
@@ -277,7 +330,7 @@ export class BracketsViewer {
      * @param stage The stage to render.
      * @param matchesByGroup A list of matches for each group.
      */
-    private renderConsolationMatches(root: DocumentFragment, stage: Stage, matchesByGroup: MatchWithMetadata[][]): void {
+    private renderConsolationMatches(root: DocumentFragment, stage: ViewerStage, matchesByGroup: MatchWithMetadata[][]): void {
         const consolationMatches = matchesByGroup[-1];
         if (!consolationMatches?.length)
             return;
@@ -575,7 +628,7 @@ export class BracketsViewer {
 
         const connection = dom.getFinalConnection(finalType, roundNumber, roundCount);
         const matchLabel = lang.getFinalMatchLabel(finalType, roundNumber, roundCount);
-        const originHint = lang.getFinalOriginHint(match.metadata.stageType, finalType, roundNumber);
+        const originHint = lang.getFinalOriginHint(match.metadata.stageType as StageType, finalType, roundNumber);
 
         match.metadata.connection = connection;
         match.metadata.label = matchLabel;

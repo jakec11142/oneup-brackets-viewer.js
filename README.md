@@ -5,7 +5,7 @@
 [![jsDelivr](https://data.jsdelivr.com/v1/package/npm/brackets-viewer/badge?style=rounded)](https://www.jsdelivr.com/package/npm/brackets-viewer)
 [![Package Quality](https://packagequality.com/shield/brackets-viewer.svg)](https://packagequality.com/#?package=brackets-viewer)
 
-A simple library to display tournament brackets (round-robin, single elimination, double elimination).
+A simple library to display tournament brackets (round-robin, swiss, single elimination, double elimination).
 
 It contains all the logic needed to display tournaments.
 
@@ -131,7 +131,7 @@ See `demo/with-api.html` + `demo/api-data.json` for a runnable example that mirr
 
 To quickly test, you can also try the demos by visiting `./demo/index.html`.
 
-`demo/with-api.html` uses the DTO sample stored in `demo/api-data.json`, so it works offline without `json-server`. If you still want to spin up `json-server` for the legacy `demo/db.json` file (used by the storage demo), you can:
+`demo/with-api.html` uses the DTO sample stored in `demo/api-data.json`, so it works offline without `json-server`. `demo/with-showcase.html` lets you pick any supported format (round-robin, swiss, single/double elim) and renders multiple mock tournaments straight from DTO data if you want to eyeball different layouts. If you still want to spin up `json-server` for the legacy `demo/db.json` file (used by the storage demo), you can:
 
 - Run the npm script named `db` to serve the static database file `./demo/db.json`
 

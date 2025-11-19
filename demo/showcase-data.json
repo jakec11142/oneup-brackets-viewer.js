@@ -1,0 +1,404 @@
+{
+  "roundRobin": [
+    {
+      "label": "RR - 3 teams - simple",
+      "structure": {
+        "stageId": "rr-simple",
+        "stageType": "ROUND_ROBIN",
+        "stageItems": [
+          {
+            "id": "rr-group-a",
+            "groupIndex": 1,
+            "rounds": [
+              {
+                "number": 1,
+                "matches": [
+                  {
+                    "id": "rr-match-1",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Alpha", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Bravo", "gamesWon": 1 }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 2,
+                "matches": [
+                  {
+                    "id": "rr-match-2",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Charlie", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Alpha", "gamesWon": 0 }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 3,
+                "matches": [
+                  {
+                    "id": "rr-match-3",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Bravo", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Charlie", "gamesWon": 1 }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "RR - 4 teams - double cycle",
+      "structure": {
+        "stageId": "rr-double",
+        "stageType": "ROUND_ROBIN",
+        "stageItems": [
+          {
+            "id": "rr-group-b",
+            "groupIndex": 1,
+            "rounds": [
+              {
+                "number": 1,
+                "matches": [
+                  {
+                    "id": "rr2-match-1",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Red", "gamesWon": 1 },
+                      { "slot": 2, "teamName": "Blue", "gamesWon": 2, "winner": true }
+                    ]
+                  },
+                  {
+                    "id": "rr2-match-2",
+                    "matchIndex": 2,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Green", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Yellow", "gamesWon": 0 }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 2,
+                "matches": [
+                  {
+                    "id": "rr2-match-3",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Red", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Green", "gamesWon": 1 }
+                    ]
+                  },
+                  {
+                    "id": "rr2-match-4",
+                    "matchIndex": 2,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Blue", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Yellow", "gamesWon": 0 }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "swiss": [
+    {
+      "label": "Swiss - 4 teams - 3 rounds",
+      "structure": {
+        "stageId": "swiss-4",
+        "stageType": "SWISS",
+        "stageItems": [
+          {
+            "id": "swiss-a",
+            "groupIndex": 1,
+            "rounds": [
+              {
+                "number": 1,
+                "matches": [
+                  {
+                    "id": "swissA-1",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Alpha", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Bravo", "gamesWon": 0 }
+                    ]
+                  },
+                  {
+                    "id": "swissA-2",
+                    "matchIndex": 2,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Charlie", "gamesWon": 1 },
+                      { "slot": 2, "teamName": "Delta", "gamesWon": 2, "winner": true }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 2,
+                "matches": [
+                  {
+                    "id": "swissA-3",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Alpha", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Delta", "gamesWon": 1 }
+                    ]
+                  },
+                  {
+                    "id": "swissA-4",
+                    "matchIndex": 2,
+                    "status": "COMPLETED",
+                    "completed": true,
+                    "slots": [
+                      { "slot": 1, "teamName": "Bravo", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Charlie", "gamesWon": 0 }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 3,
+                "matches": [
+                  {
+                    "id": "swissA-5",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "Alpha", "gamesWon": 1 },
+                      { "slot": 2, "teamName": "Bravo", "gamesWon": 2, "winner": true }
+                    ]
+                  },
+                  {
+                    "id": "swissA-6",
+                    "matchIndex": 2,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "Charlie", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Delta", "gamesWon": 1 }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "Swiss - 6 teams - 4 rounds",
+      "structure": {
+        "stageId": "swiss-6",
+        "stageType": "SWISS",
+        "stageItems": [
+          {
+            "id": "swiss-b",
+            "groupIndex": 1,
+            "rounds": [
+              {
+                "number": 1,
+                "matches": [
+                  {
+                    "id": "swissB-1",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "Moon", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Sun", "gamesWon": 1 }
+                    ]
+                  },
+                  {
+                    "id": "swissB-2",
+                    "matchIndex": 2,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "Star", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Cloud", "gamesWon": 0 }
+                    ]
+                  },
+                  {
+                    "id": "swissB-3",
+                    "matchIndex": 3,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "Snow", "gamesWon": 1 },
+                      { "slot": 2, "teamName": "Rain", "gamesWon": 2, "winner": true }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "singleElimination": [
+    {
+      "label": "Single Elim - 4 teams",
+      "structure": {
+        "stageId": "se-4",
+        "stageType": "SINGLE_ELIMINATION",
+        "stageItems": [
+          {
+            "id": "se-upper",
+            "groupIndex": 1,
+            "rounds": [
+              {
+                "number": 1,
+                "matches": [
+                  {
+                    "id": "se-match-1",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "A", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "D", "gamesWon": 0 }
+                    ]
+                  },
+                  {
+                    "id": "se-match-2",
+                    "matchIndex": 2,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "B", "gamesWon": 1 },
+                      { "slot": 2, "teamName": "C", "gamesWon": 2, "winner": true }
+                    ]
+                  }
+                ]
+              },
+              {
+                "number": 2,
+                "matches": [
+                  {
+                    "id": "se-match-3",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "A", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "C", "gamesWon": 1 }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "label": "Single Elim - 6 teams (byes)",
+      "structure": {
+        "stageId": "se-6",
+        "stageType": "SINGLE_ELIMINATION",
+        "stageItems": [
+          {
+            "id": "se-upper-bye",
+            "groupIndex": 1,
+            "rounds": [
+              {
+                "number": 1,
+                "matches": [
+                  {
+                    "id": "se6-match-1",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "Seed 3", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Seed 6", "gamesWon": 1 }
+                    ]
+                  },
+                  {
+                    "id": "se6-match-2",
+                    "matchIndex": 2,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "Seed 4", "gamesWon": 0 },
+                      { "slot": 2, "teamName": "Seed 5", "gamesWon": 2, "winner": true }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "doubleElimination": [
+    {
+      "label": "Double Elim - 4 teams",
+      "structure": {
+        "stageId": "de-4",
+        "stageType": "DOUBLE_ELIMINATION",
+        "stageItems": [
+          {
+            "id": "de-wb",
+            "groupIndex": 1,
+            "rounds": [
+              {
+                "number": 1,
+                "bracketGroup": "WINNER_BRACKET",
+                "matches": [
+                  {
+                    "id": "de-match-1",
+                    "matchIndex": 1,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "Alpha", "gamesWon": 2, "winner": true },
+                      { "slot": 2, "teamName": "Delta", "gamesWon": 0 }
+                    ]
+                  },
+                  {
+                    "id": "de-match-2",
+                    "matchIndex": 2,
+                    "status": "COMPLETED",
+                    "slots": [
+                      { "slot": 1, "teamName": "Bravo", "gamesWon": 1 },
+                      { "slot": 2, "teamName": "Charlie", "gamesWon": 2, "winner": true }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "de-lb",
+            "groupIndex": 2,
+            "rounds": []
+          }
+        ]
+      }
+    }
+  ]
+}

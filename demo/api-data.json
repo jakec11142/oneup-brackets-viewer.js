@@ -1,18 +1,18 @@
 {
   "structure": {
-    "stageId": "1",
-    "stageType": "SINGLE_ELIMINATION",
+    "stageId": "swiss-1",
+    "stageType": "SWISS",
     "stageItems": [
       {
-        "id": "wb-1",
+        "id": "swiss-group-1",
         "groupIndex": 1,
         "rounds": [
           {
             "number": 1,
-            "bracketGroup": "WINNER_BRACKET",
+            "bracketGroup": "SWISS",
             "matches": [
               {
-                "id": "match-1",
+                "id": "swiss-match-1",
                 "matchIndex": 1,
                 "status": "COMPLETED",
                 "completed": true,
@@ -21,19 +21,17 @@
                     "slot": 1,
                     "teamName": "Owls",
                     "gamesWon": 2,
-                    "winner": true,
-                    "sourceRank": 1
+                    "winner": true
                   },
                   {
                     "slot": 2,
                     "teamName": "Foxes",
-                    "gamesWon": 0,
-                    "sourceRank": 4
+                    "gamesWon": 0
                   }
                 ]
               },
               {
-                "id": "match-2",
+                "id": "swiss-match-2",
                 "matchIndex": 2,
                 "status": "COMPLETED",
                 "completed": true,
@@ -41,15 +39,13 @@
                   {
                     "slot": 1,
                     "teamName": "Bears",
-                    "gamesWon": 1,
-                    "sourceRank": 2
+                    "gamesWon": 1
                   },
                   {
                     "slot": 2,
                     "teamName": "Wolves",
                     "gamesWon": 2,
-                    "winner": true,
-                    "sourceRank": 3
+                    "winner": true
                   }
                 ]
               }
@@ -57,10 +53,10 @@
           },
           {
             "number": 2,
-            "bracketGroup": "WINNER_BRACKET",
+            "bracketGroup": "SWISS",
             "matches": [
               {
-                "id": "match-3",
+                "id": "swiss-match-3",
                 "matchIndex": 1,
                 "status": "COMPLETED",
                 "completed": true,
@@ -68,31 +64,19 @@
                   {
                     "slot": 1,
                     "teamName": "Owls",
-                    "gamesWon": 2,
-                    "winner": true
+                    "gamesWon": 1
                   },
                   {
                     "slot": 2,
                     "teamName": "Wolves",
-                    "gamesWon": 1
+                    "gamesWon": 2,
+                    "winner": true
                   }
                 ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "id": "final-1",
-        "groupIndex": 2,
-        "rounds": [
-          {
-            "number": 1,
-            "bracketGroup": "FINAL_GROUP",
-            "matches": [
+              },
               {
-                "id": "match-4",
-                "matchIndex": 1,
+                "id": "swiss-match-4",
+                "matchIndex": 2,
                 "status": "COMPLETED",
                 "completed": true,
                 "slots": [
@@ -105,7 +89,51 @@
                   {
                     "slot": 2,
                     "teamName": "Bears",
+                    "gamesWon": 0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "number": 3,
+            "bracketGroup": "SWISS",
+            "matches": [
+              {
+                "id": "swiss-match-5",
+                "matchIndex": 1,
+                "status": "COMPLETED",
+                "completed": true,
+                "slots": [
+                  {
+                    "slot": 1,
+                    "teamName": "Owls",
+                    "gamesWon": 2,
+                    "winner": true
+                  },
+                  {
+                    "slot": 2,
+                    "teamName": "Bears",
                     "gamesWon": 1
+                  }
+                ]
+              },
+              {
+                "id": "swiss-match-6",
+                "matchIndex": 2,
+                "status": "COMPLETED",
+                "completed": true,
+                "slots": [
+                  {
+                    "slot": 1,
+                    "teamName": "Wolves",
+                    "gamesWon": 1
+                  },
+                  {
+                    "slot": 2,
+                    "teamName": "Foxes",
+                    "gamesWon": 2,
+                    "winner": true
                   }
                 ]
               }
@@ -116,8 +144,8 @@
     ]
   },
   "standings": {
-    "stageId": "1",
-    "stageType": "SINGLE_ELIMINATION",
+    "stageId": "swiss-1",
+    "stageType": "SWISS",
     "groups": [
       {
         "groupIndex": 1,
@@ -126,41 +154,41 @@
             "rank": 1,
             "teamName": "Owls",
             "wins": 2,
-            "losses": 0,
+            "losses": 1,
             "draws": 0,
             "points": 6,
-            "scoreFor": 4,
-            "scoreAgainst": 1
+            "scoreFor": 5,
+            "scoreAgainst": 3
           },
           {
             "rank": 2,
-            "teamName": "Wolves",
-            "wins": 1,
+            "teamName": "Foxes",
+            "wins": 2,
             "losses": 1,
             "draws": 0,
-            "points": 3,
-            "scoreFor": 3,
+            "points": 6,
+            "scoreFor": 4,
             "scoreAgainst": 3
           },
           {
             "rank": 3,
-            "teamName": "Foxes",
-            "wins": 1,
+            "teamName": "Wolves",
+            "wins": 2,
             "losses": 1,
             "draws": 0,
-            "points": 3,
-            "scoreFor": 2,
+            "points": 6,
+            "scoreFor": 5,
             "scoreAgainst": 3
           },
           {
             "rank": 4,
             "teamName": "Bears",
             "wins": 0,
-            "losses": 2,
+            "losses": 3,
             "draws": 0,
             "points": 0,
             "scoreFor": 2,
-            "scoreAgainst": 4
+            "scoreAgainst": 7
           }
         ]
       }

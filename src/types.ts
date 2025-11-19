@@ -1,12 +1,14 @@
-import { Stage, Match, MatchGame, Participant, GroupType, FinalType, StageType, RankingItem, RankingFormula } from 'brackets-model';
+import { Match, MatchGame, Participant, GroupType, FinalType, StageType, RankingItem, RankingFormula } from 'brackets-model';
 import { CallbackFunction, FormConfiguration } from './form';
 import { InMemoryDatabase } from 'brackets-memory-db';
 import { BracketsViewer } from './main';
 import { BracketsManager } from 'brackets-manager';
 import { ToI18nKey, TFunction } from './lang';
 import type { StageStructureResponse, StageStandingsResponse, StageStructureConversionOptions } from './dto/types';
+import { ViewerStage, ViewerStageType } from './models';
 
 export type { ToI18nKey, TFunction };
+export { ViewerStage, ViewerStageType };
 
 declare global {
     interface Window {
@@ -43,7 +45,7 @@ export interface MatchWithMetadata extends Match {
         // Information known since the beginning
 
         /** Type of the stage this match is in. */
-        stageType: StageType
+        stageType: ViewerStageType
         /** The list of child games of this match. */
         games: MatchGame[]
 
@@ -81,7 +83,7 @@ export interface MatchGameWithMetadata extends MatchGame {
  */
 export interface ViewerData {
     /** The stages to display. */
-    stages: Stage[],
+    stages: ViewerStage[],
 
     /** The matches of the stage to display. */
     matches: Match[],
@@ -98,7 +100,7 @@ export interface ViewerData {
  */
 export interface InternalViewerData {
     /** The stages to display. */
-    stages: Stage[],
+    stages: ViewerStage[],
 
     /** The matches of the stage to display. */
     matches: MatchWithMetadata[],
@@ -250,6 +252,10 @@ export type RoundNameInfo = {
     fractionOfFinal: number,
 } | {
     groupType: 'round-robin',
+    roundNumber: number,
+    roundCount: number,
+} | {
+    groupType: 'swiss',
     roundNumber: number,
     roundCount: number,
 } | {

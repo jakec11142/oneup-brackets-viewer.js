@@ -1,3 +1,5 @@
+/// <reference types="node" />
+
 import assert from 'assert/strict';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
@@ -14,11 +16,12 @@ const viewerData = convertStageStructureToViewerData(fixture.structure, fixture.
 
 assert.equal(viewerData.stages.length, 1, 'expected a single stage');
 assert.equal(viewerData.stages[0].name, 'Demo Stage');
-assert.equal(viewerData.matches.length, 4, 'expected four matches');
+assert.equal(viewerData.stages[0].type, 'swiss');
+assert.equal(viewerData.matches.length, 6, 'expected six matches');
 assert.equal(viewerData.participants.length, 4, 'expected four unique participants');
 
-const finals = viewerData.matches.find(match => match.id === 'match-3');
-assert.ok(finals, 'final match missing');
-assert.equal(finals?.opponent1?.result, 'win');
+const decidingMatch = viewerData.matches.find(match => match.id === 'swiss-match-5');
+assert.ok(decidingMatch, 'round three match missing');
+assert.equal(decidingMatch?.opponent1?.result, 'win');
 
 console.log('DTO conversion tests passed.');
