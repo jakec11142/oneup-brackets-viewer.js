@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Swiss Layout Test</title>
+  <link rel="stylesheet" href="../dist/brackets-viewer.min.css" />
+  <script src="../dist/brackets-viewer.min.js"></script>
+  <style>
+    body { margin: 20px; font-family: monospace; }
+    #viewer-root { margin-top: 20px; }
+    .log { padding: 5px; border-bottom: 1px solid #eee; }
+  </style>
+</head>
+<body>
+  <h2>Swiss Layout Verification</h2>
+  <div id="log"></div>
+  <div id="viewer-root" class="brackets-viewer"></div>
+  
+  <script>
+    const log = document.getElementById('log');
+    function addLog(msg) {
+      const div = document.createElement('div');
+      div.className = 'log';
+      div.textContent = msg;
+      log.appendChild(div);
+      console.log(msg);
+    }
+    
+    async function test() {
+      addLog('Loading swissData-layered.json...');
+      const response = await fetch('swissData-layered.json');
+      const structure = await response.json();
+      
+      const viewerData = window.bracketsViewerDTO.convertStageStructureToViewerData(structure, structure, {
+        stageName: 'Swiss Layout Test',
+      });
+      
+      addLog(`Loaded ${viewerData.matches.length} matches`);
+      
+      await window.bracketsViewer.render(viewerData, {
+        selector: '#viewer-root',
+        clear: true,
+        showRoundHeaders: false,
+      });
+      
+      addLog('Rendered. Checking panel positions...');
+      
+      const panels = document.querySelectorAll('.swiss-panel');
+      panels.forEach((panel, idx) => {
+        const header = panel.querySelector('.swiss-panel-header .record');
+        const style = window.getComputedStyle(panel);
+        const record = header ? header.textContent : 'unknown';
+        addLog(`Panel ${idx + 1}: ${record} at (${style.left}, ${style.top})`);
+      });
+      
+      addLog(`Total panels: ${panels.length}`);
+    }
+    
+    window.addEventListener('load', test);
+  </script>
+</body>
+</html>

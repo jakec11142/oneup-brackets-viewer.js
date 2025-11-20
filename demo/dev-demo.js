@@ -58,6 +58,17 @@ const granularOptions = {
   matchPadding: undefined,
 };
 
+// Default values for slider reset
+const DEFAULT_SLIDER_VALUES = {
+  matchWidth: 150,
+  matchHeight: 60,
+  columnWidth: 190,
+  rowHeight: 80,
+  groupGapY: 100,
+  borderRadius: 4,
+  matchPadding: 8,
+};
+
 SAMPLES.forEach(sample => {
   const btn = document.createElement('button');
   btn.type = 'button';
@@ -78,6 +89,7 @@ VIEW_MODELS.forEach(vm => {
   btn.dataset.formats = JSON.stringify(vm.formats);
   btn.addEventListener('click', () => {
     currentViewModel = vm;
+    resetGranularControls(); // Reset sliders when preset is selected
     renderCurrentConfig(null, btn, null);
   });
   viewModelHost.appendChild(btn);
@@ -90,6 +102,7 @@ SIZING_OPTIONS.forEach(option => {
   btn.dataset.sizing = option.id;
   btn.addEventListener('click', () => {
     currentSizing = option;
+    resetGranularControls(); // Reset sliders when preset is selected
     renderCurrentConfig(null, null, btn);
   });
   sizingHost.appendChild(btn);
@@ -141,6 +154,54 @@ positionRadios.forEach(radio => {
 
 // === GRANULAR CUSTOMIZATION CONTROLS (CHARACTER CREATOR) ===
 
+/**
+ * Resets all granular controls to their default values
+ * Called when a view model or sizing preset is selected
+ */
+function resetGranularControls() {
+  // Reset granular options state
+  Object.keys(granularOptions).forEach(key => {
+    granularOptions[key] = undefined;
+  });
+
+  // Reset sliders to default values
+  const sliderResets = [
+    { sliderId: 'slider-match-width', valueId: 'value-match-width', defaultValue: DEFAULT_SLIDER_VALUES.matchWidth },
+    { sliderId: 'slider-match-height', valueId: 'value-match-height', defaultValue: DEFAULT_SLIDER_VALUES.matchHeight },
+    { sliderId: 'slider-column-width', valueId: 'value-column-width', defaultValue: DEFAULT_SLIDER_VALUES.columnWidth },
+    { sliderId: 'slider-row-height', valueId: 'value-row-height', defaultValue: DEFAULT_SLIDER_VALUES.rowHeight },
+    { sliderId: 'slider-group-gap-y', valueId: 'value-group-gap-y', defaultValue: DEFAULT_SLIDER_VALUES.groupGapY },
+    { sliderId: 'slider-border-radius', valueId: 'value-border-radius', defaultValue: DEFAULT_SLIDER_VALUES.borderRadius },
+    { sliderId: 'slider-match-padding', valueId: 'value-match-padding', defaultValue: DEFAULT_SLIDER_VALUES.matchPadding },
+  ];
+
+  sliderResets.forEach(({ sliderId, valueId, defaultValue }) => {
+    const slider = document.getElementById(sliderId);
+    const valueDisplay = document.getElementById(valueId);
+    if (slider && valueDisplay) {
+      slider.value = defaultValue;
+      valueDisplay.textContent = defaultValue;
+    }
+  });
+
+  // Reset dropdowns to default (empty selection)
+  const fontSizeSelect = document.getElementById('select-font-size');
+  if (fontSizeSelect) {
+    fontSizeSelect.value = '';
+  }
+
+  const fontWeightSelect = document.getElementById('select-font-weight');
+  if (fontWeightSelect) {
+    fontWeightSelect.value = '';
+  }
+
+  // Reset bracket alignment to default (bottom)
+  const alignmentRadios = document.querySelectorAll('input[name="bracket-alignment"]');
+  alignmentRadios.forEach(radio => {
+    radio.checked = radio.value === 'bottom';
+  });
+}
+
 // Match dimension sliders
 function setupSlider(sliderId, valueId, granularKey) {
   const slider = document.getElementById(sliderId);
@@ -189,6 +250,15 @@ alignmentRadios.forEach(radio => {
     renderCurrentConfig(null, null, null);
   });
 });
+
+// Manual reset button
+const resetGranularBtn = document.getElementById('reset-granular-btn');
+if (resetGranularBtn) {
+  resetGranularBtn.addEventListener('click', () => {
+    resetGranularControls();
+    renderCurrentConfig(null, null, null);
+  });
+}
 
 /**
  * Filters view model buttons to show only those compatible with the current format

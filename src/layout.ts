@@ -937,10 +937,11 @@ export function computeSwissLayout(
 
         sortedLayers.forEach(layer => {
             const layerBuckets = bucketsByLayer.get(layer)!;
-            // All buckets go in column 0 for vertical-only stacking
+            // Each layer gets its own column, buckets within layer share the column
             layerBuckets.forEach(bucket => {
-                bucketColumnMap.set(bucket.key, 0);
+                bucketColumnMap.set(bucket.key, currentCol);
             });
+            currentCol++;
         });
     } else {
         // Round-based: Group by round number (wins + losses + 1)
@@ -984,7 +985,9 @@ export function computeSwissLayout(
     const panelPositions: SwissPanelPosition[] = [];
     let maxHeight = 0;
     let maxColumnIndex = 0;
-    let cumulativeY = TOP_OFFSET; // Track running Y for vertical stacking
+
+    // Track Y position per column for vertical stacking
+    const columnYPositions = new Map<number, number>();
 
     sortedBuckets.forEach((bucket) => {
         const bucketMatches = bucketMap.get(bucket.key) ?? [];
@@ -1001,11 +1004,14 @@ export function computeSwissLayout(
         const columnIndex = bucketColumnMap.get(bucket.key) ?? 0;
         maxColumnIndex = Math.max(maxColumnIndex, columnIndex);
 
+        // Get current Y position for this column (or start at TOP_OFFSET)
+        const currentY = columnYPositions.get(columnIndex) ?? TOP_OFFSET;
+
         // Calculate this panel's height
         const panelHeight = PANEL_HEADER_HEIGHT + bucketMatches.length * ROW_HEIGHT + PANEL_PADDING;
 
-        // Use cumulative Y for vertical stacking (layer-based mode with column 0)
-        const panelY = cumulativeY;
+        // Use column-specific Y for vertical stacking within each column
+        const panelY = currentY;
 
         // Track layer for metadata
         const layer = bucket.wins + bucket.losses;
@@ -1047,8 +1053,8 @@ export function computeSwissLayout(
 
         maxHeight = Math.max(maxHeight, panelY + panelHeight);
 
-        // Increment Y for next panel (add gap between panels)
-        cumulativeY = panelY + panelHeight + 20; // 20px gap between panels
+        // Update Y position for this column (add gap between panels)
+        columnYPositions.set(columnIndex, panelY + panelHeight + 20); // 20px gap between panels
     });
 
     const totalWidth = LEFT_OFFSET + (maxColumnIndex + 1) * (COLUMN_WIDTH + COLUMN_GAP_X) + layout.matchWidth;
