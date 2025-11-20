@@ -183,9 +183,29 @@ export function isMatch(input: Match | MatchGame): input is Match {
 
 /**
  * Indicates whether the input is a match game.
- * 
+ *
  * @param input A match or a match game.
  */
 export function isMatchGame(input: Match | MatchGame): input is MatchGame {
     return !isMatch(input);
+}
+
+/**
+ * Display status type for UI rendering.
+ */
+export type DisplayStatus = 'pending' | 'upcoming' | 'live' | 'completed';
+
+/**
+ * Maps a match status to a display status for UI rendering.
+ *
+ * @param status The status from brackets-model (numeric enum).
+ */
+export function getDisplayStatus(status: number): DisplayStatus {
+    // Status enum values from brackets-model:
+    // Locked = 0, Waiting = 1, Ready = 2, Running = 3, Completed = 4, Archived = 5
+
+    if (status === 3) return 'live';         // Running
+    if (status === 4 || status === 5) return 'completed';  // Completed or Archived
+    if (status === 2) return 'upcoming';     // Ready
+    return 'pending';                         // Locked or Waiting
 }

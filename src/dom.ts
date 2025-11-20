@@ -1,6 +1,6 @@
 import { Match, ParticipantResult, FinalType, GroupType, Id, MatchGame, type RankingItem } from 'brackets-model';
 import { Connection, Placement } from './types';
-import { isMatchGame, rankingHeader } from './helpers';
+import { isMatchGame, rankingHeader, getDisplayStatus, DisplayStatus } from './helpers';
 import { t } from './lang';
 import { ConnectorLine } from './layout';
 
@@ -188,6 +188,37 @@ export function createMatchContainer(match?: Match | MatchGame): HTMLElement {
     }
 
     return div;
+}
+
+/**
+ * Creates a status badge element for a match.
+ *
+ * @param status The numeric status from the match.
+ */
+export function createStatusBadge(status: number): HTMLElement {
+    const badge = document.createElement('div');
+    badge.classList.add('status-badge');
+
+    const displayStatus: DisplayStatus = getDisplayStatus(status);
+    badge.classList.add(`status-${displayStatus}`);
+
+    // Set badge text based on display status
+    switch (displayStatus) {
+        case 'live':
+            badge.innerText = 'LIVE';
+            break;
+        case 'upcoming':
+            badge.innerText = '⏱';  // Clock emoji for upcoming
+            break;
+        case 'completed':
+            badge.innerText = '✓';  // Checkmark for completed
+            break;
+        case 'pending':
+            // No text for pending - visual styling only
+            break;
+    }
+
+    return badge;
 }
 
 /**

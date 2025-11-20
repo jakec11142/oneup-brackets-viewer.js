@@ -232,6 +232,56 @@
     // Position is set via inline styles by layout engine
   }
 
+  // Status badge styling
+  .status-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 0.65em;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 2;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    pointer-events: none; // Don't interfere with match clicks
+
+    &.status-pending {
+      // No visible badge for pending - could add subtle indicator if needed
+      display: none;
+    }
+
+    &.status-upcoming {
+      background: #4a90e2;
+      color: white;
+      font-size: 0.9em;
+    }
+
+    &.status-live {
+      background: var(--bv-win-color);
+      color: white;
+      animation: pulse-live 2s ease-in-out infinite;
+    }
+
+    &.status-completed {
+      background: var(--bv-surface-color);
+      color: var(--bv-hint-color);
+      font-size: 0.9em;
+    }
+  }
+
+  // Live pulse animation
+  @keyframes pulse-live {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scale(1.05);
+    }
+  }
+
   .opponents {
     width: 100%;
     position: relative;

@@ -856,6 +856,11 @@ export class BracketsViewer {
      */
     private createMatch(match: MatchWithMetadata | MatchGameWithMetadata, propagateHighlight: boolean): HTMLElement {
         const matchContainer = dom.createMatchContainer(match);
+
+        // Add status badge for visual match state indication
+        const statusBadge = dom.createStatusBadge(match.status);
+        matchContainer.append(statusBadge);
+
         const opponents = isMatch(match)
             ? dom.createOpponentsContainer(() => this._onMatchClick(match))
             : dom.createOpponentsContainer();
