@@ -22,6 +22,7 @@ import {
     MatchGameWithMetadata,
     ToggleEvent,
     ViewerStage,
+    DoubleElimMode,
 } from './types';
 
 export class BracketsViewer {
@@ -81,8 +82,11 @@ export class BracketsViewer {
             showPopoverOnMatchLabelClick: config?.showPopoverOnMatchLabelClick ?? true,
             highlightParticipantOnHover: config?.highlightParticipantOnHover ?? true,
             showRankingTable: config?.showRankingTable ?? true,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             rankingFormula: config?.rankingFormula ?? ((item): number => 3 * item.wins + 1 * item.draws + 0 * item.losses),
-        };
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            doubleElimMode: config?.doubleElimMode ?? 'unified',
+        } as Config;
 
         if (config?.onMatchClick)
             this._onMatchClick = config.onMatchClick;
@@ -382,6 +386,15 @@ export class BracketsViewer {
      * @param matchesByGroup A list of matches for each group.
      */
     private renderDoubleElimination(container: HTMLElement, matchesByGroup: MatchWithMetadata[][]): void {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const mode: DoubleElimMode = this.config.doubleElimMode ?? 'unified';
+
+        if (mode === 'unified') {
+            this.renderUnifiedDoubleElimination(container, matchesByGroup);
+            return;
+        }
+
+        // SPLIT MODE (legacy behavior)
         const hasLoserBracket = matchesByGroup[1] !== undefined;
         const winnerBracketMatches = splitBy(matchesByGroup[0], 'round_id').map(matches => sortBy(matches, 'number'));
         const { hasFinal, connectFinal, grandFinalMatches, consolationFinalMatches } = this.getFinalInfoDoubleElimination(matchesByGroup);
@@ -397,6 +410,107 @@ export class BracketsViewer {
             this.renderFinal(container, 'grand_final', grandFinalMatches);
             this.renderFinal(container, 'consolation_final', consolationFinalMatches);
         }
+    }
+
+    /**
+     * Renders a unified double elimination stage with all bracket groups on one canvas.
+     *
+     * @param container The container to render into.
+     * @param matchesByGroup A list of matches for each group.
+     */
+    private renderUnifiedDoubleElimination(container: HTMLElement, matchesByGroup: MatchWithMetadata[][]): void {
+        // Helper to map group_id to matchLocation
+        const getMatchLocation = (groupId: string): GroupType => {
+            const normalized = groupId.toLowerCase();
+            if (normalized.includes('winners-bracket')) return 'winner_bracket';
+            if (normalized.includes('losers-bracket')) return 'loser_bracket';
+            if (normalized.includes('grand-final')) return 'final_group';
+            return 'winner_bracket'; // fallback
+        };
+
+        // Organize and prepare ALL matches with required metadata
+        const allMatchesWithMetadata: MatchWithMetadata[] = [];
+
+        Object.values(matchesByGroup).forEach(groupMatches => {
+            if (!Array.isArray(groupMatches) || groupMatches.length === 0) return;
+
+            // Determine bracket type from first match's group_id
+            const matchLocation = getMatchLocation(String(groupMatches[0].group_id));
+
+            // Organize by round and add metadata
+            const matchesByRound = splitBy(groupMatches, 'round_id')
+                .map(matches => sortBy(matches, 'number'));
+            const roundCount = matchesByRound.length;
+
+            matchesByRound.forEach((roundMatches, roundIndex) => {
+                const roundNumber = roundIndex + 1;
+                const connectFinal = matchLocation === 'winner_bracket' && roundNumber === roundCount;
+
+                roundMatches.forEach(match => {
+                    allMatchesWithMetadata.push({
+                        ...match,
+                        metadata: {
+                            ...match.metadata,
+                            roundNumber,
+                            roundCount,
+                            matchLocation,
+                            connectFinal,
+                        },
+                    });
+                });
+            });
+        });
+
+        // Use ALL edges - NO FILTERING
+        const allEdges = this.edges;
+
+        console.log(`🔧 Unified DE: ${allMatchesWithMetadata.length} matches, ${allEdges.length} edges`);
+
+        // Single computeLayout call with all matches + all edges
+        // Use 'winner_bracket' as the type (it's used mainly for logging)
+        const layout = computeLayout(allMatchesWithMetadata, allEdges, 'winner_bracket');
+
+        // Create bracket container for unified view
+        const groupId = allMatchesWithMetadata[0]?.group_id ?? 'unified-de';
+        const bracketContainer = dom.createBracketContainer(groupId, lang.getBracketName(this.stage, 'winner_bracket'));
+        const roundsContainer = dom.createRoundsContainer();
+
+        // Render all matches with absolute positioning
+        let renderedCount = 0;
+        let positionedCount = 0;
+
+        for (const match of allMatchesWithMetadata) {
+            const matchEl = this.createBracketMatch(match);
+            const pos = layout.matchPositions.get(String(match.id));
+
+            if (pos) {
+                matchEl.style.position = 'absolute';
+                matchEl.style.left = `${pos.xPx}px`;
+                matchEl.style.top = `${pos.yPx}px`;
+                positionedCount++;
+            } else 
+                console.warn(`⚠️ No position found for match ${match.id}`);
+            
+
+            roundsContainer.append(matchEl);
+            renderedCount++;
+        }
+
+        console.log(`✅ Rendered ${renderedCount} matches (${positionedCount} positioned)`);
+
+        // Set explicit size on rounds container
+        roundsContainer.style.width = `${layout.totalWidth}px`;
+        roundsContainer.style.height = `${layout.totalHeight}px`;
+        console.log(`📐 Container sized to ${layout.totalWidth}x${layout.totalHeight}px`);
+
+        // Add SVG connectors overlay
+        const svg = dom.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
+        roundsContainer.prepend(svg);
+
+        bracketContainer.append(roundsContainer);
+        container.append(bracketContainer);
+
+        console.log(`🔗 Generated ${layout.connectors.length} connectors`);
     }
 
     /**
@@ -490,7 +604,7 @@ export class BracketsViewer {
         const matchIds = new Set(allMatchesForLayout.map(m => String(m.id)));
         const bracketEdges = this.edges.filter(edge =>
             matchIds.has(String(edge.fromMatchId ?? '')) &&
-            matchIds.has(String(edge.toMatchId ?? ''))
+            matchIds.has(String(edge.toMatchId ?? '')),
         );
 
         // Compute layout using ALL matches
@@ -498,9 +612,9 @@ export class BracketsViewer {
 
         // Debug: Log connector count
         console.log(`[${bracketType}] Matches: ${allMatchesForLayout.length}, Edges: ${bracketEdges.length}, Connectors: ${layout.connectors.length}`);
-        if (layout.connectors.length > 0) {
+        if (layout.connectors.length > 0) 
             console.log('First connector:', layout.connectors[0]);
-        }
+        
 
         // Render round headers absolutely (temporarily disabled for testing)
         // layout.headerPositions.forEach(header => {
@@ -529,7 +643,7 @@ export class BracketsViewer {
             const roundNumber = roundIndex + 1;
             const roundMatches = fromToornament && roundNumber === 1 ? completedMatches : matchesByRound[roundIndex];
 
-            roundMatches.forEach((match, idx) => {
+            roundMatches.forEach((match, _idx) => {
                 if (!match) return; // Skip null entries from reordering
 
                 const matchWithMetadata: MatchWithMetadata = {
@@ -551,9 +665,9 @@ export class BracketsViewer {
                     matchEl.style.left = `${pos.xPx}px`;
                     matchEl.style.top = `${pos.yPx}px`;
                     positionedCount++;
-                } else {
+                } else 
                     console.warn(`⚠️ No position found for match ${match.id}`);
-                }
+                
 
                 roundsContainer.append(matchEl);
                 renderedCount++;

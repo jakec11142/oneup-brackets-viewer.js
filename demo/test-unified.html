@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Double Elimination Test</title>
+    <link rel="stylesheet" href="../dist/brackets-viewer.min.css">
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        h1 { font-size: 24px; margin-bottom: 20px; }
+        #viewer-root { border: 1px solid #ddd; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Unified Double Elimination Bracket Test</h1>
+    <div id="viewer-root"></div>
+
+    <script src="../dist/brackets-viewer.min.js"></script>
+    <script>
+        const viewer = window.bracketsViewer;
+
+        // Load and render double elimination data
+        fetch('doubleElimData.json')
+            .then(res => res.json())
+            .then(structure => {
+                console.log('=== LOADED DATA ===');
+                console.log('StageType:', structure.stageType);
+                console.log('Stage Items:', structure.stageItems.length);
+
+                const viewerData = window.bracketsViewerDTO.convertStageStructureToViewerData(structure, undefined, {
+                    stageName: 'Unified Double Elimination Test',
+                });
+
+                console.log('=== VIEWER DATA ===');
+                console.log('Matches:', viewerData.matches.length);
+                console.log('Edges:', viewerData.edges.length);
+                console.log('Participants:', viewerData.participants.length);
+
+                // Render with UNIFIED mode (default)
+                return viewer.render(viewerData, {
+                    selector: '#viewer-root',
+                    clear: true,
+                    // doubleElimMode is 'unified' by default
+                });
+            })
+            .then(() => {
+                console.log('=== RENDER COMPLETE ===');
+            })
+            .catch(error => {
+                console.error('ERROR:', error);
+            });
+    </script>
+</body>
+</html>

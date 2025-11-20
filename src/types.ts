@@ -126,6 +126,11 @@ export type Placement = 'none' | 'before' | 'after';
 export type Side = 'opponent1' | 'opponent2';
 
 /**
+ * The rendering mode for double elimination brackets.
+ */
+export type DoubleElimMode = 'unified' | 'split';
+
+/**
  * An optional config to provide to `brackets-viewer.js`
  */
 export interface Config {
@@ -220,16 +225,25 @@ export interface Config {
 
     /**
      * A formula to compute the ranking of the participants on round-robin stages.
-     * 
+     *
      * See {@link RankingItem} for the possible properties on `item`.
-     * 
+     *
      * @default (item) => 3 * item.wins + 1 * item.draws + 0 * item.losses
      */
     rankingFormula?: RankingFormula,
 
     /**
+     * The rendering mode for double elimination brackets.
+     * - If `unified`, all bracket groups (winners, losers, grand final) are rendered on a single canvas with cross-bracket edges visible.
+     * - If `split`, bracket groups are rendered separately (backwards compatible with legacy behavior).
+     *
+     * @default 'unified'
+     */
+    doubleElimMode?: DoubleElimMode,
+
+    /**
      * Whether to clear any previously displayed data.
-     * 
+     *
      * @default false
      */
     clear?: boolean

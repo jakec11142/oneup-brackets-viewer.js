@@ -40,6 +40,10 @@ const defaultStageNames: Record<ViewerStageType, string> = {
 
 /**
  * Converts a structured stage response returned by the API to the shape required by the viewer.
+ *
+ * @param structure
+ * @param standings
+ * @param options
  */
 export function convertStageStructureToViewerData(
     structure: StageStructureResponse,
@@ -63,9 +67,9 @@ export function convertStageStructureToViewerData(
     // Extract all edges from stage items
     const edges: BracketEdgeResponse[] = [];
     stageItems.forEach(item => {
-        if (item.edges) {
+        if (item.edges) 
             edges.push(...item.edges);
-        }
+        
         item.rounds?.forEach(round => {
             round.matches?.forEach(match => {
                 (match.slots ?? []).forEach(slot => ensureParticipant(accumulator, slot.teamName));
@@ -76,9 +80,15 @@ export function convertStageStructureToViewerData(
     const matches: Match[] = [];
 
     stageItems.forEach((item, groupIndex) => {
-        const groupId = item.id ?? `group-${groupIndex + 1}`;
+        const baseGroupId = item.id ?? `group-${groupIndex + 1}`;
 
         item.rounds?.forEach(round => {
+            // Incorporate bracketGroup into group_id for proper classification
+            const bracketSuffix = round.bracketGroup
+                ? round.bracketGroup.toLowerCase().replace(/_/g, '-')
+                : 'bracket';
+            const groupId = `${baseGroupId}-${bracketSuffix}`;
+
             const roundId = `${groupId}-round-${round.number ?? 1}`;
 
             round.matches?.forEach((match, matchIndex) => {
@@ -120,6 +130,11 @@ export function convertStageStructureToViewerData(
     };
 }
 
+/**
+ *
+ * @param accumulator
+ * @param teamName
+ */
 function ensureParticipant(accumulator: ParticipantAccumulator, teamName?: string): Participant | null {
     if (!teamName)
         return null;
@@ -138,6 +153,11 @@ function ensureParticipant(accumulator: ParticipantAccumulator, teamName?: strin
     return participant;
 }
 
+/**
+ *
+ * @param accumulator
+ * @param slot
+ */
 function convertSlot(
     accumulator: ParticipantAccumulator,
     slot: MatchSlotResponse | undefined,
@@ -166,6 +186,10 @@ function convertSlot(
     return result;
 }
 
+/**
+ *
+ * @param type
+ */
 function mapStageType(type?: StageStructureFormat): ViewerStageType {
     if (!type)
         throw new Error('StageStructureResponse.stageType is required');
@@ -176,6 +200,10 @@ function mapStageType(type?: StageStructureFormat): ViewerStageType {
     return stageTypeMap[type];
 }
 
+/**
+ *
+ * @param status
+ */
 function mapStatus(status?: string): Status {
     if (!status)
         return Status.Locked;

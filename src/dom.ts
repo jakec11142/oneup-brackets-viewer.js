@@ -117,8 +117,35 @@ export function createConnectorSVG(connectors: ConnectorLine[], width: number, h
         const pointsStr = conn.points.map(p => `${p.x},${p.y}`).join(' ');
         polyline.setAttribute('points', pointsStr);
         polyline.setAttribute('fill', 'none');
-        polyline.setAttribute('stroke', 'var(--bv-connector-color)');
-        polyline.setAttribute('stroke-width', 'var(--bv-connector-border-width)');
+
+        // Apply styling based on connector type
+        polyline.setAttribute('class', `connector-${conn.connectorType}`);
+
+        switch (conn.connectorType) {
+            case 'cross-bracket':
+                // Cross-bracket connectors: lower opacity, dashed, thinner
+                polyline.setAttribute('stroke', 'var(--bv-connector-cross-bracket)');
+                polyline.setAttribute('stroke-width', 'var(--bv-connector-width-cross)');
+                polyline.setAttribute('opacity', 'var(--bv-connector-opacity-cross)');
+                polyline.setAttribute('stroke-dasharray', '4,3');
+                break;
+
+            case 'grand-final':
+                // Grand final connectors: bold, full opacity, distinct color
+                polyline.setAttribute('stroke', 'var(--bv-connector-grand-final)');
+                polyline.setAttribute('stroke-width', 'var(--bv-connector-width-grand-final)');
+                polyline.setAttribute('opacity', 'var(--bv-connector-opacity-grand-final)');
+                break;
+
+            case 'internal':
+            default:
+                // Internal connectors: standard styling
+                polyline.setAttribute('stroke', 'var(--bv-connector-internal)');
+                polyline.setAttribute('stroke-width', 'var(--bv-connector-width-internal)');
+                polyline.setAttribute('opacity', 'var(--bv-connector-opacity-internal)');
+                break;
+        }
+
         svg.appendChild(polyline);
     }
 

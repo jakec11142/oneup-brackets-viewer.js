@@ -1,4 +1,4 @@
-import { Match, GroupType } from 'brackets-model';
+import { Match } from 'brackets-model';
 import { BracketEdgeResponse } from './dto/types';
 
 // Layout constants (should match CSS variables)
@@ -32,6 +32,11 @@ export interface Point {
 }
 
 /**
+ * Type of connector based on bracket relationship.
+ */
+export type ConnectorType = 'internal' | 'cross-bracket' | 'grand-final';
+
+/**
  * A connector line between two matches.
  */
 export interface ConnectorLine {
@@ -39,6 +44,7 @@ export interface ConnectorLine {
     fromMatchId: string;
     toMatchId: string;
     points: Point[];
+    connectorType: ConnectorType;
 }
 
 /**
@@ -76,10 +82,10 @@ export interface BracketLayout {
 /**
  * Extracts bracket group from group_id.
  * Examples:
- * - "stage-1-winners-bracket" -> "WINNERS_BRACKET"
- * - "stage-1-losers-bracket" -> "LOSERS_BRACKET"
- * - "stage-1-finals" -> "GRAND_FINAL_BRACKET"
- * - "stage-1-placement-finals" -> "PLACEMENT_BRACKET"
+ * - "group-1-winners-bracket" -> "WINNERS_BRACKET"
+ * - "group-1-losers-bracket" -> "LOSERS_BRACKET"
+ * - "group-1-grand-final-bracket" -> "GRAND_FINAL_BRACKET"
+ * - "group-1-placement-bracket" -> "PLACEMENT_BRACKET"
  * - "stage-1-third-place" -> "PLACEMENT_BRACKET"
  *
  * @param groupId The group_id from a match
@@ -88,16 +94,23 @@ export interface BracketLayout {
 function extractBracketGroup(groupId: string): BracketGroup {
     const normalized = groupId.toLowerCase();
 
-    if (normalized.includes('placement') || normalized.includes('third') || normalized.includes('3rd')) {
+    // Check placement/third-place matches first
+    if (normalized.includes('placement') || normalized.includes('third') || normalized.includes('3rd')) 
         return 'PLACEMENT_BRACKET';
-    }
-    if (normalized.includes('loser')) {
+    
+    // Check for losers bracket
+    if (normalized.includes('loser')) 
         return 'LOSERS_BRACKET';
-    }
-    if (normalized.includes('final')) {
+    
+    // Check for grand finals (check 'grand-final' before 'final' to avoid ambiguity)
+    if (normalized.includes('grand-final') || normalized.includes('final')) 
         return 'GRAND_FINAL_BRACKET';
-    }
-    // Default to winners bracket (includes single elimination)
+    
+    // Check for winners bracket explicitly
+    if (normalized.includes('winner')) 
+        return 'WINNERS_BRACKET';
+    
+    // Default to winners bracket (includes single elimination without group suffix)
     return 'WINNERS_BRACKET';
 }
 
@@ -112,7 +125,7 @@ function extractBracketGroup(groupId: string): BracketGroup {
 export function computeLayout(
     matches: Match[],
     edges: BracketEdgeResponse[],
-    bracketType: GroupType
+    bracketType: string,
 ): BracketLayout {
     console.log(`🔧 computeLayout called: ${matches.length} matches, ${edges.length} edges, type=${bracketType}`);
 
@@ -154,19 +167,19 @@ export function computeLayout(
         matchesById.set(matchId, { match, bracketGroup, roundNumber });
 
         // Track rounds per group
-        if (!roundsByGroup.has(bracketGroup)) {
+        if (!roundsByGroup.has(bracketGroup)) 
             roundsByGroup.set(bracketGroup, new Set());
-        }
+        
         roundsByGroup.get(bracketGroup)!.add(roundNumber);
 
         // Track matches by group/round
-        if (!matchesByGroupRound.has(bracketGroup)) {
+        if (!matchesByGroupRound.has(bracketGroup)) 
             matchesByGroupRound.set(bracketGroup, new Map());
-        }
+        
         const groupRounds = matchesByGroupRound.get(bracketGroup)!;
-        if (!groupRounds.has(roundNumber)) {
+        if (!groupRounds.has(roundNumber)) 
             groupRounds.set(roundNumber, []);
-        }
+        
         groupRounds.get(roundNumber)!.push(matchId);
     });
 
@@ -174,7 +187,7 @@ export function computeLayout(
     const groupOffsetsX = new Map<BracketGroup, number>();
     let currentColumn = 0;
 
-    console.log(`📐 Column assignment:`);
+    console.log('📐 Column assignment:');
     for (const group of GROUP_ORDER) {
         const rounds = roundsByGroup.get(group);
         if (!rounds || rounds.size === 0) continue;
@@ -233,9 +246,9 @@ export function computeLayout(
             if (fromNode.bracketGroup !== group || toNode.bracketGroup !== group) continue;
 
             const toId = String(edge.toMatchId ?? '');
-            if (!inEdgesByToId.has(toId)) {
+            if (!inEdgesByToId.has(toId)) 
                 inEdgesByToId.set(toId, []);
-            }
+            
             inEdgesByToId.get(toId)!.push(edge);
         }
 
@@ -259,9 +272,9 @@ export function computeLayout(
                 for (const edge of inboundEdges) {
                     const childId = String(edge.fromMatchId ?? '');
                     const lane = laneFloatById.get(childId);
-                    if (lane !== undefined) {
+                    if (lane !== undefined) 
                         childLanes.push(lane);
-                    }
+                    
                 }
 
                 if (childLanes.length > 0) {
@@ -283,9 +296,9 @@ export function computeLayout(
         const buckets = new Map<number, string[]>();
         for (const [matchId, lf] of laneFloatById.entries()) {
             const key = Math.round(lf * 1000) / 1000; // Round to avoid fp noise
-            if (!buckets.has(key)) {
+            if (!buckets.has(key)) 
                 buckets.set(key, []);
-            }
+            
             buckets.get(key)!.push(matchId);
         }
 
@@ -301,10 +314,11 @@ export function computeLayout(
                 const ma = matchesById.get(a);
                 const mb = matchesById.get(b);
                 if (!ma || !mb) return 0;
-                return (
-                    ma.roundNumber - mb.roundNumber ||
-                    ma.match.number - mb.match.number
-                );
+
+                const aNum = ma.match.number ?? 0;
+                const bNum = mb.match.number ?? 0;
+
+                return ma.roundNumber - mb.roundNumber || aNum - bNum;
             });
 
             // Spread them around the original center
@@ -317,9 +331,9 @@ export function computeLayout(
             });
         }
 
-        if (collisionCount > 0) {
+        if (collisionCount > 0) 
             console.log(`   ⚠️ Resolved ${collisionCount} lane collisions via tie-breaking`);
-        }
+        
 
         // Normalize float lanes to sorted integer indices 0..N-1
         const uniqueFloats = Array.from(new Set(laneFloatById.values())).sort((a, b) => a - b);
@@ -329,9 +343,9 @@ export function computeLayout(
         const normalized = new Map<string, number>();
         for (const [matchId, lf] of laneFloatById.entries()) {
             const idx = floatToIndex.get(lf);
-            if (idx !== undefined) {
+            if (idx !== undefined) 
                 normalized.set(matchId, idx);
-            }
+            
         }
 
         laneIndicesByGroup.set(group, normalized);
@@ -394,12 +408,12 @@ export function computeLayout(
     });
 
     // --- 6. Generate connectors ---
-    const connectors = generateConnectors(edges, matchPositions);
+    const connectors = generateConnectors(edges, matchPositions, matchesById);
 
     console.log(`🔗 Generated ${connectors.length} connectors from ${edges.length} edges`);
-    if (connectors.length > 0 && connectors.length < edges.length) {
+    if (connectors.length > 0 && connectors.length < edges.length) 
         console.warn(`⚠️ Some connectors were skipped! Generated ${connectors.length} of ${edges.length} edges`);
-    }
+    
 
     return {
         matchPositions,
@@ -416,11 +430,13 @@ export function computeLayout(
  *
  * @param edges All edges defining connections
  * @param positions Match positions with pixel coordinates
+ * @param matchesById Map of match IDs to match nodes with bracket group info
  * @returns Array of connector lines
  */
 function generateConnectors(
     edges: BracketEdgeResponse[],
-    positions: Map<string, MatchPosition>
+    positions: Map<string, MatchPosition>,
+    matchesById: Map<string, { match: Match; bracketGroup: BracketGroup; roundNumber: number }>,
 ): ConnectorLine[] {
     const connectors: ConnectorLine[] = [];
 
@@ -435,6 +451,23 @@ function generateConnectors(
                 toPos: !!toPos,
             });
             return;
+        }
+
+        // Classify connector type based on bracket groups
+        const fromNode = matchesById.get(String(edge.fromMatchId ?? ''));
+        const toNode = matchesById.get(String(edge.toMatchId ?? ''));
+
+        let connectorType: ConnectorType = 'internal';
+
+        if (fromNode && toNode) {
+            if (fromNode.bracketGroup !== toNode.bracketGroup) {
+                // Cross-bracket connection
+                if (toNode.bracketGroup === 'GRAND_FINAL_BRACKET') {
+                    connectorType = 'grand-final';
+                } else {
+                    connectorType = 'cross-bracket';
+                }
+            }
         }
 
         // Calculate anchor points at vertical center of matches
@@ -463,6 +496,7 @@ function generateConnectors(
             fromMatchId: String(edge.fromMatchId ?? ''),
             toMatchId: String(edge.toMatchId ?? ''),
             points,
+            connectorType,
         });
     });
 

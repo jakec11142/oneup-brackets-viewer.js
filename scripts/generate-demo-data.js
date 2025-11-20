@@ -34,14 +34,23 @@ const STATUS_MAP = {
     5: 'COMPLETED',
 };
 
+/**
+ *
+ * @param count
+ */
 function createTeamNames(count) {
     return Array.from({ length: count }, (_, index) => `Team ${index + 1}`);
 }
 
+/**
+ *
+ * @param stageType
+ * @param groupNumber
+ */
 function getBracketGroup(stageType, groupNumber) {
-    if (stageType === 'SINGLE_ELIMINATION') {
+    if (stageType === 'SINGLE_ELIMINATION') 
         return groupNumber === 1 ? 'WINNERS_BRACKET' : 'FINALS';
-    }
+    
 
     if (stageType === 'DOUBLE_ELIMINATION') {
         if (groupNumber === 1)
@@ -57,6 +66,12 @@ function getBracketGroup(stageType, groupNumber) {
     return null;
 }
 
+/**
+ *
+ * @param stageId
+ * @param stageType
+ * @param groups
+ */
 function buildStandings(stageId, stageType, groups) {
     return {
         stageId,
@@ -77,6 +92,12 @@ function buildStandings(stageId, stageType, groups) {
     };
 }
 
+/**
+ *
+ * @param participantsMap
+ * @param opponent
+ * @param slot
+ */
 function convertSlot(participantsMap, opponent, slot) {
     if (!opponent)
         return { slot };
@@ -101,6 +122,15 @@ function convertSlot(participantsMap, opponent, slot) {
     return slotData;
 }
 
+/**
+ *
+ * @param exported
+ * @param stage
+ * @param root0
+ * @param root0.stageId
+ * @param root0.stageType
+ * @param root0.stageItemIds
+ */
 function convertManagerStage(exported, stage, { stageId, stageType, stageItemIds = [] }) {
     const participantsMap = new Map(
         exported.participant.map(participant => [participant.id, participant]),
@@ -162,12 +192,20 @@ function convertManagerStage(exported, stage, { stageId, stageType, stageItemIds
     return structure;
 }
 
+/**
+ *
+ * @param stageItem
+ */
 function ensureEdgeBucket(stageItem) {
     if (!stageItem.edges)
         stageItem.edges = [];
     return stageItem.edges;
 }
 
+/**
+ *
+ * @param stageItems
+ */
 function applyDoubleEliminationEdges(stageItems) {
     const grouped = Object.fromEntries(stageItems.map(item => [item.groupIndex, item]));
     const winnerItem = grouped[1];
@@ -240,13 +278,13 @@ function applyDoubleEliminationEdges(stageItems) {
         pushEdge(winnerItem, { fromMatchId: wbr3[i]?.id, fromRank: 2, toMatchId: lbr4[targetIndex]?.id, toSlot: 1 });
     }
 
-    for (let i = 0; i < wbr4.length; i++) {
+    for (let i = 0; i < wbr4.length; i++) 
         pushEdge(winnerItem, { fromMatchId: wbr4[i]?.id, fromRank: 2, toMatchId: lbr6[i]?.id, toSlot: 1 });
-    }
+    
 
-    if (wbr5.length && lbr8.length) {
+    if (wbr5.length && lbr8.length) 
         pushEdge(winnerItem, { fromMatchId: wbr5[0]?.id, fromRank: 2, toMatchId: lbr8[0]?.id, toSlot: 1 });
-    }
+    
 
     // Loser bracket progression (including rounds where winners bracket losers join).
     for (let roundIndex = 0; roundIndex < loserRounds.length - 1; roundIndex++) {
@@ -254,12 +292,12 @@ function applyDoubleEliminationEdges(stageItems) {
         const nextMatches = loserRounds[roundIndex + 1].matches;
 
         if (currentMatches.length === nextMatches.length) {
-            for (let i = 0; i < currentMatches.length; i++) {
+            for (let i = 0; i < currentMatches.length; i++) 
                 pushEdge(loserItem, { fromMatchId: currentMatches[i]?.id, fromRank: 1, toMatchId: nextMatches[i]?.id, toSlot: 2 });
-            }
-        } else {
+            
+        } else 
             mapPairwiseWinners(currentMatches, nextMatches, loserItem);
-        }
+        
     }
 
     // Finals.
@@ -280,6 +318,9 @@ function applyDoubleEliminationEdges(stageItems) {
     }
 }
 
+/**
+ *
+ */
 async function buildSingleEliminationSample() {
     const db = new InMemoryDatabase();
     const manager = new BracketsManager(db);
@@ -314,6 +355,9 @@ async function buildSingleEliminationSample() {
     };
 }
 
+/**
+ *
+ */
 async function buildDoubleEliminationSample() {
     const db = new InMemoryDatabase();
     const manager = new BracketsManager(db);
@@ -348,6 +392,9 @@ async function buildDoubleEliminationSample() {
     };
 }
 
+/**
+ *
+ */
 async function buildRoundRobinSample() {
     const db = new InMemoryDatabase();
     const manager = new BracketsManager(db);
@@ -396,6 +443,9 @@ async function buildRoundRobinSample() {
     };
 }
 
+/**
+ *
+ */
 function buildSwissSample() {
     const stageId = ACTUAL_STAGE_IDS.swiss;
     const stageItemId = KNOWN_STAGE_ITEM_IDS.swiss[0];
@@ -490,6 +540,9 @@ function buildSwissSample() {
     };
 }
 
+/**
+ *
+ */
 async function main() {
     const [singleElim, doubleElim, roundRobin] = await Promise.all([
         buildSingleEliminationSample(),

@@ -21,6 +21,7 @@ renderSample(SAMPLES[0], buttonsHost.firstElementChild);
 
 /**
  * Renders a bracket sample to the viewer
+ *
  * @param {object} sample - The sample configuration object
  * @param {HTMLButtonElement} btn - The button element that was clicked
  * @returns {Promise<void>}
@@ -36,6 +37,7 @@ async function renderSample(sample, btn) {
 
 /**
  * Loads and caches a tournament structure from a JSON file
+ *
  * @param {string} file - The filename to load
  * @returns {Promise<object>} The tournament structure data
  */
