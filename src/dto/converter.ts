@@ -25,10 +25,21 @@ const stageTypeMap: Record<Exclude<StageStructureFormat, 'FFA'>, ViewerStageType
 };
 
 const statusMap: Record<string, Status> = {
+    // Uncomplete/Pending states (0) - no badge shown
+    UNCOMPLETE: Status.Locked,
+    INCOMPLETE: Status.Locked,
     UNSCHEDULED: Status.Locked,
-    SCHEDULED: Status.Ready,
+    PENDING: Status.Locked,
+
+    // Live/Running states (3) - green pulsing LIVE badge
     LIVE: Status.Running,
+    RUNNING: Status.Running,
+    IN_PROGRESS: Status.Running,
+
+    // Complete states (4) - gray checkmark badge
+    COMPLETE: Status.Completed,
     COMPLETED: Status.Completed,
+    FINISHED: Status.Completed,
 };
 
 const defaultStageNames: Record<ViewerStageType, string> = {
