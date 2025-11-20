@@ -6,6 +6,7 @@ import { BracketsManager } from 'brackets-manager';
 import { ToI18nKey, TFunction } from './lang';
 import type { StageStructureResponse, StageStandingsResponse, StageStructureConversionOptions, BracketEdgeResponse } from './dto/types';
 import { ViewerStage, ViewerStageType } from './models';
+import type { LayoutConfig } from './viewModels';
 
 export type { ToI18nKey, TFunction };
 export { ViewerStage, ViewerStageType };
@@ -59,6 +60,17 @@ export interface MatchWithMetadata extends Match {
         roundCount?: number,
         /** Group type this match is in. */
         matchLocation?: GroupType
+
+        // Swiss-specific information
+
+        /** Number of wins for teams in this match (Swiss only) */
+        swissWins?: number,
+        /** Number of losses for teams in this match (Swiss only) */
+        swissLosses?: number,
+        /** Date of the round this match is in (Swiss only) */
+        roundDate?: string,
+        /** Best-of format for this match's round (Swiss only, e.g., "BO1", "BO3") */
+        roundBestOf?: string,
 
         // Other information
 
@@ -261,6 +273,46 @@ export interface Config {
      * @default true
      */
     showRoundHeaders?: boolean,
+
+    /**
+     * View model preset ID for bracket layout and theme.
+     *
+     * View models provide preset configurations for:
+     * - Layout density (normal, compact, ultra-compact, spacious)
+     * - Theme (default, admin-compact, etc.)
+     * - Double elimination mode (unified/split)
+     *
+     * Available presets:
+     * - Single Elimination: 'se-default', 'se-compact', 'se-ultra-compact', 'se-spacious'
+     * - Double Elimination: 'de-default', 'de-compact', 'de-admin-compact', 'de-split', 'de-spacious'
+     * - Generic: 'default', 'compact', 'admin'
+     *
+     * If not specified, an appropriate default is chosen based on the stage type.
+     *
+     * @example
+     * // Use compact view for admin dashboard
+     * viewer.render(data, { viewModelId: 'de-admin-compact' });
+     *
+     * @default undefined (auto-selects based on stage type)
+     */
+    viewModelId?: string,
+
+    /**
+     * Layout configuration overrides.
+     *
+     * Allows fine-tuning specific layout parameters on top of the selected view model preset.
+     * Useful for custom adjustments without creating a new view model.
+     *
+     * @example
+     * // Use compact preset but with custom column width
+     * viewer.render(data, {
+     *   viewModelId: 'de-compact',
+     *   layoutOverrides: { columnWidth: 180 }
+     * });
+     *
+     * @default undefined (no overrides)
+     */
+    layoutOverrides?: Partial<LayoutConfig>,
 }
 
 /**

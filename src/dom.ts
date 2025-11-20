@@ -61,8 +61,19 @@ export function createBracketContainer(groupId?: Id, title?: string): HTMLElemen
     bracket.classList.add('bracket');
 
     // Consolation matches are not in a group.
-    if (groupId)
+    if (groupId) {
         bracket.setAttribute('data-group-id', groupId.toString());
+
+        // Extract and set bracket type for CSS targeting
+        const groupIdStr = groupId.toString().toLowerCase();
+        let bracketType = 'unknown';
+        if (groupIdStr.includes('winners-bracket')) bracketType = 'winners';
+        else if (groupIdStr.includes('losers-bracket')) bracketType = 'losers';
+        else if (groupIdStr.includes('grand-final')) bracketType = 'grand-final';
+        else if (groupIdStr.includes('placement')) bracketType = 'placement';
+
+        bracket.setAttribute('data-bracket-type', bracketType);
+    }
 
     if (title) {
         const h2 = document.createElement('h2');

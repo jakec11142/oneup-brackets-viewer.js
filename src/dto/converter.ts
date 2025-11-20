@@ -103,7 +103,7 @@ export function convertStageStructureToViewerData(
             const roundId = `${groupId}-round-${round.number ?? 1}`;
 
             round.matches?.forEach((match, matchIndex) => {
-                matches.push({
+                const baseMatch: Match = {
                     id: match.id ?? `${roundId}-match-${matchIndex + 1}`,
                     stage_id: stageId,
                     group_id: groupId,
@@ -113,7 +113,15 @@ export function convertStageStructureToViewerData(
                     opponent1: convertSlot(accumulator, match.slots?.[0]),
                     opponent2: convertSlot(accumulator, match.slots?.[1]),
                     child_count: 0,
-                });
+                };
+
+                // SWISS ONLY: Store round date and bestOf metadata for panel headers
+                if (type === 'swiss') {
+                    (baseMatch as any).swissRoundDate = round.date;
+                    (baseMatch as any).swissRoundBestOf = round.bestOf;
+                }
+
+                matches.push(baseMatch);
             });
         });
     });

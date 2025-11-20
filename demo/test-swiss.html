@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Swiss Panel Test</title>
+  <link rel="stylesheet" href="../dist/brackets-viewer.min.css" />
+  <script src="../dist/brackets-viewer.min.js"></script>
+  <style>
+    body { margin:0; padding:20px; background:#f5f5f5; font-family:sans-serif; }
+    h1 { font-size:18px; margin-bottom:20px; }
+    #viewer-root { background:#fff; border-radius:8px; padding:20px; box-shadow:0 6px 24px rgba(15,23,42,.1); }
+    #status { background:#fff; padding:15px; border-radius:4px; margin-bottom:20px; }
+    .log-item { padding:5px 0; font-size:13px; font-family:monospace; }
+    .log-success { color:#10b981; }
+    .log-error { color:#ef4444; }
+    .log-info { color:#3b82f6; }
+  </style>
+</head>
+<body>
+  <h1>Swiss Panel Rendering Test</h1>
+  <div id="status">
+    <div class="log-item log-info">⏳ Loading Swiss data...</div>
+  </div>
+  <section id="viewer-root" class="brackets-viewer"></section>
+
+  <script type="module">
+    const statusDiv = document.querySelector('#status');
+
+    function log(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `log-item log-${type}`;
+      div.textContent = message;
+      statusDiv.appendChild(div);
+      console.log(message);
+    }
+
+    async function testSwissRendering() {
+      try {
+        log('⏳ Fetching Swiss data...');
+        const response = await fetch('swissData.json');
+        const structure = await response.json();
+        log('✓ Swiss data loaded', 'success');
+
+        log('⏳ Converting to viewer data...');
+        const viewerData = window.bracketsViewerDTO.convertStageStructureToViewerData(structure, undefined, {
+          stageName: 'Swiss Test',
+        });
+        log(`✓ Converted: ${viewerData.matches.length} matches, ${viewerData.participants.length} participants`, 'success');
+
+        log('⏳ Rendering bracket...');
+        await window.bracketsViewer.render(viewerData, {
+          selector: '#viewer-root',
+          clear: true,
+          showRoundHeaders: false,
+        });
+        log('✓ Rendering complete', 'success');
+
+        // Check for Swiss panels
+        const panels = document.querySelectorAll('.swiss-panel');
+        log(`✓ Found ${panels.length} Swiss panels`, panels.length > 0 ? 'success' : 'error');
+
+        if (panels.length > 0) {
+          panels.forEach((panel, idx) => {
+            const header = panel.querySelector('.swiss-panel-header');
+            const body = panel.querySelector('.swiss-panel-body');
+            const matches = body ? body.querySelectorAll('.match') : [];
+            const record = header ? header.querySelector('.record')?.textContent : 'N/A';
+            const date = header ? header.querySelector('.date')?.textContent : 'none';
+            const bestOf = header ? header.querySelector('.bo-label')?.textContent : 'none';
+
+            log(`  Panel ${idx + 1}: Record="${record}", Date="${date}", BestOf="${bestOf}", Matches=${matches.length}`, 'info');
+          });
+        }
+
+        // Check for connectors (should be NONE)
+        const connectors = document.querySelectorAll('.bracket-connectors line, .bracket-connectors path');
+        if (connectors.length === 0) {
+          log('✓ No SVG connectors found (correct for Swiss panels)', 'success');
+        } else {
+          log(`⚠ Found ${connectors.length} SVG connectors (should be 0)`, 'error');
+        }
+
+      } catch (error) {
+        log(`✗ Error: ${error.message}`, 'error');
+        console.error(error);
+      }
+    }
+
+    // Run test after page loads
+    window.addEventListener('load', testSwissRendering);
+  </script>
+</body>
+</html>

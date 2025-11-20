@@ -66,6 +66,52 @@
     --bv-lose-color: #e57373;
   }
 
+  // Default theme (explicit, uses default CSS variables)
+  &.bv-theme-default {
+    /* Uses the default variables defined above */
+  }
+
+  // Compact theme - reduced spacing for denser layouts
+  &.bv-theme-compact {
+    --bv-font-size: 11px;
+    --bv-round-gap: 30px;
+    --bv-match-width: 130px;
+    --bv-match-horizontal-padding: 6px;
+    --bv-match-vertical-padding: 4px;
+  }
+
+  // Admin compact theme - ultra-dense dark theme for dashboards
+  &.bv-theme-admin-compact {
+    /* Color scheme: very dark with subtle contrast */
+    --bv-bg-color: #020617;
+    --bv-surface-color: #0f172a;
+    --bv-match-bg-color: #0f172a;
+    --bv-text-color: #e5e7eb;
+    --bv-heading-color: #9ca3af;
+    --bv-label-color: #9ca3af;
+    --bv-hint-color: #6b7280;
+    --bv-border-color: #1e293b;
+    --bv-border-hover-color: #334155;
+    --bv-border-selected-color: #64748b;
+    --bv-connector-color: #334155;
+
+    /* Connector colors for admin theme */
+    --bv-connector-internal: #475569;
+    --bv-connector-cross-bracket: #475569;
+    --bv-connector-grand-final: #6366f1;
+
+    --bv-win-color: #10b981;
+    --bv-lose-color: #ef4444;
+
+    /* Compact sizing */
+    --bv-font-size: 10px;
+    --bv-round-gap: 24px;
+    --bv-match-width: 120px;
+    --bv-match-horizontal-padding: 5px;
+    --bv-match-vertical-padding: 3px;
+    --bv-connector-border-width: 1.5px;
+  }
+
   $connector-width: var(--bv-round-gap) / 2;
   $connector-border: var(--bv-connector-border-width) solid var(--bv-connector-color);
 
@@ -192,6 +238,9 @@
   }
 
   .bracket {
+    margin-bottom: 40px; // Vertical spacing between bracket sections
+    position: relative; // For divider positioning
+
     h2 {
       font-size: 1.5em;
       color: var(--bv-heading-color);
@@ -210,6 +259,80 @@
         position: absolute;
         z-index: 1;
       }
+    }
+
+    // Winners Bracket: Subtle green tint with left border
+    &[data-bracket-type="winners"] .rounds {
+      background: linear-gradient(180deg,
+        rgba(80, 182, 73, 0.03) 0%,
+        rgba(80, 182, 73, 0.01) 100%
+      );
+      border-left: 3px solid var(--bv-win-color);
+      padding-left: 8px;
+    }
+
+    // Losers Bracket: Subtle red tint with left border
+    &[data-bracket-type="losers"] .rounds {
+      background: linear-gradient(180deg,
+        rgba(230, 26, 26, 0.03) 0%,
+        rgba(230, 26, 26, 0.01) 100%
+      );
+      border-left: 3px solid var(--bv-lose-color);
+      padding-left: 8px;
+    }
+
+    // Grand Finals: Subtle blue/gold tint with full border
+    &[data-bracket-type="grand-final"] .rounds {
+      background: linear-gradient(180deg,
+        rgba(92, 124, 250, 0.05) 0%,
+        rgba(92, 124, 250, 0.02) 100%
+      );
+      border: 2px solid var(--bv-connector-grand-final);
+      padding: 8px;
+    }
+
+    // Horizontal dividers between bracket sections
+    &:not(:first-of-type)::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--bv-border-color) 10%,
+        var(--bv-border-color) 90%,
+        transparent 100%
+      );
+    }
+
+    // Thicker divider for Losers bracket
+    &[data-bracket-type="losers"]::before {
+      height: 3px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--bv-lose-color) 10%,
+        var(--bv-lose-color) 90%,
+        transparent 100%
+      );
+      opacity: 0.3;
+    }
+
+    // Special divider for Grand Finals (golden/blue gradient)
+    &[data-bracket-type="grand-final"]::before {
+      height: 4px;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--bv-connector-grand-final) 20%,
+        gold 50%,
+        var(--bv-connector-grand-final) 80%,
+        transparent 100%
+      );
+      opacity: 0.5;
     }
   }
 
@@ -391,6 +514,107 @@
 
     &.loss .result {
       color: var(--bv-lose-color);
+    }
+  }
+
+  // Swiss panel styles (boxed column layout)
+  .swiss-panel {
+    border: 1px solid var(--bv-border-color);
+    border-radius: 8px;
+    background: var(--bv-surface-color);
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+
+  .swiss-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: var(--bv-match-bg-color);
+    border-bottom: 1px solid var(--bv-border-color);
+    font-size: 0.95em;
+    font-weight: 600;
+    min-height: 40px;
+
+    .record {
+      color: var(--bv-text-color);
+      font-size: 1.1em;
+      font-weight: 700;
+    }
+
+    .date {
+      color: var(--bv-hint-color);
+      font-size: 0.9em;
+      font-weight: 500;
+    }
+
+    .bo-label {
+      color: var(--bv-hint-color);
+      font-size: 0.85em;
+      font-weight: 600;
+      text-transform: uppercase;
+      background: var(--bv-surface-color);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+  }
+
+  .swiss-panel-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .swiss-match-row {
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    margin-bottom: 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  // Compact theme adjustments for Swiss
+  &.bv-theme-compact {
+    .swiss-panel-header {
+      padding: 8px 12px;
+      font-size: 0.9em;
+      min-height: 36px;
+
+      .record { font-size: 1em; }
+      .date { font-size: 0.85em; }
+      .bo-label { font-size: 0.8em; padding: 2px 6px; }
+    }
+
+    .swiss-panel-body {
+      padding: 10px;
+      gap: 8px;
+    }
+  }
+
+  // Admin compact theme adjustments for Swiss
+  &.bv-theme-admin-compact {
+    .swiss-panel {
+      border-radius: 6px;
+    }
+
+    .swiss-panel-header {
+      padding: 6px 10px;
+      font-size: 0.85em;
+      min-height: 32px;
+
+      .record { font-size: 0.95em; }
+      .date { font-size: 0.8em; }
+      .bo-label { font-size: 0.75em; padding: 1px 5px; }
+    }
+
+    .swiss-panel-body {
+      padding: 8px;
+      gap: 6px;
     }
   }
 

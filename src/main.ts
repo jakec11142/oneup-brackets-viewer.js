@@ -6,7 +6,8 @@ import * as lang from './lang';
 import { Locale } from './lang';
 import { helpers } from 'brackets-manager';
 import { BracketEdgeResponse } from './dto/types';
-import { computeLayout } from './layout';
+import { computeLayout, computeSwissLayout } from './layout';
+import { getViewModel, type ViewModel, type LayoutConfig, type BracketKind } from './viewModels';
 import {
     Config,
     OriginHint,
@@ -35,6 +36,8 @@ export class BracketsViewer {
 
     private stage!: ViewerStage;
     private config!: Config;
+    private viewModel!: ViewModel;
+    private layoutConfig!: LayoutConfig;
     private skipFirstRound = false;
     private alwaysConnectFirstRound = false;
     private popover!: HTMLElement;
@@ -88,7 +91,29 @@ export class BracketsViewer {
             rankingFormula: config?.rankingFormula ?? ((item): number => 3 * item.wins + 1 * item.draws + 0 * item.losses),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             doubleElimMode: config?.doubleElimMode ?? 'unified',
+            viewModelId: config?.viewModelId,
+            layoutOverrides: config?.layoutOverrides,
         } as Config;
+
+        // Resolve view model based on stage type and viewModelId
+        // This determines layout density, theme, and double elim mode preset
+        const firstStageType = data.stages?.[0]?.type;
+        const stageType: BracketKind = firstStageType === 'single_elimination' || firstStageType === 'double_elimination'
+            ? firstStageType
+            : 'single_elimination'; // fallback for round_robin, swiss, etc.
+
+        this.viewModel = getViewModel(config?.viewModelId, stageType);
+
+        // Create final layoutConfig by merging view model preset with user overrides
+        this.layoutConfig = {
+            ...this.viewModel.layout,
+            ...(config?.layoutOverrides ?? {}),
+        };
+
+        // Resolve doubleElimMode with priority: config > viewModel preset > default 'unified'
+        if (!config?.doubleElimMode && this.viewModel.doubleElimMode) {
+            this.config.doubleElimMode = this.viewModel.doubleElimMode;
+        }
 
         if (config?.onMatchClick)
             this._onMatchClick = config.onMatchClick;
@@ -134,12 +159,23 @@ export class BracketsViewer {
         }));
 
         const target = findRoot(config?.selector);
+
+        // Apply theme with precedence: config.theme > viewModel.theme.rootClassName
         Array.from(target.classList)
             .filter(cls => cls.startsWith('bv-theme-'))
             .forEach(cls => target.classList.remove(cls));
 
-        if (config?.theme)
-            target.classList.add(`bv-theme-${config.theme}`);
+        // Ensure base class is present
+        if (!target.classList.contains('bv-root'))
+            target.classList.add('bv-root');
+
+        // Apply theme: explicit config.theme takes precedence, otherwise use view model theme
+        const themeClass = config?.theme
+            ? `bv-theme-${config.theme}`
+            : this.viewModel.theme.rootClassName;
+
+        if (themeClass)
+            target.classList.add(themeClass);
 
         if (config?.clear)
             target.innerHTML = '';
@@ -267,7 +303,7 @@ export class BracketsViewer {
     }
 
     /**
-     * Renders a Swiss stage.
+     * Renders a Swiss stage using record-bucket column layout.
      *
      * @param root The root element.
      * @param stage The stage to render.
@@ -286,23 +322,110 @@ export class BracketsViewer {
             const groupId = groupMatches[0].group_id;
             const bracket = dom.createBracketContainer(groupId, lang.getGroupName(groupNumber++));
             const roundsContainer = dom.createRoundsContainer();
+
+            // Organize matches with metadata
             const matchesByRound = splitBy(groupMatches, 'round_id').map(matches => sortBy(matches, 'number'));
+            const roundCount = matchesByRound.length;
 
+            // Prepare matches with round metadata
+            const allMatchesWithMetadata: MatchWithMetadata[] = [];
             matchesByRound.forEach((roundMatches, roundIndex) => {
-                const roundId = roundMatches[0].round_id;
-                const roundName = this.getRoundName({
-                    groupType: 'swiss',
-                    roundNumber: roundIndex + 1,
-                    roundCount: matchesByRound.length,
-                }, lang.getRoundName);
-
-                const roundContainer = dom.createRoundContainer(roundId, roundName);
-
-                for (const match of roundMatches)
-                    roundContainer.append(this.createMatch(match, true));
-
-                roundsContainer.append(roundContainer);
+                const roundNumber = roundIndex + 1;
+                roundMatches.forEach(match => {
+                    allMatchesWithMetadata.push({
+                        ...match,
+                        metadata: {
+                            ...match.metadata,
+                            roundNumber,
+                            roundCount,
+                            matchLocation: 'single_bracket',
+                            // Transfer Swiss-specific round data from Match object to metadata
+                            roundDate: (match as any).swissRoundDate,
+                            roundBestOf: (match as any).swissRoundBestOf,
+                        },
+                    });
+                });
             });
+
+            console.log(`🎯 Rendering Swiss group: ${allMatchesWithMetadata.length} matches`);
+
+            // Use computeSwissLayout for record-bucket positioning
+            const swissLayout = computeSwissLayout(allMatchesWithMetadata, this.layoutConfig);
+
+            // Group matches by record bucket for panel rendering
+            const matchesByRecord = new Map<string, MatchWithMetadata[]>();
+            allMatchesWithMetadata.forEach(match => {
+                const wins = match.metadata.swissWins ?? 0;
+                const losses = match.metadata.swissLosses ?? 0;
+                const key = `${wins}-${losses}`;
+                if (!matchesByRecord.has(key)) {
+                    matchesByRecord.set(key, []);
+                }
+                matchesByRecord.get(key)!.push(match);
+            });
+
+            // Render Swiss panels (boxed columns)
+            let renderedPanels = 0;
+            let renderedMatches = 0;
+
+            swissLayout.panelPositions?.forEach(panel => {
+                // Create panel container
+                const panelDiv = document.createElement('div');
+                panelDiv.className = 'swiss-panel';
+                panelDiv.style.position = 'absolute';
+                panelDiv.style.left = `${panel.xPx}px`;
+                panelDiv.style.top = `${panel.yPx}px`;
+                panelDiv.style.width = `${panel.width}px`;
+                panelDiv.dataset.key = panel.key;
+
+                // Create panel header
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'swiss-panel-header';
+
+                const recordSpan = document.createElement('span');
+                recordSpan.className = 'record';
+                recordSpan.textContent = panel.record;
+                headerDiv.appendChild(recordSpan);
+
+                if (panel.date) {
+                    const dateSpan = document.createElement('span');
+                    dateSpan.className = 'date';
+                    dateSpan.textContent = panel.date;
+                    headerDiv.appendChild(dateSpan);
+                }
+
+                if (panel.bestOf) {
+                    const boSpan = document.createElement('span');
+                    boSpan.className = 'bo-label';
+                    boSpan.textContent = panel.bestOf;
+                    headerDiv.appendChild(boSpan);
+                }
+
+                panelDiv.appendChild(headerDiv);
+
+                // Create panel body for matches
+                const bodyDiv = document.createElement('div');
+                bodyDiv.className = 'swiss-panel-body';
+
+                // Render matches within this panel
+                const panelMatches = matchesByRecord.get(panel.key) ?? [];
+                panelMatches.forEach(match => {
+                    const matchEl = this.createBracketMatch(match);
+                    matchEl.classList.add('swiss-match-row');
+                    bodyDiv.appendChild(matchEl);
+                    renderedMatches++;
+                });
+
+                panelDiv.appendChild(bodyDiv);
+                roundsContainer.appendChild(panelDiv);
+                renderedPanels++;
+            });
+
+            console.log(`✅ Rendered ${renderedPanels} Swiss panels with ${renderedMatches} matches (NO connectors)`);
+
+            // Set explicit size on rounds container
+            roundsContainer.style.width = `${swissLayout.totalWidth}px`;
+            roundsContainer.style.height = `${swissLayout.totalHeight}px`;
 
             bracket.append(roundsContainer);
 
@@ -470,7 +593,7 @@ export class BracketsViewer {
 
         // Single computeLayout call with all matches + all edges
         // Use 'winner_bracket' as the type (it's used mainly for logging)
-        const layout = computeLayout(allMatchesWithMetadata, allEdges, 'winner_bracket');
+        const layout = computeLayout(allMatchesWithMetadata, allEdges, 'winner_bracket', this.layoutConfig);
 
         // Create bracket container for unified view
         const groupId = allMatchesWithMetadata[0]?.group_id ?? 'unified-de';
@@ -655,7 +778,7 @@ export class BracketsViewer {
         );
 
         // Compute layout using ALL matches
-        const layout = computeLayout(allMatchesForLayout, bracketEdges, bracketType);
+        const layout = computeLayout(allMatchesForLayout, bracketEdges, bracketType, this.layoutConfig);
 
         // Debug: Log connector count
         console.log(`[${bracketType}] Matches: ${allMatchesForLayout.length}, Edges: ${bracketEdges.length}, Connectors: ${layout.connectors.length}`);

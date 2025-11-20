@@ -1,15 +1,7 @@
 import { Match } from 'brackets-model';
 import { BracketEdgeResponse } from './dto/types';
-
-// Layout constants (should match CSS variables)
-// --bv-match-width: 150px, --bv-round-gap: 40px
-const COLUMN_WIDTH = 190;  // 150 (match width) + 40 (round gap)
-const ROW_HEIGHT = 80;     // Match height + vertical gap
-const MATCH_HEIGHT = 60;   // Actual match min-height for connector anchoring
-const TOP_OFFSET = 50;     // Top padding to ensure first round is visible
-const LEFT_OFFSET = 0;     // Left padding (none needed, container has padding)
-const GROUP_GAP_Y = 100;   // Vertical gap between bracket groups (winners/losers/finals)
-const GROUP_GAP_X = 1;     // Column gap between bracket groups
+import type { LayoutConfig } from './viewModels';
+import type { MatchWithMetadata } from './types';
 
 /**
  * Bracket group types in display order
@@ -69,12 +61,39 @@ export interface MatchPosition {
 }
 
 /**
+ * Panel position for boxed Swiss layout
+ */
+export interface SwissPanelPosition {
+    /** Record key (e.g., "0-0", "1-0", "2-1") */
+    key: string;
+    /** Display label for the record */
+    record: string;
+    /** Optional round number associated with this bucket */
+    roundNumber?: number;
+    /** Date string for panel header (from round data if available) */
+    date?: string;
+    /** Best-of label (e.g., "BO1", "BO3") from round data if available */
+    bestOf?: string;
+    /** X position in pixels */
+    xPx: number;
+    /** Y position in pixels */
+    yPx: number;
+    /** Panel width in pixels */
+    width: number;
+    /** Panel height in pixels (based on match count) */
+    height: number;
+    /** Number of matches in this panel */
+    matchCount: number;
+}
+
+/**
  * Complete layout result.
  */
 export interface BracketLayout {
     matchPositions: Map<string, MatchPosition>;
     headerPositions: RoundHeader[];
     connectors: ConnectorLine[];
+    panelPositions?: SwissPanelPosition[]; // Swiss-specific: boxed panel positions
     totalWidth: number;
     totalHeight: number;
 }
@@ -120,13 +139,26 @@ function extractBracketGroup(groupId: string): BracketGroup {
  * @param matches All matches in the bracket
  * @param edges All edges defining connections between matches
  * @param bracketType Type of bracket (winner_bracket, loser_bracket, etc.)
+ * @param layout Layout configuration parameters (column width, spacing, etc.)
  * @returns Complete layout with positions and connectors
  */
 export function computeLayout(
     matches: Match[],
     edges: BracketEdgeResponse[],
     bracketType: string,
+    layout: LayoutConfig,
 ): BracketLayout {
+    // Destructure layout parameters for use throughout the function
+    const {
+        columnWidth: COLUMN_WIDTH,
+        rowHeight: ROW_HEIGHT,
+        matchHeight: MATCH_HEIGHT,
+        topOffset: TOP_OFFSET,
+        leftOffset: LEFT_OFFSET,
+        groupGapX: GROUP_GAP_X,
+        groupGapY: GROUP_GAP_Y,
+    } = layout;
+
     console.log(`🔧 computeLayout called: ${matches.length} matches, ${edges.length} edges, type=${bracketType}`);
 
     if (matches.length === 0) {
@@ -187,21 +219,36 @@ export function computeLayout(
     const groupOffsetsX = new Map<BracketGroup, number>();
     let currentColumn = 0;
 
-    console.log('📐 Column assignment:');
-    for (const group of GROUP_ORDER) {
+    // For 'finals-top' alignment, position Grand Finals to the right of Winners,
+    // and Losers aligned with Winners start (X=0)
+    const columnOrder: BracketGroup[] = layout.bracketAlignment === 'finals-top'
+        ? ['WINNERS_BRACKET', 'GRAND_FINAL_BRACKET', 'LOSERS_BRACKET', 'PLACEMENT_BRACKET']
+        : GROUP_ORDER;
+
+    console.log(`📐 Column assignment (alignment: ${layout.bracketAlignment}):`);
+    for (const group of columnOrder) {
         const rounds = roundsByGroup.get(group);
         if (!rounds || rounds.size === 0) continue;
 
         const sortedRounds = Array.from(rounds).sort((a, b) => a - b);
-        groupOffsetsX.set(group, currentColumn);
-        console.log(`  ${group}: ${sortedRounds.length} rounds → columns ${currentColumn} to ${currentColumn + sortedRounds.length - 1}`);
-        currentColumn += sortedRounds.length + GROUP_GAP_X; // Add gap between groups
+
+        // Special case: For 'finals-top', Losers starts with configurable offset
+        if (layout.bracketAlignment === 'finals-top' && group === 'LOSERS_BRACKET') {
+            const offset = layout.losersBracketOffsetX ?? 0; // Default to 0 for backward compatibility
+            groupOffsetsX.set(group, offset);
+            console.log(`  ${group}: ${sortedRounds.length} rounds → columns ${offset} to ${offset + sortedRounds.length - 1} (offset by ${offset} columns)`);
+        } else {
+            groupOffsetsX.set(group, currentColumn);
+            console.log(`  ${group}: ${sortedRounds.length} rounds → columns ${currentColumn} to ${currentColumn + sortedRounds.length - 1}`);
+            currentColumn += sortedRounds.length + GROUP_GAP_X; // Add gap between groups
+        }
     }
 
     const matchPositions = new Map<string, MatchPosition>();
     let maxXRound = 0;
 
-    for (const group of GROUP_ORDER) {
+    // Use same column order for position assignment
+    for (const group of columnOrder) {
         const groupRounds = matchesByGroupRound.get(group);
         if (!groupRounds) continue;
 
@@ -355,16 +402,81 @@ export function computeLayout(
     }
 
     // --- 4. Compute Y offsets per group and final pixel positions ---
-    let currentY = TOP_OFFSET;
     const groupOffsetY = new Map<BracketGroup, number>();
+    const bracketAlignment = layout.bracketAlignment || 'bottom';
 
+    // Calculate heights for each group first
+    const groupHeights = new Map<BracketGroup, number>();
+    let maxGroupHeight = 0;
     for (const group of GROUP_ORDER) {
         const lanesCount = laneCountByGroup.get(group);
         if (!lanesCount) continue;
+        const height = lanesCount * ROW_HEIGHT;
+        groupHeights.set(group, height);
+        maxGroupHeight = Math.max(maxGroupHeight, height);
+    }
 
-        groupOffsetY.set(group, currentY);
-        const groupHeight = lanesCount * ROW_HEIGHT;
-        currentY += groupHeight + GROUP_GAP_Y;
+    // Apply alignment strategy
+    if (bracketAlignment === 'finals-top') {
+        // Grand Finals at top with Winners, Losers below
+        // This puts the most important matches at the top of the page
+        let currentY = TOP_OFFSET;
+
+        // Position Grand Finals and Winners side-by-side at top
+        const winnersHeight = groupHeights.get('WINNERS_BRACKET') || 0;
+        const finalsHeight = groupHeights.get('GRAND_FINAL_BRACKET') || 0;
+
+        if (winnersHeight > 0) {
+            groupOffsetY.set('WINNERS_BRACKET', currentY);
+        }
+        if (finalsHeight > 0) {
+            // Position Grand Finals at same Y level as Winners (top aligned)
+            groupOffsetY.set('GRAND_FINAL_BRACKET', currentY);
+        }
+
+        // Move Y down past the taller of Winners or Finals
+        currentY += Math.max(winnersHeight, finalsHeight) + GROUP_GAP_Y;
+
+        // Position Losers and Placement below
+        const losersHeight = groupHeights.get('LOSERS_BRACKET') || 0;
+        if (losersHeight > 0) {
+            groupOffsetY.set('LOSERS_BRACKET', currentY);
+            currentY += losersHeight + GROUP_GAP_Y;
+        }
+
+        const placementHeight = groupHeights.get('PLACEMENT_BRACKET') || 0;
+        if (placementHeight > 0) {
+            groupOffsetY.set('PLACEMENT_BRACKET', currentY);
+        }
+
+    } else if (bracketAlignment === 'top') {
+        // Top-aligned: All brackets start from the same Y position (better for Finals visibility)
+        let currentY = TOP_OFFSET;
+        for (const group of GROUP_ORDER) {
+            const height = groupHeights.get(group);
+            if (!height) continue;
+            groupOffsetY.set(group, currentY);
+            currentY += height + GROUP_GAP_Y;
+        }
+    } else if (bracketAlignment === 'center') {
+        // Center-aligned: Center each bracket group within the maximum height
+        let currentY = TOP_OFFSET;
+        for (const group of GROUP_ORDER) {
+            const height = groupHeights.get(group);
+            if (!height) continue;
+            const centerOffset = (maxGroupHeight - height) / 2;
+            groupOffsetY.set(group, currentY + centerOffset);
+            currentY += maxGroupHeight + GROUP_GAP_Y;
+        }
+    } else {
+        // Bottom-aligned (default): Stack brackets naturally with gaps
+        let currentY = TOP_OFFSET;
+        for (const group of GROUP_ORDER) {
+            const height = groupHeights.get(group);
+            if (!height) continue;
+            groupOffsetY.set(group, currentY);
+            currentY += height + GROUP_GAP_Y;
+        }
     }
 
     // Fill in xPx, yPx, and lane on matchPositions
@@ -387,7 +499,7 @@ export function computeLayout(
 
         matchPositions.set(id, pos);
 
-        maxX = Math.max(maxX, xPx + 150); // Match width
+        maxX = Math.max(maxX, xPx + layout.matchWidth);
         maxY = Math.max(maxY, yPx + MATCH_HEIGHT);
     }
 
@@ -408,7 +520,7 @@ export function computeLayout(
     });
 
     // --- 6. Generate connectors ---
-    const connectors = generateConnectors(edges, matchPositions, matchesById);
+    const connectors = generateConnectors(edges, matchPositions, matchesById, MATCH_HEIGHT, layout.matchWidth);
 
     console.log(`🔗 Generated ${connectors.length} connectors from ${edges.length} edges`);
     if (connectors.length > 0 && connectors.length < edges.length) 
@@ -431,12 +543,16 @@ export function computeLayout(
  * @param edges All edges defining connections
  * @param positions Match positions with pixel coordinates
  * @param matchesById Map of match IDs to match nodes with bracket group info
+ * @param matchHeight Height of match elements for calculating connector anchor points
+ * @param matchWidth Width of match elements for calculating connector anchor points
  * @returns Array of connector lines
  */
 function generateConnectors(
     edges: BracketEdgeResponse[],
     positions: Map<string, MatchPosition>,
     matchesById: Map<string, { match: Match; bracketGroup: BracketGroup; roundNumber: number }>,
+    matchHeight: number,
+    matchWidth: number,
 ): ConnectorLine[] {
     const connectors: ConnectorLine[] = [];
 
@@ -471,11 +587,11 @@ function generateConnectors(
         }
 
         // Calculate anchor points at vertical center of matches
-        const centerY = MATCH_HEIGHT / 2; // 30px for 60px height
+        const centerY = matchHeight / 2; // e.g. 30px for 60px height
 
         // Source point: right side of source match at vertical center
         const fromY = fromPos.yPx + centerY;
-        const fromX = fromPos.xPx + 150; // Match width
+        const fromX = fromPos.xPx + matchWidth;
 
         // Target point: left side of target match at vertical center
         const toY = toPos.yPx + centerY;
@@ -502,3 +618,207 @@ function generateConnectors(
 
     return connectors;
 }
+
+/**
+ * Swiss record bucket identifier (wins-losses)
+ */
+interface SwissRecordBucket {
+    wins: number;
+    losses: number;
+    key: string; // e.g., "0-0", "1-0", "2-1"
+}
+
+/**
+ * Bucket header for Swiss layout (legacy, kept for compatibility)
+ */
+export interface SwissBucketHeader {
+    record: string;
+    xPx: number;
+    yPx: number;
+}
+
+/**
+ * Computes layout for a Swiss tournament with record-based column buckets.
+ *
+ * Swiss tournaments group matches by win-loss records:
+ * - Column 0: 0-0 (Round 1)
+ * - Columns 1-2: 1-0 and 0-1 (Round 2)
+ * - Columns 3-5: 2-0, 1-1, 0-2 (Round 3)
+ * - etc.
+ *
+ * @param matches All matches in the Swiss tournament with swissWins/swissLosses metadata
+ * @param layout Layout configuration parameters
+ * @returns Complete layout with positions, bucket headers, and connectors
+ */
+export function computeSwissLayout(
+    matches: MatchWithMetadata[],
+    layout: LayoutConfig,
+): BracketLayout {
+    const {
+        columnWidth: COLUMN_WIDTH,
+        rowHeight: ROW_HEIGHT,
+        matchHeight: MATCH_HEIGHT,
+        topOffset: TOP_OFFSET,
+        leftOffset: LEFT_OFFSET,
+    } = layout;
+
+    console.log(`🎯 computeSwissLayout: ${matches.length} matches`);
+
+    if (matches.length === 0) {
+        return {
+            matchPositions: new Map(),
+            headerPositions: [],
+            connectors: [],
+            totalWidth: 0,
+            totalHeight: 0,
+        };
+    }
+
+    // Step 1: Infer Swiss records from round numbers
+    // For matches without explicit swissWins/swissLosses, infer from round structure
+    const matchesWithRecords = matches.map(match => {
+        const roundNumber = match.metadata.roundNumber ?? 1;
+
+        // For now, we'll create a simple inference:
+        // Round 1 → all matches are 0-0
+        // Round 2 → matches are split between 1-0 and 0-1 (we'll distribute evenly)
+        // Round 3 → 2-0, 1-1, 0-2, etc.
+
+        // If explicit metadata exists, use it
+        if (match.metadata.swissWins !== undefined && match.metadata.swissLosses !== undefined) {
+            return {
+                match,
+                wins: match.metadata.swissWins,
+                losses: match.metadata.swissLosses,
+            };
+        }
+
+        // Otherwise, infer from round (simplified approach)
+        // This is a fallback for data without explicit records
+        if (roundNumber === 1) {
+            return { match, wins: 0, losses: 0 };
+        }
+
+        // For subsequent rounds, distribute matches across possible records
+        // This is a placeholder - real Swiss data should have explicit records
+        const totalGames = roundNumber - 1;
+        const matchIndex = match.number ?? 0;
+        const matchesInRound = matches.filter(m => (m.metadata.roundNumber ?? 1) === roundNumber).length;
+
+        // Simple distribution: split matches evenly across possible records
+        // For round 2 (totalGames=1): half 1-0, half 0-1
+        // For round 3 (totalGames=2): 2-0, 1-1, 0-2
+        const bucketsCount = totalGames + 1;
+        const bucketSize = Math.ceil(matchesInRound / bucketsCount);
+        const bucketIndex = Math.floor(matchIndex / bucketSize);
+        const wins = Math.max(0, Math.min(totalGames - bucketIndex, totalGames));
+        const losses = totalGames - wins;
+
+        return { match, wins, losses };
+    });
+
+    // Step 2: Group matches by record buckets
+    const bucketMap = new Map<string, MatchWithMetadata[]>();
+
+    matchesWithRecords.forEach(({ match, wins, losses }) => {
+        const key = `${wins}-${losses}`;
+        if (!bucketMap.has(key)) {
+            bucketMap.set(key, []);
+        }
+        bucketMap.get(key)!.push(match);
+
+        // Store the computed record back into metadata for later use
+        match.metadata.swissWins = wins;
+        match.metadata.swissLosses = losses;
+    });
+
+    console.log(`📊 Swiss buckets: ${Array.from(bucketMap.keys()).join(', ')}`);
+
+    // Step 3: Order buckets in Swiss progression
+    // Primary sort: by total games (wins + losses)
+    // Secondary sort: by wins (descending) within same total
+    const sortedBuckets: SwissRecordBucket[] = Array.from(bucketMap.entries())
+        .map(([key, matches]) => {
+            const [wins, losses] = key.split('-').map(Number);
+            return { wins, losses, key };
+        })
+        .sort((a, b) => {
+            const totalA = a.wins + a.losses;
+            const totalB = b.wins + b.losses;
+            if (totalA !== totalB) return totalA - totalB;
+            // Within same round, sort by wins descending (2-0 before 1-1 before 0-2)
+            return b.wins - a.wins;
+        });
+
+    console.log(`📐 Bucket order: ${sortedBuckets.map(b => b.key).join(' → ')}`);
+
+    // Step 4: Assign column positions and compute match positions
+    const matchPositions = new Map<string, MatchPosition>();
+    const panelPositions: SwissPanelPosition[] = [];
+    let maxY = 0;
+
+    sortedBuckets.forEach((bucket, columnIndex) => {
+        const bucketMatches = bucketMap.get(bucket.key) ?? [];
+
+        // Sort matches within bucket by match number for deterministic ordering
+        bucketMatches.sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
+
+        // Extract date/bestOf from first match in bucket (all matches in same bucket share same round)
+        const firstMatch = bucketMatches[0];
+        const roundDate = firstMatch?.metadata?.roundDate;
+        const roundBestOf = firstMatch?.metadata?.roundBestOf;
+
+        // Position each match in this column
+        let panelHeight = 0;
+        bucketMatches.forEach((match, laneIndex) => {
+            const xPx = LEFT_OFFSET + columnIndex * COLUMN_WIDTH;
+            const yPx = TOP_OFFSET + laneIndex * ROW_HEIGHT;
+
+            matchPositions.set(String(match.id), {
+                xRound: columnIndex,
+                yLane: laneIndex,
+                xPx,
+                yPx,
+            });
+
+            maxY = Math.max(maxY, yPx + MATCH_HEIGHT);
+            panelHeight = (laneIndex + 1) * ROW_HEIGHT;
+        });
+
+        // Create panel position with metadata for boxed rendering
+        panelPositions.push({
+            key: bucket.key,
+            record: bucket.key,
+            roundNumber: bucket.wins + bucket.losses + 1, // Infer round from total games
+            date: roundDate,
+            bestOf: roundBestOf,
+            xPx: LEFT_OFFSET + columnIndex * COLUMN_WIDTH,
+            yPx: TOP_OFFSET - 60, // Position header above matches (increased from 40 for panel header)
+            width: COLUMN_WIDTH,
+            height: panelHeight + 60, // Panel height = matches + header space
+            matchCount: bucketMatches.length,
+        });
+    });
+
+    const totalWidth = LEFT_OFFSET + sortedBuckets.length * COLUMN_WIDTH + layout.matchWidth;
+    const totalHeight = maxY + 50; // Add bottom padding
+
+    console.log(`✅ Swiss layout: ${sortedBuckets.length} panels, ${matchPositions.size} matches (NO connectors)`);
+
+    return {
+        matchPositions,
+        headerPositions: panelPositions.map((panel, idx) => ({
+            roundNumber: panel.roundNumber ?? idx + 1,
+            roundName: panel.record,
+            columnIndex: idx,
+            xPx: panel.xPx,
+            yPx: panel.yPx + 20, // Position header text within panel
+        })),
+        panelPositions, // NEW: Return panel positions for boxed rendering
+        connectors: [], // Swiss no longer uses connectors
+        totalWidth,
+        totalHeight,
+    };
+}
+
+// generateSwissConnectors function removed - Swiss now uses boxed panels without connectors

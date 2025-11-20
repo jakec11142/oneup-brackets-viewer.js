@@ -15,6 +15,8 @@ export interface RoundStructureResponse {
     number?: number;
     bracketGroup?: string;
     matches?: MatchStructureResponse[];
+    date?: string;
+    bestOf?: string;
 }
 export type MatchLifecycleStatus = 'UNSCHEDULED' | 'SCHEDULED' | 'LIVE' | 'COMPLETED';
 export interface MatchStructureResponse {
