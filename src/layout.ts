@@ -810,7 +810,7 @@ export function computeSwissLayout(
     const PANEL_INNER_GAP = swissConfig?.panelInnerGap ?? 10;
     const LAYER_GAP_FACTOR = swissConfig?.layerGapFactor ?? 1.5;
     const MIN_LAYER_GAP_PX = swissConfig?.minLayerGapPx ?? (layout.swissLayerStepY ?? ROW_HEIGHT * 1.5);
-    const COLUMN_MODE = swissConfig?.columnMode ?? 'round-based';
+    const COLUMN_MODE = swissConfig?.columnMode ?? 'layer-based';
     const LAYER_GAP_COLUMNS = swissConfig?.layerGapColumns ?? 0;
     const TOP_OFFSET = layout.topOffset;
     const LEFT_OFFSET = layout.leftOffset;
@@ -937,11 +937,10 @@ export function computeSwissLayout(
 
         sortedLayers.forEach(layer => {
             const layerBuckets = bucketsByLayer.get(layer)!;
+            // All buckets go in column 0 for vertical-only stacking
             layerBuckets.forEach(bucket => {
-                bucketColumnMap.set(bucket.key, currentCol++);
+                bucketColumnMap.set(bucket.key, 0);
             });
-            // Add gap columns between layers if configured
-            currentCol += LAYER_GAP_COLUMNS;
         });
     } else {
         // Round-based: Group by round number (wins + losses + 1)
@@ -963,12 +962,11 @@ export function computeSwissLayout(
         let currentCol = 0;
 
         sortedRounds.forEach(roundNum => {
-            // All buckets in this round share the same column
+            // Each bucket in this round gets its own column
             const roundBuckets = bucketsByRound.get(roundNum)!;
             roundBuckets.forEach(bucket => {
-                bucketColumnMap.set(bucket.key, currentCol);
+                bucketColumnMap.set(bucket.key, currentCol++);
             });
-            currentCol++;
         });
     }
 
@@ -986,6 +984,7 @@ export function computeSwissLayout(
     const panelPositions: SwissPanelPosition[] = [];
     let maxHeight = 0;
     let maxColumnIndex = 0;
+    let cumulativeY = TOP_OFFSET; // Track running Y for vertical stacking
 
     sortedBuckets.forEach((bucket) => {
         const bucketMatches = bucketMap.get(bucket.key) ?? [];
@@ -1002,20 +1001,15 @@ export function computeSwissLayout(
         const columnIndex = bucketColumnMap.get(bucket.key) ?? 0;
         maxColumnIndex = Math.max(maxColumnIndex, columnIndex);
 
-        // Calculate layer-based Y position
-        const roundNum = bucket.wins + bucket.losses + 1;
-        const layer = bucket.wins + bucket.losses;
-        const baseLayerY = TOP_OFFSET + layer * layerStepY;
-
-        // Calculate layer height based on max matches in this round
-        const maxMatchesInRound = matchCountByRound.get(roundNum) ?? 1;
-        const layerHeight = PANEL_HEADER_HEIGHT + maxMatchesInRound * ROW_HEIGHT + PANEL_PADDING;
-
         // Calculate this panel's height
         const panelHeight = PANEL_HEADER_HEIGHT + bucketMatches.length * ROW_HEIGHT + PANEL_PADDING;
 
-        // Center panel vertically within its layer
-        const panelY = baseLayerY + (layerHeight - panelHeight) / 2;
+        // Use cumulative Y for vertical stacking (layer-based mode with column 0)
+        const panelY = cumulativeY;
+
+        // Track layer for metadata
+        const layer = bucket.wins + bucket.losses;
+        const roundNum = bucket.wins + bucket.losses + 1;
 
         // Classify zone for visual hierarchy
         const zone = classifyZone(bucket.wins, bucket.losses, maxWins, maxLosses);
@@ -1052,6 +1046,9 @@ export function computeSwissLayout(
         });
 
         maxHeight = Math.max(maxHeight, panelY + panelHeight);
+
+        // Increment Y for next panel (add gap between panels)
+        cumulativeY = panelY + panelHeight + 20; // 20px gap between panels
     });
 
     const totalWidth = LEFT_OFFSET + (maxColumnIndex + 1) * (COLUMN_WIDTH + COLUMN_GAP_X) + layout.matchWidth;

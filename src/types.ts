@@ -155,11 +155,14 @@ export type DoubleElimMode = 'unified' | 'split';
  * Controls match card sizing and spacing optimized for different use cases.
  *
  * - `default`: Standard sizing (150px wide matches)
- * - `compact`: Tighter spacing (130px wide matches) for admin dashboards
+ * - `compact`: Tighter spacing (130px wide matches)
+ * - `ultra-compact`: Maximum density (120px wide matches)
+ * - `spacious`: Extra room (170px wide matches)
  * - `logo`: Larger cards (200px wide matches) with room for team logos
- * - `ultrawide`: Extra-wide layout (220px wide matches) optimized for ultrawide monitors
+ * - `logo-compact`: Medium cards (180px wide matches) with logos in compact layout
+ * - `ultrawide`: Extra-wide layout (300px wide matches) optimized for ultrawide monitors
  */
-export type ViewMode = 'default' | 'compact' | 'logo' | 'ultrawide';
+export type ViewMode = 'default' | 'compact' | 'ultra-compact' | 'spacious' | 'logo' | 'logo-compact' | 'ultrawide';
 
 /**
  * An optional config to provide to `brackets-viewer.js`
@@ -376,6 +379,169 @@ export interface Config {
      * @default undefined (uses layout from viewModelId or default)
      */
     viewMode?: ViewMode,
+
+    // ===== GRANULAR LAYOUT DIMENSION CONTROLS =====
+    // Character-creator-style customization - direct control over all layout properties
+    // These override values from viewModelId, sizing, and layoutOverrides if provided
+
+    /**
+     * Width of each match element in pixels.
+     * Controls the horizontal size of match cards.
+     *
+     * @example 150 (default), 200 (logos), 300 (ultrawide)
+     * @default undefined (uses value from viewModelId or sizing)
+     */
+    matchWidth?: number,
+
+    /**
+     * Height of each match element in pixels.
+     * Controls the vertical size of match cards.
+     *
+     * @example 60 (default), 80 (logos), 44 (ultra-compact)
+     * @default undefined (uses value from viewModelId or sizing)
+     */
+    matchHeight?: number,
+
+    /**
+     * Width of each column in pixels (includes match width + gap between rounds).
+     * Controls horizontal spacing between rounds.
+     *
+     * @example 190 (default), 340 (ultrawide)
+     * @default undefined (uses value from viewModelId or sizing)
+     */
+    columnWidth?: number,
+
+    /**
+     * Height of each row in pixels (includes match height + vertical gap between matches).
+     * Controls vertical spacing between matches in the same round.
+     *
+     * @example 80 (default), 100 (spacious), 56 (ultra-compact)
+     * @default undefined (uses value from viewModelId or sizing)
+     */
+    rowHeight?: number,
+
+    /**
+     * Top padding/offset for the bracket in pixels.
+     * Controls spacing from the top edge of the container.
+     *
+     * @example 50 (default), 32 (ultra-compact), 60 (spacious)
+     * @default undefined (uses value from viewModelId)
+     */
+    topOffset?: number,
+
+    /**
+     * Left padding/offset for the bracket in pixels.
+     * Controls spacing from the left edge of the container.
+     *
+     * @example 0 (default for all presets)
+     * @default undefined (uses value from viewModelId)
+     */
+    leftOffset?: number,
+
+    /**
+     * Horizontal gap between bracket groups (winner/loser/grand final) in columns.
+     * For double elimination: gap between Winners → Losers → Grand Finals.
+     *
+     * @example 1 (default - minimal gap)
+     * @default undefined (uses value from viewModelId)
+     */
+    groupGapX?: number,
+
+    /**
+     * Vertical gap between bracket groups in pixels.
+     * For double elimination: vertical spacing between Winners and Losers brackets.
+     *
+     * @example 100 (default), 60 (compact), 120 (spacious)
+     * @default undefined (uses value from viewModelId)
+     */
+    groupGapY?: number,
+
+    /**
+     * Vertical alignment strategy for bracket groups in double elimination.
+     * Controls how Winners, Losers, and Grand Finals brackets are aligned vertically.
+     *
+     * - `bottom`: Winners top, Losers bottom, Finals right (industry standard)
+     * - `top`: All brackets start from same Y position
+     * - `center`: Center brackets within max height
+     * - `finals-top`: Grand Finals at top with Winners/Losers below
+     *
+     * @example 'bottom' (default - industry standard)
+     * @default undefined (uses value from viewModelId)
+     */
+    bracketAlignment?: 'top' | 'center' | 'bottom' | 'finals-top',
+
+    /**
+     * Horizontal offset for Losers bracket when using 'finals-top' alignment (in columns).
+     * Prevents visual overlap with Winners bracket.
+     *
+     * @example 0 (default - aligned), 2 (offset by 2 columns)
+     * @default undefined (uses value from viewModelId)
+     */
+    losersBracketOffsetX?: number,
+
+    /**
+     * Vertical step between Swiss layers in pixels.
+     * A layer is wins + losses (e.g., 2-0 and 1-1 are both layer 2).
+     * Creates progressive vertical stacking of Swiss record buckets.
+     *
+     * @example 120 (default), 90 (compact), 150 (spacious)
+     * @default undefined (uses value from viewModelId)
+     */
+    swissLayerStepY?: number,
+
+    /**
+     * Vertical gap between Swiss panels in the same column (round) in pixels.
+     * For round-based stacking where multiple buckets appear in one column.
+     *
+     * @example 24 (default), 16 (ultra-compact), 32 (spacious)
+     * @default undefined (uses value from viewModelId)
+     */
+    swissBucketGapY?: number,
+
+    // ===== THEME & VISUAL CUSTOMIZATION =====
+
+    /**
+     * Font size preset for all text in the bracket.
+     * Controls the base font size for team names, scores, and labels.
+     *
+     * - `small`: Compact text for dense layouts (11px base)
+     * - `medium`: Standard readable size (13px base)
+     * - `large`: Larger text for presentations (15px base)
+     *
+     * @example 'medium' (default)
+     * @default 'medium'
+     */
+    fontSize?: 'small' | 'medium' | 'large',
+
+    /**
+     * Font weight for team names and primary text.
+     *
+     * - `normal`: Standard weight (400)
+     * - `medium`: Semi-bold (500)
+     * - `bold`: Bold text (600)
+     *
+     * @example 'normal' (default)
+     * @default 'normal'
+     */
+    fontWeight?: 'normal' | 'medium' | 'bold',
+
+    /**
+     * Border radius for match cards in pixels.
+     * Controls the roundness of match box corners.
+     *
+     * @example 4 (default - subtle rounding), 0 (sharp corners), 8 (more rounded)
+     * @default 4
+     */
+    borderRadius?: number,
+
+    /**
+     * Inner padding for match cards in pixels.
+     * Controls spacing between match card edges and content.
+     *
+     * @example 8 (default), 4 (compact), 12 (spacious)
+     * @default 8
+     */
+    matchPadding?: number,
 }
 
 /**

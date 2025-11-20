@@ -112,6 +112,91 @@ When `showRoundHeaders: true` (default), round labels are automatically calculat
 
 This feature supports internationalization through the `addLocale()` function.
 
+### View Model Presets
+
+View models provide preset configurations that bundle layout density, visual theme, and double elimination mode together. They're the easiest way to get a consistent look without manual configuration.
+
+**Usage:**
+
+```ts
+await renderBracket('#tournament-bracket', viewerData, {
+  viewModelId: 'de-compact',  // Compact double elimination preset
+});
+```
+
+**Available Presets:**
+
+| Preset ID | Description | Stage Types | Layout | Theme |
+| --------- | ----------- | ----------- | ------ | ----- |
+| **Single Elimination** |
+| `se-default` | Standard single elimination | SE | 150px × 60px | Default |
+| `se-compact` | Compact for admin dashboards | SE | 130px × 48px | Compact fonts |
+| `se-ultra-compact` | Maximum density | SE | 120px × 44px | Compact fonts |
+| `se-spacious` | Extra room for readability | SE | 170px × 72px | Default |
+| `se-ultrawide` | Optimized for 21:9 monitors | SE | 300px × 60px | Default |
+| `se-with-logos` | Room for team logos | SE | 200px × 80px | Default |
+| `se-compact-logos` | Logos in compact layout | SE | 180px × 64px | Default |
+| **Double Elimination** |
+| `de-default` | Industry standard unified view | DE | 150px × 60px | Default |
+| `de-compact` | Compact unified view | DE | 130px × 48px | Compact fonts |
+| `de-admin-compact` | Maximum density with dark theme | DE | 120px × 44px | Admin dark |
+| `de-split` | Split view (winners/losers separate) | DE | 150px × 60px | Default |
+| `de-spacious` | Extra room for readability | DE | 170px × 72px | Default |
+| `de-ultrawide` | Optimized for 21:9 monitors | DE | 300px × 60px | Default |
+| `de-with-logos` | Room for team logos | DE | 200px × 80px | Default |
+| `de-compact-logos` | Logos in compact layout | DE | 180px × 64px | Default |
+| **Generic (All Stages)** |
+| `default` | Standard layout | All | 150px × 60px | Default |
+| `compact` | Compact layout | All | 130px × 48px | Compact fonts |
+| `admin` | Admin dashboard | All | 120px × 44px | Admin dark |
+
+**When to use:**
+- Admin dashboards: `de-admin-compact` or `admin`
+- Public broadcasts with logos: `se-with-logos` or `de-with-logos`
+- Ultrawide monitors (21:9): `se-ultrawide` or `de-ultrawide`
+- Default case: `se-default` or `de-default` (or omit - auto-selected)
+
+### Sizing Presets (Elimination Brackets Only)
+
+For quick dimension adjustments on single/double elimination brackets without changing theme or other settings, use the `sizing` parameter. This overrides the layout from your view model.
+
+**Usage:**
+
+```ts
+await renderBracket('#tournament-bracket', viewerData, {
+  viewModelId: 'de-default',  // Start with standard preset
+  sizing: 'ultrawide',        // But use ultrawide dimensions
+});
+```
+
+**Available Sizing Options:**
+
+| Sizing | Match Width | Match Height | Best For |
+| ------ | ----------- | ------------ | -------- |
+| `default` | 150px | 60px | Balanced for most displays |
+| `compact` | 130px | 48px | Fits more on screen for admin dashboards |
+| `logo` | 200px | 80px | Room for team logos and broadcasts |
+| `ultrawide` | 300px | 60px | 21:9 ultrawide monitors in fullscreen |
+
+**Note:** Sizing presets only work for `single_elimination` and `double_elimination` stages. Swiss and round-robin stages are unaffected.
+
+**Examples:**
+
+```ts
+// Quick sizing without view model
+await renderBracket('#bracket', viewerData, {
+  sizing: 'logo',  // 200px matches
+});
+
+// Combine compact theme with ultrawide sizing
+await renderBracket('#bracket', viewerData, {
+  viewModelId: 'de-compact',  // Compact theme with 130px layout
+  sizing: 'ultrawide',        // Override to 300px for ultrawide display
+});
+```
+
+**Migration Note:** The deprecated `viewMode` parameter is still supported as an alias for `sizing` but will be removed in a future version. Please update your code to use `sizing` instead.
+
 ---
 
 ## DTO Requirements

@@ -277,12 +277,18 @@ export const ULTRAWIDE_LAYOUT: LayoutConfig = {
 
 /**
  * View mode layout presets for elimination brackets
- * Provides quick sizing options for SE/DE brackets via the viewMode config parameter
+ * Provides quick sizing options for SE/DE brackets via the sizing config parameter
+ *
+ * These are dimension presets that users can combine with any view model or theme.
+ * For even more control, use the granular config parameters (matchWidth, etc.)
  */
 export const VIEW_MODE_LAYOUTS = {
   default: DEFAULT_LAYOUT,
   compact: COMPACT_LAYOUT,
+  'ultra-compact': ULTRA_COMPACT_LAYOUT,
+  spacious: SPACIOUS_LAYOUT,
   logo: LAYOUT_WITH_LOGOS,
+  'logo-compact': COMPACT_LAYOUT_WITH_LOGOS,
   ultrawide: ULTRAWIDE_LAYOUT,
 } as const;
 
@@ -338,195 +344,53 @@ export const SWISS_COMPACT_ADMIN_LAYOUT: LayoutConfig = {
 
 /**
  * Registry of all available view models
+ *
+ * SIMPLIFIED PRESET SYSTEM:
+ * Instead of 20+ format-specific presets, we now have just 3 quick-start options.
+ * Users customize further using granular config parameters (matchWidth, fontSize, etc.)
+ *
+ * Philosophy: "Character Creator" approach - start with a base, then tune everything.
  */
 export const VIEW_MODELS: Record<string, ViewModel> = {
-  // === Single Elimination Presets ===
-
-  'se-default': {
-    id: 'se-default',
-    label: 'Single Elimination - Default',
-    stageTypes: ['single_elimination'],
-    layout: DEFAULT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-default' },
-  },
-
-  'se-compact': {
-    id: 'se-compact',
-    label: 'Single Elimination - Compact',
-    stageTypes: ['single_elimination'],
-    layout: COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-compact' },
-  },
-
-  'se-ultra-compact': {
-    id: 'se-ultra-compact',
-    label: 'Single Elimination - Ultra Compact',
-    stageTypes: ['single_elimination'],
-    layout: ULTRA_COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-compact' },
-  },
-
-  'se-spacious': {
-    id: 'se-spacious',
-    label: 'Single Elimination - Spacious',
-    stageTypes: ['single_elimination'],
-    layout: SPACIOUS_LAYOUT,
-    theme: { rootClassName: 'bv-theme-default' },
-  },
-
-  'se-ultrawide': {
-    id: 'se-ultrawide',
-    label: 'Single Elimination - Ultrawide (21:9)',
-    stageTypes: ['single_elimination'],
-    layout: ULTRAWIDE_LAYOUT,
-    theme: { rootClassName: 'bv-theme-default' },
-  },
-
-  // === Double Elimination Presets ===
-
-  'de-default': {
-    id: 'de-default',
-    label: 'Double Elimination - Standard (Industry Convention)',
-    stageTypes: ['double_elimination'],
-    layout: DEFAULT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-default' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-compact': {
-    id: 'de-compact',
-    label: 'Double Elimination - Compact (Unified)',
-    stageTypes: ['double_elimination'],
-    layout: COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-compact' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-admin-compact': {
-    id: 'de-admin-compact',
-    label: 'Double Elimination - Admin Compact',
-    stageTypes: ['double_elimination'],
-    layout: ULTRA_COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-admin-compact' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-split': {
-    id: 'de-split',
-    label: 'Double Elimination - Split View',
-    stageTypes: ['double_elimination'],
-    layout: DEFAULT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-default' },
-    doubleElimMode: 'split',
-  },
-
-  'de-spacious': {
-    id: 'de-spacious',
-    label: 'Double Elimination - Spacious',
-    stageTypes: ['double_elimination'],
-    layout: SPACIOUS_LAYOUT,
-    theme: { rootClassName: 'bv-theme-default' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-ultrawide': {
-    id: 'de-ultrawide',
-    label: 'Double Elimination - Ultrawide (21:9)',
-    stageTypes: ['double_elimination'],
-    layout: ULTRAWIDE_LAYOUT,
-    theme: { rootClassName: 'bv-theme-default' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-with-logos': {
-    id: 'de-with-logos',
-    label: 'Double Elimination - With Team Logos',
-    stageTypes: ['double_elimination'],
-    layout: LAYOUT_WITH_LOGOS,
-    theme: { rootClassName: 'bv-theme-default' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-compact-logos': {
-    id: 'de-compact-logos',
-    label: 'Double Elimination - Compact with Logos',
-    stageTypes: ['double_elimination'],
-    layout: COMPACT_LAYOUT_WITH_LOGOS,
-    theme: { rootClassName: 'bv-theme-default' },
-    doubleElimMode: 'unified',
-  },
-
-  // === Single Elimination with Logos ===
-
-  'se-with-logos': {
-    id: 'se-with-logos',
-    label: 'Single Elimination - With Team Logos',
-    stageTypes: ['single_elimination'],
-    layout: LAYOUT_WITH_LOGOS,
-    theme: { rootClassName: 'bv-theme-default' },
-  },
-
-  'se-compact-logos': {
-    id: 'se-compact-logos',
-    label: 'Single Elimination - Compact with Logos',
-    stageTypes: ['single_elimination'],
-    layout: COMPACT_LAYOUT_WITH_LOGOS,
-    theme: { rootClassName: 'bv-theme-default' },
-  },
-
-  // === Swiss Presets ===
-
-  'swiss-default': {
-    id: 'swiss-default',
-    label: 'Swiss - Default',
-    stageTypes: ['swiss'],
-    layout: SWISS_DEFAULT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-default' },
-  },
-
-  'swiss-compact-admin': {
-    id: 'swiss-compact-admin',
-    label: 'Swiss - Compact Admin',
-    stageTypes: ['swiss'],
-    layout: SWISS_COMPACT_ADMIN_LAYOUT,
-    theme: { rootClassName: 'bv-theme-admin-compact' },
-  },
-
-  // === Generic Fallbacks ===
+  // === QUICK START PRESETS ===
 
   'default': {
     id: 'default',
-    label: 'Default View',
+    label: 'Default',
     stageTypes: ['single_elimination', 'double_elimination', 'round_robin', 'swiss'],
     layout: DEFAULT_LAYOUT,
     theme: { rootClassName: 'bv-theme-default' },
-  },
-
-  'compact': {
-    id: 'compact',
-    label: 'Compact View',
-    stageTypes: ['single_elimination', 'double_elimination', 'round_robin', 'swiss'],
-    layout: COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-compact' },
+    doubleElimMode: 'unified',
   },
 
   'admin': {
     id: 'admin',
-    label: 'Admin Dashboard View',
+    label: 'Admin Dashboard',
     stageTypes: ['single_elimination', 'double_elimination', 'round_robin', 'swiss'],
     layout: ULTRA_COMPACT_LAYOUT,
     theme: { rootClassName: 'bv-theme-admin-compact' },
+    doubleElimMode: 'unified',
+  },
+
+  'broadcast': {
+    id: 'broadcast',
+    label: 'Broadcast / Streaming',
+    stageTypes: ['single_elimination', 'double_elimination', 'round_robin', 'swiss'],
+    layout: LAYOUT_WITH_LOGOS,
+    theme: { rootClassName: 'bv-theme-default' },
+    doubleElimMode: 'unified',
   },
 };
 
 /**
  * Default view model IDs by bracket type
+ * All formats now use 'default' as the starting point
  */
 const DEFAULT_VIEW_MODEL_IDS: Record<BracketKind, string> = {
-  single_elimination: 'se-default',
-  double_elimination: 'de-default',
+  single_elimination: 'default',
+  double_elimination: 'default',
   round_robin: 'default',
-  swiss: 'swiss-default',
+  swiss: 'default',
 };
 
 /**

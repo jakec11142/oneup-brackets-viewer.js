@@ -6,31 +6,19 @@ const SAMPLES = [
 ];
 
 const VIEW_MODELS = [
-  { id: undefined, label: 'Default', formats: ['single', 'double', 'roundRobin', 'swiss'] },
-  { id: 'se-default', label: 'Default', formats: ['single'] },
-  { id: 'se-compact', label: 'Compact', formats: ['single'] },
-  { id: 'se-ultra-compact', label: 'Ultra Compact', formats: ['single'] },
-  { id: 'se-spacious', label: 'Spacious', formats: ['single'] },
-  { id: 'se-ultrawide', label: 'Ultrawide (21:9)', formats: ['single'] },
-  { id: 'se-with-logos', label: 'With Logos', formats: ['single'] },
-  { id: 'se-compact-logos', label: 'Compact with Logos', formats: ['single'] },
-  { id: 'de-default', label: 'Standard', formats: ['double'] },
-  { id: 'de-compact', label: 'Compact', formats: ['double'] },
-  { id: 'de-admin-compact', label: 'Admin Compact', formats: ['double'] },
-  { id: 'de-split', label: 'Split View', formats: ['double'] },
-  { id: 'de-spacious', label: 'Spacious', formats: ['double'] },
-  { id: 'de-ultrawide', label: 'Ultrawide (21:9)', formats: ['double'] },
-  { id: 'de-with-logos', label: 'With Logos', formats: ['double'] },
-  { id: 'de-compact-logos', label: 'Compact with Logos', formats: ['double'] },
-  { id: 'compact', label: 'Compact (Any)', formats: ['single', 'double', 'roundRobin', 'swiss'] },
-  { id: 'admin', label: 'Admin (Any)', formats: ['single', 'double', 'roundRobin', 'swiss'] },
+  { id: 'default', label: 'Default', formats: ['single', 'double', 'roundRobin', 'swiss'] },
+  { id: 'admin', label: 'Admin Dashboard', formats: ['single', 'double', 'roundRobin', 'swiss'] },
+  { id: 'broadcast', label: 'Broadcast / Streaming', formats: ['single', 'double', 'roundRobin', 'swiss'] },
 ];
 
 const SIZING_OPTIONS = [
-  { id: undefined, label: 'Auto' },
+  { id: undefined, label: 'None (Use Manual)' },
   { id: 'default', label: 'Standard (150px)' },
   { id: 'compact', label: 'Compact (130px)' },
+  { id: 'ultra-compact', label: 'Ultra Compact (120px)' },
+  { id: 'spacious', label: 'Spacious (170px)' },
   { id: 'logo', label: 'Logo (200px)' },
+  { id: 'logo-compact', label: 'Logo Compact (180px)' },
   { id: 'ultrawide', label: 'Ultrawide (300px)' },
 ];
 
@@ -51,10 +39,23 @@ const displayOptions = {
   showLowerBracketSlotsOrigin: true,
   showRankingTable: true,
   showPopoverOnMatchLabelClick: true,
-  // Additional visual options
   highlightParticipantOnHover: true,
   separatedChildCountLabel: true,
   participantOriginPlacement: 'before',
+};
+
+// Granular customization state (character-creator style)
+const granularOptions = {
+  matchWidth: undefined,
+  matchHeight: undefined,
+  columnWidth: undefined,
+  rowHeight: undefined,
+  groupGapY: undefined,
+  bracketAlignment: undefined,
+  fontSize: undefined,
+  fontWeight: undefined,
+  borderRadius: undefined,
+  matchPadding: undefined,
 };
 
 SAMPLES.forEach(sample => {
@@ -109,12 +110,11 @@ Object.entries(toggles).forEach(([toggleId, optionKey]) => {
   if (checkbox) {
     checkbox.addEventListener('change', () => {
       displayOptions[optionKey] = checkbox.checked;
-      renderCurrentConfig(null, null, null); // Re-render with new options
+      renderCurrentConfig(null, null, null);
     });
   }
 });
 
-// Set up Tier 1 customization option handlers
 const highlightHoverCheckbox = document.getElementById('toggle-highlight-hover');
 if (highlightHoverCheckbox) {
   highlightHoverCheckbox.addEventListener('change', () => {
@@ -131,11 +131,61 @@ if (separateBestOfCheckbox) {
   });
 }
 
-// Participant position radio buttons
 const positionRadios = document.querySelectorAll('input[name="participant-position"]');
 positionRadios.forEach(radio => {
   radio.addEventListener('change', () => {
     displayOptions.participantOriginPlacement = radio.value;
+    renderCurrentConfig(null, null, null);
+  });
+});
+
+// === GRANULAR CUSTOMIZATION CONTROLS (CHARACTER CREATOR) ===
+
+// Match dimension sliders
+function setupSlider(sliderId, valueId, granularKey) {
+  const slider = document.getElementById(sliderId);
+  const valueDisplay = document.getElementById(valueId);
+
+  if (!slider || !valueDisplay) return;
+
+  slider.addEventListener('input', () => {
+    const value = parseInt(slider.value);
+    valueDisplay.textContent = value;
+    granularOptions[granularKey] = value;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
+setupSlider('slider-match-width', 'value-match-width', 'matchWidth');
+setupSlider('slider-match-height', 'value-match-height', 'matchHeight');
+setupSlider('slider-column-width', 'value-column-width', 'columnWidth');
+setupSlider('slider-row-height', 'value-row-height', 'rowHeight');
+setupSlider('slider-group-gap-y', 'value-group-gap-y', 'groupGapY');
+setupSlider('slider-border-radius', 'value-border-radius', 'borderRadius');
+setupSlider('slider-match-padding', 'value-match-padding', 'matchPadding');
+
+// Visual customization dropdowns
+const fontSizeSelect = document.getElementById('select-font-size');
+if (fontSizeSelect) {
+  fontSizeSelect.addEventListener('change', () => {
+    granularOptions.fontSize = fontSizeSelect.value || undefined;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
+const fontWeightSelect = document.getElementById('select-font-weight');
+if (fontWeightSelect) {
+  fontWeightSelect.addEventListener('change', () => {
+    granularOptions.fontWeight = fontWeightSelect.value || undefined;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
+// Bracket alignment radios
+const alignmentRadios = document.querySelectorAll('input[name="bracket-alignment"]');
+alignmentRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    granularOptions.bracketAlignment = radio.value;
     renderCurrentConfig(null, null, null);
   });
 });
@@ -158,17 +208,17 @@ function filterViewModelButtons() {
 
 // Initial filter and render
 filterViewModelButtons();
-renderCurrentConfig(buttonsHost.firstElementChild, viewModelHost.firstElementChild, viewModeHost.firstElementChild);
+renderCurrentConfig(buttonsHost.firstElementChild, viewModelHost.firstElementChild, sizingHost.firstElementChild);
 
 /**
- * Renders the current sample with the current view model and view mode
+ * Renders the current sample with the current view model and sizing preset
  *
- * @param {HTMLButtonElement|null} sampleBtn - The sample button that was clicked (null if view model/mode changed)
- * @param {HTMLButtonElement|null} vmBtn - The view model button that was clicked (null if sample/mode changed)
- * @param {HTMLButtonElement|null} viewModeBtn - The view mode button that was clicked (null if sample/vm changed)
+ * @param {HTMLButtonElement|null} sampleBtn - The sample button that was clicked (null if view model/sizing changed)
+ * @param {HTMLButtonElement|null} vmBtn - The view model button that was clicked (null if sample/sizing changed)
+ * @param {HTMLButtonElement|null} sizingBtn - The sizing button that was clicked (null if sample/vm changed)
  * @returns {Promise<void>}
  */
-async function renderCurrentConfig(sampleBtn, vmBtn, viewModeBtn) {
+async function renderCurrentConfig(sampleBtn, vmBtn, sizingBtn) {
   if (sampleBtn) {
     buttonsHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === sampleBtn));
     filterViewModelButtons();
@@ -176,8 +226,8 @@ async function renderCurrentConfig(sampleBtn, vmBtn, viewModeBtn) {
   if (vmBtn) {
     viewModelHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === vmBtn));
   }
-  if (viewModeBtn) {
-    viewModeHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === viewModeBtn));
+  if (sizingBtn) {
+    sizingHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === sizingBtn));
   }
 
   const structure = await loadStructure(currentSample.file);
@@ -189,39 +239,41 @@ async function renderCurrentConfig(sampleBtn, vmBtn, viewModeBtn) {
     selector: '#viewer-root',
     clear: true,
     viewModelId: currentViewModel.id,
-    viewMode: currentViewMode.id,
-    // Apply display options from toggles
+    sizing: currentSizing.id,
+
+    // Display options from toggles
     showRoundHeaders: displayOptions.showRoundHeaders,
     showStatusBadges: displayOptions.showStatusBadges,
     showSlotsOrigin: displayOptions.showSlotsOrigin,
     showLowerBracketSlotsOrigin: displayOptions.showLowerBracketSlotsOrigin,
     showRankingTable: displayOptions.showRankingTable,
     showPopoverOnMatchLabelClick: displayOptions.showPopoverOnMatchLabelClick,
-    // Additional visual customization options
     highlightParticipantOnHover: displayOptions.highlightParticipantOnHover,
     separatedChildCountLabel: displayOptions.separatedChildCountLabel,
     participantOriginPlacement: displayOptions.participantOriginPlacement,
+
+    // Granular customization parameters (character-creator style)
+    // Only include if user has set them (not undefined)
+    ...(granularOptions.matchWidth !== undefined && { matchWidth: granularOptions.matchWidth }),
+    ...(granularOptions.matchHeight !== undefined && { matchHeight: granularOptions.matchHeight }),
+    ...(granularOptions.columnWidth !== undefined && { columnWidth: granularOptions.columnWidth }),
+    ...(granularOptions.rowHeight !== undefined && { rowHeight: granularOptions.rowHeight }),
+    ...(granularOptions.groupGapY !== undefined && { groupGapY: granularOptions.groupGapY }),
+    ...(granularOptions.bracketAlignment !== undefined && { bracketAlignment: granularOptions.bracketAlignment }),
+    ...(granularOptions.fontSize !== undefined && { fontSize: granularOptions.fontSize }),
+    ...(granularOptions.fontWeight !== undefined && { fontWeight: granularOptions.fontWeight }),
+    ...(granularOptions.borderRadius !== undefined && { borderRadius: granularOptions.borderRadius }),
+    ...(granularOptions.matchPadding !== undefined && { matchPadding: granularOptions.matchPadding }),
   };
 
   console.log('Rendering with config:', config);
   console.log('- Sample:', currentSample.label);
   console.log('- View Model:', currentViewModel.label, '(id:', currentViewModel.id, ')');
-  console.log('- View Mode:', currentViewMode.label, '(id:', currentViewMode.id, ')');
+  console.log('- Sizing:', currentSizing.label, '(id:', currentSizing.id, ')');
   console.log('- Display Options:', displayOptions);
+  console.log('- Granular Options:', granularOptions);
 
   await window.bracketsViewer.render(viewerData, config);
-}
-
-/**
- * Renders a bracket sample to the viewer (legacy function, kept for compatibility)
- *
- * @param {object} sample - The sample configuration object
- * @param {HTMLButtonElement} btn - The button element that was clicked
- * @returns {Promise<void>}
- */
-async function renderSample(sample, btn) {
-  currentSample = sample;
-  await renderCurrentConfig(btn, null);
 }
 
 /**

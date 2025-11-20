@@ -131,6 +131,21 @@ export class BracketsViewer {
             };
         }
 
+        // Apply granular layout dimension controls (character-creator style customization)
+        // These take highest priority and override everything else
+        if (config?.matchWidth !== undefined) this.layoutConfig.matchWidth = config.matchWidth;
+        if (config?.matchHeight !== undefined) this.layoutConfig.matchHeight = config.matchHeight;
+        if (config?.columnWidth !== undefined) this.layoutConfig.columnWidth = config.columnWidth;
+        if (config?.rowHeight !== undefined) this.layoutConfig.rowHeight = config.rowHeight;
+        if (config?.topOffset !== undefined) this.layoutConfig.topOffset = config.topOffset;
+        if (config?.leftOffset !== undefined) this.layoutConfig.leftOffset = config.leftOffset;
+        if (config?.groupGapX !== undefined) this.layoutConfig.groupGapX = config.groupGapX;
+        if (config?.groupGapY !== undefined) this.layoutConfig.groupGapY = config.groupGapY;
+        if (config?.bracketAlignment !== undefined) this.layoutConfig.bracketAlignment = config.bracketAlignment;
+        if (config?.losersBracketOffsetX !== undefined) this.layoutConfig.losersBracketOffsetX = config.losersBracketOffsetX;
+        if (config?.swissLayerStepY !== undefined) this.layoutConfig.swissLayerStepY = config.swissLayerStepY;
+        if (config?.swissBucketGapY !== undefined) this.layoutConfig.swissBucketGapY = config.swissBucketGapY;
+
         // Resolve doubleElimMode with priority: config > viewModel preset > default 'unified'
         if (!config?.doubleElimMode && this.viewModel.doubleElimMode) {
             this.config.doubleElimMode = this.viewModel.doubleElimMode;
@@ -200,6 +215,26 @@ export class BracketsViewer {
 
         // Set dynamic CSS variables from layout config
         target.style.setProperty('--bv-match-width', `${this.layoutConfig.matchWidth}px`);
+        target.style.setProperty('--bv-match-height', `${this.layoutConfig.matchHeight}px`);
+
+        // Apply granular visual customization parameters via CSS custom properties
+        if (config?.fontSize) {
+            const fontSizeMap = { small: '11px', medium: '13px', large: '15px' };
+            target.style.setProperty('--bv-font-size', fontSizeMap[config.fontSize]);
+        }
+
+        if (config?.fontWeight) {
+            const fontWeightMap = { normal: '400', medium: '500', bold: '600' };
+            target.style.setProperty('--bv-font-weight', fontWeightMap[config.fontWeight]);
+        }
+
+        if (config?.borderRadius !== undefined) {
+            target.style.setProperty('--bv-border-radius', `${config.borderRadius}px`);
+        }
+
+        if (config?.matchPadding !== undefined) {
+            target.style.setProperty('--bv-match-padding', `${config.matchPadding}px`);
+        }
 
         if (config?.clear)
             target.innerHTML = '';
@@ -465,6 +500,7 @@ export class BracketsViewer {
             // Set explicit size on rounds container
             roundsContainer.style.width = `${swissLayout.totalWidth}px`;
             roundsContainer.style.height = `${swissLayout.totalHeight}px`;
+            console.log(`📐 Container dimensions: ${swissLayout.totalWidth}px × ${swissLayout.totalHeight}px`);
 
             bracket.append(roundsContainer);
 
