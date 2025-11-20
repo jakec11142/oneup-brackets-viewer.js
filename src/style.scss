@@ -127,7 +127,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     width: var(--bv-match-width);
-    display: none; // Temporarily hidden for testing
+    display: block; // Show semantic round labels
   }
 
   .round-robin {

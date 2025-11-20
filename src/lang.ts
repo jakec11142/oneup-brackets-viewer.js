@@ -234,24 +234,81 @@ export function getBracketName(stage: ViewerStage, type: GroupType): string | un
 
 // eslint-disable-next-line jsdoc/require-param
 /**
- * Returns the name of a round.
+ * Returns the semantic name of a round (Finals, Semi-Finals, etc).
  */
-export function getRoundName({ roundNumber, roundCount }: RoundNameInfo, t: TFunction): string {
-    return roundNumber === roundCount ? t('common.round-name-final') : t('common.round-name', { roundNumber });
+export function getRoundName({ roundNumber, roundCount }: { roundNumber: number; roundCount: number }, t: TFunction): string {
+    const roundsFromEnd = roundCount - roundNumber;
+
+    // Finals (last round)
+    if (roundsFromEnd === 0) {
+        return t('common.round-name-semantic-final');
+    }
+
+    // Semi-Finals (2nd to last)
+    if (roundsFromEnd === 1) {
+        return t('common.round-name-semantic-semi-final');
+    }
+
+    // Quarter-Finals (3rd to last)
+    if (roundsFromEnd === 2) {
+        return t('common.round-name-semantic-quarter-final');
+    }
+
+    // Round of X
+    const teamsRemaining = Math.pow(2, roundsFromEnd + 1);
+    return t('common.round-name-semantic-round-of-x', { teams: teamsRemaining });
 }
 
 // eslint-disable-next-line jsdoc/require-param
 /**
- * Returns the name of a round in the winner bracket of a double elimination stage.
+ * Returns the semantic name of a round in the winner bracket of a double elimination stage.
  */
-export function getWinnerBracketRoundName({ roundNumber, roundCount }: RoundNameInfo, t: TFunction): string {
-    return roundNumber === roundCount ? t('common.round-name-winner-bracket-final') : t('common.round-name-winner-bracket', { roundNumber });
+export function getWinnerBracketRoundName({ roundNumber, roundCount }: { roundNumber: number; roundCount: number }, t: TFunction): string {
+    const roundsFromEnd = roundCount - roundNumber;
+
+    // Finals
+    if (roundsFromEnd === 0) {
+        return `WB ${t('common.round-name-semantic-final')}`;
+    }
+
+    // Semi-Finals
+    if (roundsFromEnd === 1) {
+        return `WB ${t('common.round-name-semantic-semi-final')}`;
+    }
+
+    // Quarter-Finals
+    if (roundsFromEnd === 2) {
+        return `WB ${t('common.round-name-semantic-quarter-final')}`;
+    }
+
+    // Round of X
+    const teamsRemaining = Math.pow(2, roundsFromEnd + 1);
+    return `WB ${t('common.round-name-semantic-round-of-x', { teams: teamsRemaining })}`;
 }
 
 // eslint-disable-next-line jsdoc/require-param
 /**
- * Returns the name of a round in the loser bracket of a double elimination stage.
+ * Returns the semantic name of a round in the loser bracket of a double elimination stage.
  */
-export function getLoserBracketRoundName({ roundNumber, roundCount }: RoundNameInfo, t: TFunction): string {
-    return roundNumber === roundCount ? t('common.round-name-loser-bracket-final') : t('common.round-name-loser-bracket', { roundNumber });
+export function getLoserBracketRoundName({ roundNumber, roundCount }: { roundNumber: number; roundCount: number }, t: TFunction): string {
+    const roundsFromEnd = roundCount - roundNumber;
+
+    // Finals
+    if (roundsFromEnd === 0) {
+        return `LB ${t('common.round-name-semantic-final')}`;
+    }
+
+    // Semi-Finals
+    if (roundsFromEnd === 1) {
+        return `LB ${t('common.round-name-semantic-semi-final')}`;
+    }
+
+    // Quarter-Finals
+    if (roundsFromEnd === 2) {
+        return `LB ${t('common.round-name-semantic-quarter-final')}`;
+    }
+
+    // Round of X
+    const teamsRemaining = Math.pow(2, roundsFromEnd + 1);
+    return `LB ${t('common.round-name-semantic-round-of-x', { teams: teamsRemaining })}`;
 }

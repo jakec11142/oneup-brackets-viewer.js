@@ -101,7 +101,11 @@
         "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Round {{roundNumber}}",
         "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) Round final",
         "round-name-loser-bracket": "$t(abbreviations.loser-bracket) Round {{roundNumber}}",
-        "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) Round final"
+        "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) Round final",
+        "round-name-semantic-final": "Finale",
+        "round-name-semantic-semi-final": "Demi-finales",
+        "round-name-semantic-quarter-final": "Quarts de finale",
+        "round-name-semantic-round-of-x": "Phase de {{teams}}"
     },
     "form-creator": {
         "stage-name-label": "Name your stage",

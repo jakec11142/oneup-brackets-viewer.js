@@ -157,10 +157,16 @@ export function createConnectorSVG(connectors: ConnectorLine[], width: number, h
  *
  * @param roundId ID of the round.
  * @param title Title of the round.
+ * @param tooltip Optional tooltip text to show on hover.
  */
-export function createRoundContainer(roundId: Id, title: string): HTMLElement {
+export function createRoundContainer(roundId: Id, title: string, tooltip?: string): HTMLElement {
     const h3 = document.createElement('h3');
     h3.innerText = title;
+
+    if (tooltip) {
+        h3.setAttribute('title', tooltip);
+        h3.classList.add('has-tooltip');
+    }
 
     const round = document.createElement('article');
     round.classList.add('round');

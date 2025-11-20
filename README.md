@@ -55,6 +55,65 @@ A lightweight viewer for tournament brackets that consumes the exact DTOs expose
 
 ---
 
+## Configuration Options
+
+The `renderBracket` function accepts an optional configuration object to customize the viewer's appearance and behavior:
+
+```ts
+await renderBracket('#tournament-bracket', viewerData, {
+  selector: '#tournament-bracket',
+  clear: true,
+  showStatusBadges: true,      // Show match status badges (LIVE, completed, upcoming)
+  showRoundHeaders: true,       // Show semantic round labels (Finals, Semi-Finals, etc.)
+  doubleElimMode: 'unified',    // 'unified' or 'split' mode for double elimination
+  theme: 'dark',                // Apply a theme class for CSS variable overrides
+});
+```
+
+### Available Options
+
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `selector` | `string` | `'.brackets-viewer'` | CSS selector for the root element |
+| `clear` | `boolean` | `false` | Clear any previously displayed data before rendering |
+| `showStatusBadges` | `boolean` | `true` | Display color-coded status badges on matches (LIVE with pulse animation, completed with checkmark, upcoming with clock icon) |
+| `showRoundHeaders` | `boolean` | `true` | Show semantic round labels calculated from position (e.g., "Finals", "Semi-Finals", "Quarter-Finals", "Round of 16"). For double elimination, labels are prefixed with WB/LB (e.g., "WB Finals", "LB Semi-Finals") |
+| `doubleElimMode` | `'unified' \| 'split'` | `'unified'` | Rendering mode for double elimination: `unified` displays all brackets on a single canvas with cross-bracket connectors visible, `split` renders brackets separately (legacy behavior) |
+| `theme` | `string` | `undefined` | Theme identifier that applies a `.bv-theme-{theme}` class to the container. Use `'dark'` for the built-in dark theme or provide your own theme with CSS variables |
+| `highlightParticipantOnHover` | `boolean` | `true` | Highlight every instance of a participant across all matches on hover |
+| `showSlotsOrigin` | `boolean` | `true` | Show the origin of slots (e.g., "Seed #1", "Loser of WB 2.1") |
+| `showLowerBracketSlotsOrigin` | `boolean` | `true` | Show slot origins specifically in the loser bracket |
+| `showRankingTable` | `boolean` | `true` | Display ranking tables in round-robin and Swiss stages |
+| `showPopoverOnMatchLabelClick` | `boolean` | `true` | Display a popover when clicking match labels that have child games |
+| `participantOriginPlacement` | `'before' \| 'after' \| 'none'` | `'before'` | Position of participant seed/origin relative to name: `before` = "#1 Team", `after` = "Team (#1)", `none` = hidden |
+| `separatedChildCountLabel` | `boolean` | `false` | Separate match label and child count (Bo3) into opposite corners of the match box |
+| `onMatchClick` | `(match: Match) => void` | `undefined` | Callback fired when a match is clicked |
+| `onMatchLabelClick` | `(match: Match) => void` | `undefined` | Callback fired when a match label is clicked |
+| `customRoundName` | `function` | `undefined` | Custom function to override round names. Use `addLocale()` for simple translations instead |
+| `rankingFormula` | `function` | `(item) => 3 * item.wins + 1 * item.draws + 0 * item.losses` | Formula to compute participant rankings in round-robin/Swiss stages |
+
+### Status Badges
+
+When `showStatusBadges: true` (default), matches display visual indicators:
+
+- **LIVE**: Green badge with pulsing animation
+- **Completed**: Gray checkmark badge
+- **Upcoming**: Blue clock icon badge
+- **Pending**: No badge displayed
+
+### Semantic Round Headers
+
+When `showRoundHeaders: true` (default), round labels are automatically calculated based on the round's position from the end:
+
+- **Single Elimination**: "Finals", "Semi-Finals", "Quarter-Finals", "Round of 16", etc.
+- **Double Elimination (Winner Bracket)**: "WB Finals", "WB Semi-Finals", "WB Quarter-Finals", etc.
+- **Double Elimination (Loser Bracket)**: "LB Finals", "LB Semi-Finals", "LB Quarter-Finals", etc.
+- **Grand Finals**: "Grand Finals" or "Grand Finals - Match 1/2" for bracket reset scenarios
+
+This feature supports internationalization through the `addLocale()` function.
+
+---
+
 ## DTO Requirements
 
 All the models live under `src/api/models`. The viewer only needs a `StageStructureResponse` and an optional `StageStandingsResponse`. The structure DTO mirrors the backend OpenAPI schema:

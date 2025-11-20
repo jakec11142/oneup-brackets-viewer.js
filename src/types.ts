@@ -247,6 +247,20 @@ export interface Config {
      * @default false
      */
     clear?: boolean
+
+    /**
+     * Whether to show status badges on matches (LIVE, upcoming, completed).
+     *
+     * @default true
+     */
+    showStatusBadges?: boolean,
+
+    /**
+     * Whether to show semantic round headers (Finals, Semi-Finals, etc).
+     *
+     * @default true
+     */
+    showRoundHeaders?: boolean,
 }
 
 /**

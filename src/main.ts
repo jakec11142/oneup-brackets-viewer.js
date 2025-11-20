@@ -498,6 +498,50 @@ export class BracketsViewer {
 
         console.log(`✅ Rendered ${renderedCount} matches (${positionedCount} positioned)`);
 
+        // Render round headers with semantic labels (if enabled)
+        // For unified mode, we need to determine bracket type and round count from matches at each column
+        if (this.config.showRoundHeaders !== false) {
+            layout.headerPositions.forEach(header => {
+                // Find matches in this column to determine bracket type and round count
+                const matchesInColumn = allMatchesWithMetadata.filter(m => {
+                    const pos = layout.matchPositions.get(String(m.id));
+                    return pos && pos.xRound === header.columnIndex;
+                });
+
+                if (matchesInColumn.length === 0) return;
+
+                // Use metadata from first match in column
+                const sampleMatch = matchesInColumn[0];
+                const bracketType = sampleMatch.metadata?.matchLocation ?? 'winner_bracket';
+                const roundCount = sampleMatch.metadata?.roundCount ?? header.roundNumber;
+
+                const roundInfo = {
+                    roundNumber: header.roundNumber,
+                    roundCount,
+                };
+
+                let roundName: string;
+
+                if (bracketType === 'winner_bracket') {
+                    roundName = lang.getWinnerBracketRoundName(roundInfo, lang.t);
+                } else if (bracketType === 'loser_bracket') {
+                    roundName = lang.getLoserBracketRoundName(roundInfo, lang.t);
+                } else if (bracketType === 'final_group') {
+                    roundName = 'Grand Finals';
+                } else {
+                    roundName = lang.getRoundName(roundInfo, lang.t);
+                }
+
+                const h3 = document.createElement('h3');
+                h3.innerText = roundName;
+                h3.style.position = 'absolute';
+                h3.style.left = `${header.xPx}px`;
+                h3.style.top = `${header.yPx}px`;
+                h3.style.width = `var(--bv-match-width)`;
+                roundsContainer.append(h3);
+            });
+        }
+
         // Set explicit size on rounds container
         roundsContainer.style.width = `${layout.totalWidth}px`;
         roundsContainer.style.height = `${layout.totalHeight}px`;
@@ -616,23 +660,33 @@ export class BracketsViewer {
             console.log('First connector:', layout.connectors[0]);
         
 
-        // Render round headers absolutely (temporarily disabled for testing)
-        // layout.headerPositions.forEach(header => {
-        //     const roundName = this.getRoundName({
-        //         roundNumber: header.roundNumber,
-        //         roundCount,
-        //         fractionOfFinal: helpers.getFractionOfFinal(header.roundNumber, roundCount),
-        //         groupType: lang.toI18nKey(bracketType as Exclude<GroupType, 'final_group'>),
-        //     }, getRoundName);
+        // Render round headers with semantic labels (if enabled)
+        if (this.config.showRoundHeaders !== false) {
+            layout.headerPositions.forEach(header => {
+                const roundInfo = {
+                    roundNumber: header.roundNumber,
+                    roundCount,
+                };
 
-        //     const h3 = document.createElement('h3');
-        //     h3.innerText = roundName;
-        //     h3.style.position = 'absolute';
-        //     h3.style.left = `${header.xPx}px`;
-        //     h3.style.top = `${header.yPx}px`;
-        //     h3.style.width = `var(--bv-match-width)`;
-        //     roundsContainer.append(h3);
-        // });
+                // Use appropriate semantic label function based on bracket type
+                let roundName: string;
+                if (bracketType === 'winner_bracket') {
+                    roundName = lang.getWinnerBracketRoundName(roundInfo, lang.t);
+                } else if (bracketType === 'loser_bracket') {
+                    roundName = lang.getLoserBracketRoundName(roundInfo, lang.t);
+                } else {
+                    roundName = lang.getRoundName(roundInfo, lang.t);
+                }
+
+                const h3 = document.createElement('h3');
+                h3.innerText = roundName;
+                h3.style.position = 'absolute';
+                h3.style.left = `${header.xPx}px`;
+                h3.style.top = `${header.yPx}px`;
+                h3.style.width = `var(--bv-match-width)`;
+                roundsContainer.append(h3);
+            });
+        }
 
         // Step 2: Render matches using the proper ordering
         // Use completedMatches for round 1 if reordered, original for other rounds
@@ -857,9 +911,11 @@ export class BracketsViewer {
     private createMatch(match: MatchWithMetadata | MatchGameWithMetadata, propagateHighlight: boolean): HTMLElement {
         const matchContainer = dom.createMatchContainer(match);
 
-        // Add status badge for visual match state indication
-        const statusBadge = dom.createStatusBadge(match.status);
-        matchContainer.append(statusBadge);
+        // Add status badge for visual match state indication (if enabled)
+        if (this.config.showStatusBadges !== false) {
+            const statusBadge = dom.createStatusBadge(match.status);
+            matchContainer.append(statusBadge);
+        }
 
         const opponents = isMatch(match)
             ? dom.createOpponentsContainer(() => this._onMatchClick(match))
