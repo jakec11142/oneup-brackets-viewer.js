@@ -27,12 +27,22 @@ const VIEW_MODELS = [
   { id: 'admin', label: 'Admin (Any)', formats: ['single', 'double', 'roundRobin', 'swiss'] },
 ];
 
+const VIEW_MODES = [
+  { id: undefined, label: 'Auto (from view model)' },
+  { id: 'default', label: 'Default (150px)' },
+  { id: 'compact', label: 'Compact (130px)' },
+  { id: 'logo', label: 'Logo (200px)' },
+  { id: 'ultrawide', label: 'Ultrawide (220px)' },
+];
+
 const buttonsHost = document.querySelector('#format-buttons');
 const viewModelHost = document.querySelector('#view-model-buttons');
+const viewModeHost = document.querySelector('#view-mode-buttons');
 const cache = new Map();
 
 let currentSample = SAMPLES[0];
 let currentViewModel = VIEW_MODELS[0];
+let currentViewMode = VIEW_MODES[0];
 
 // Display options state (defaults to all enabled)
 const displayOptions = {
@@ -51,7 +61,7 @@ SAMPLES.forEach(sample => {
   btn.dataset.sample = sample.id;
   btn.addEventListener('click', () => {
     currentSample = sample;
-    renderCurrentConfig(btn, null);
+    renderCurrentConfig(btn, null, null);
   });
   buttonsHost.appendChild(btn);
 });
@@ -64,9 +74,21 @@ VIEW_MODELS.forEach(vm => {
   btn.dataset.formats = JSON.stringify(vm.formats);
   btn.addEventListener('click', () => {
     currentViewModel = vm;
-    renderCurrentConfig(null, btn);
+    renderCurrentConfig(null, btn, null);
   });
   viewModelHost.appendChild(btn);
+});
+
+VIEW_MODES.forEach(mode => {
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = mode.label;
+  btn.dataset.viewMode = mode.id;
+  btn.addEventListener('click', () => {
+    currentViewMode = mode;
+    renderCurrentConfig(null, null, btn);
+  });
+  viewModeHost.appendChild(btn);
 });
 
 // Set up display option toggles
@@ -84,7 +106,7 @@ Object.entries(toggles).forEach(([toggleId, optionKey]) => {
   if (checkbox) {
     checkbox.addEventListener('change', () => {
       displayOptions[optionKey] = checkbox.checked;
-      renderCurrentConfig(null, null); // Re-render with new options
+      renderCurrentConfig(null, null, null); // Re-render with new options
     });
   }
 });
@@ -107,22 +129,26 @@ function filterViewModelButtons() {
 
 // Initial filter and render
 filterViewModelButtons();
-renderCurrentConfig(buttonsHost.firstElementChild, viewModelHost.firstElementChild);
+renderCurrentConfig(buttonsHost.firstElementChild, viewModelHost.firstElementChild, viewModeHost.firstElementChild);
 
 /**
- * Renders the current sample with the current view model
+ * Renders the current sample with the current view model and view mode
  *
- * @param {HTMLButtonElement|null} sampleBtn - The sample button that was clicked (null if view model changed)
- * @param {HTMLButtonElement|null} vmBtn - The view model button that was clicked (null if sample changed)
+ * @param {HTMLButtonElement|null} sampleBtn - The sample button that was clicked (null if view model/mode changed)
+ * @param {HTMLButtonElement|null} vmBtn - The view model button that was clicked (null if sample/mode changed)
+ * @param {HTMLButtonElement|null} viewModeBtn - The view mode button that was clicked (null if sample/vm changed)
  * @returns {Promise<void>}
  */
-async function renderCurrentConfig(sampleBtn, vmBtn) {
+async function renderCurrentConfig(sampleBtn, vmBtn, viewModeBtn) {
   if (sampleBtn) {
     buttonsHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === sampleBtn));
     filterViewModelButtons();
   }
   if (vmBtn) {
     viewModelHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === vmBtn));
+  }
+  if (viewModeBtn) {
+    viewModeHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === viewModeBtn));
   }
 
   const structure = await loadStructure(currentSample.file);
@@ -134,6 +160,7 @@ async function renderCurrentConfig(sampleBtn, vmBtn) {
     selector: '#viewer-root',
     clear: true,
     viewModelId: currentViewModel.id,
+    viewMode: currentViewMode.id,
     // Apply display options from toggles
     showRoundHeaders: displayOptions.showRoundHeaders,
     showStatusBadges: displayOptions.showStatusBadges,
@@ -146,6 +173,7 @@ async function renderCurrentConfig(sampleBtn, vmBtn) {
   console.log('Rendering with config:', config);
   console.log('- Sample:', currentSample.label);
   console.log('- View Model:', currentViewModel.label, '(id:', currentViewModel.id, ')');
+  console.log('- View Mode:', currentViewMode.label, '(id:', currentViewMode.id, ')');
   console.log('- Display Options:', displayOptions);
 
   await window.bracketsViewer.render(viewerData, config);
