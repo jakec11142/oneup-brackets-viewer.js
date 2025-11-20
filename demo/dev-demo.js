@@ -52,6 +52,19 @@ const displayOptions = {
   showLowerBracketSlotsOrigin: true,
   showRankingTable: true,
   showPopoverOnMatchLabelClick: true,
+  // Tier 1 visual options
+  highlightParticipantOnHover: true,
+  separateBestOfLabel: true,
+  participantOriginPlacement: 'before',
+  theme: 'default',
+  // Tier 2 interaction & layout options
+  showConnectors: true,
+  showParticipantImages: false,
+  bracketAlignment: 'bottom',
+  matchDensity: 'auto',
+  swissColumnMode: 'round',
+  // Tier 3 advanced options
+  connectorStyle: 'default',
 };
 
 SAMPLES.forEach(sample => {
@@ -111,6 +124,92 @@ Object.entries(toggles).forEach(([toggleId, optionKey]) => {
   }
 });
 
+// Set up Tier 1 customization option handlers
+const highlightHoverCheckbox = document.getElementById('toggle-highlight-hover');
+if (highlightHoverCheckbox) {
+  highlightHoverCheckbox.addEventListener('change', () => {
+    displayOptions.highlightParticipantOnHover = highlightHoverCheckbox.checked;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
+const separateBestOfCheckbox = document.getElementById('toggle-separate-bestof');
+if (separateBestOfCheckbox) {
+  separateBestOfCheckbox.addEventListener('change', () => {
+    displayOptions.separateBestOfLabel = separateBestOfCheckbox.checked;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
+// Participant position radio buttons
+const positionRadios = document.querySelectorAll('input[name="participant-position"]');
+positionRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    displayOptions.participantOriginPlacement = radio.value;
+    renderCurrentConfig(null, null, null);
+  });
+});
+
+// Theme selector
+const themeSelector = document.getElementById('theme-selector');
+if (themeSelector) {
+  themeSelector.addEventListener('change', () => {
+    displayOptions.theme = themeSelector.value;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
+// Tier 2 customization option handlers
+const connectorLinesCheckbox = document.getElementById('toggle-connector-lines');
+if (connectorLinesCheckbox) {
+  connectorLinesCheckbox.addEventListener('change', () => {
+    displayOptions.showConnectors = connectorLinesCheckbox.checked;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
+const participantImagesCheckbox = document.getElementById('toggle-participant-images');
+if (participantImagesCheckbox) {
+  participantImagesCheckbox.addEventListener('change', () => {
+    displayOptions.showParticipantImages = participantImagesCheckbox.checked;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
+const bracketAlignmentSelector = document.getElementById('bracket-alignment');
+if (bracketAlignmentSelector) {
+  bracketAlignmentSelector.addEventListener('change', () => {
+    displayOptions.bracketAlignment = bracketAlignmentSelector.value;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
+const matchDensitySelector = document.getElementById('match-density');
+if (matchDensitySelector) {
+  matchDensitySelector.addEventListener('change', () => {
+    displayOptions.matchDensity = matchDensitySelector.value;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
+// Swiss column mode radio buttons
+const swissRadios = document.querySelectorAll('input[name="swiss-column-mode"]');
+swissRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    displayOptions.swissColumnMode = radio.value;
+    renderCurrentConfig(null, null, null);
+  });
+});
+
+// Tier 3 customization option handlers
+const connectorStyleSelector = document.getElementById('connector-style');
+if (connectorStyleSelector) {
+  connectorStyleSelector.addEventListener('change', () => {
+    displayOptions.connectorStyle = connectorStyleSelector.value;
+    renderCurrentConfig(null, null, null);
+  });
+}
+
 /**
  * Filters view model buttons to show only those compatible with the current format
  */
@@ -168,6 +267,19 @@ async function renderCurrentConfig(sampleBtn, vmBtn, viewModeBtn) {
     showLowerBracketSlotsOrigin: displayOptions.showLowerBracketSlotsOrigin,
     showRankingTable: displayOptions.showRankingTable,
     showPopoverOnMatchLabelClick: displayOptions.showPopoverOnMatchLabelClick,
+    // Tier 1 visual customization options
+    highlightParticipantOnHover: displayOptions.highlightParticipantOnHover,
+    separateBestOfLabel: displayOptions.separateBestOfLabel,
+    participantOriginPlacement: displayOptions.participantOriginPlacement,
+    theme: displayOptions.theme,
+    // Tier 2 interaction & layout options
+    showConnectors: displayOptions.showConnectors,
+    showParticipantImages: displayOptions.showParticipantImages,
+    bracketAlignment: displayOptions.bracketAlignment,
+    matchDensity: displayOptions.matchDensity,
+    swissColumnMode: displayOptions.swissColumnMode,
+    // Tier 3 advanced options
+    connectorStyle: displayOptions.connectorStyle,
   };
 
   console.log('Rendering with config:', config);

@@ -11,6 +11,14 @@ import type { LayoutConfig } from './viewModels';
 export type { ToI18nKey, TFunction };
 export { ViewerStage, ViewerStageType };
 
+/**
+ * Swiss zone classification for visual hierarchy
+ * - 'neutral': Normal state (still in tournament)
+ * - 'advancing': Close to or at advancing threshold (maxWins reached)
+ * - 'eliminated': Close to or at elimination threshold (maxLosses reached)
+ */
+export type SwissZone = 'neutral' | 'advancing' | 'eliminated';
+
 declare global {
     interface Window {
         bracketsViewer: BracketsViewer,
@@ -141,6 +149,17 @@ export type Side = 'opponent1' | 'opponent2';
  * The rendering mode for double elimination brackets.
  */
 export type DoubleElimMode = 'unified' | 'split';
+
+/**
+ * View mode for elimination brackets (SE/DE only).
+ * Controls match card sizing and spacing optimized for different use cases.
+ *
+ * - `default`: Standard sizing (150px wide matches)
+ * - `compact`: Tighter spacing (130px wide matches) for admin dashboards
+ * - `logo`: Larger cards (200px wide matches) with room for team logos
+ * - `ultrawide`: Extra-wide layout (220px wide matches) optimized for ultrawide monitors
+ */
+export type ViewMode = 'default' | 'compact' | 'logo' | 'ultrawide';
 
 /**
  * An optional config to provide to `brackets-viewer.js`
@@ -275,6 +294,31 @@ export interface Config {
     showRoundHeaders?: boolean,
 
     /**
+     * Whether to show connector lines between matches.
+     *
+     * @default true
+     */
+    showConnectors?: boolean,
+
+    /**
+     * Whether to show participant images/avatars in matches.
+     *
+     * @default false
+     */
+    showParticipantImages?: boolean,
+
+    /**
+     * Visual style for connector lines between matches.
+     * - `default`: Standard connector lines
+     * - `minimal`: Thinner, more subtle lines
+     * - `bold`: Thicker, more prominent lines
+     * - `rounded`: Smooth curved connectors
+     *
+     * @default 'default'
+     */
+    connectorStyle?: 'default' | 'minimal' | 'bold' | 'rounded',
+
+    /**
      * View model preset ID for bracket layout and theme.
      *
      * View models provide preset configurations for:
@@ -313,6 +357,40 @@ export interface Config {
      * @default undefined (no overrides)
      */
     layoutOverrides?: Partial<LayoutConfig>,
+
+    /**
+     * View mode for elimination brackets (single/double elimination only).
+     *
+     * Provides quick sizing presets optimized for different use cases:
+     * - `default`: Standard sizing (150px wide matches) - balanced for most displays
+     * - `compact`: Tighter spacing (130px wide matches) - fits more on screen for admin dashboards
+     * - `logo`: Larger cards (200px wide matches) - room for team logos and broadcasts
+     * - `ultrawide`: Extra-wide layout (220px wide matches) - optimized for ultrawide monitors
+     *
+     * Note: Only applies to single_elimination and double_elimination stages.
+     * Swiss and round-robin stages are unaffected.
+     *
+     * This parameter works alongside viewModelId - viewMode adjusts sizing while
+     * viewModelId controls the full preset (layout + theme + DE mode).
+     *
+     * @example
+     * // Quick sizing for logos
+     * viewer.render(data, { viewMode: 'logo' });
+     *
+     * @example
+     * // Ultrawide mode for large displays
+     * viewer.render(data, { viewMode: 'ultrawide' });
+     *
+     * @example
+     * // Combine with view model
+     * viewer.render(data, {
+     *   viewModelId: 'de-spacious',
+     *   viewMode: 'compact'
+     * });
+     *
+     * @default undefined (uses layout from viewModelId or default)
+     */
+    viewMode?: ViewMode,
 }
 
 /**

@@ -17,9 +17,13 @@
     .toggles-container { display:flex; gap:16px; flex-wrap:wrap; }
     .toggle-item { display:flex; align-items:center; gap:8px; }
     .toggle-item label { font-size:13px; color:#444; cursor:pointer; user-select:none; }
-    .toggle-item input[type="checkbox"] {
+    .toggle-item input[type="checkbox"], .toggle-item input[type="radio"] {
       width:18px; height:18px; cursor:pointer;
       accent-color:#212121;
+    }
+    .toggle-item select {
+      padding:6px 12px; border:1px solid #ccc; border-radius:4px;
+      background:#fff; cursor:pointer; font-size:13px;
     }
     #viewer-root { background:#fff; border-radius:8px; padding:20px; box-shadow:0 6px 24px rgba(15,23,42,.1); }
   </style>
@@ -63,6 +67,113 @@
       <div class="toggle-item">
         <input type="checkbox" id="toggle-match-popover" checked />
         <label for="toggle-match-popover">Show Match Popover on Click</label>
+      </div>
+    </div>
+  </div>
+  <div class="button-group">
+    <h3>Visual Features</h3>
+    <div class="toggles-container">
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-highlight-hover" checked />
+        <label for="toggle-highlight-hover">Highlight Participant on Hover</label>
+      </div>
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-separate-bestof" checked />
+        <label for="toggle-separate-bestof">Separate Best-of Label</label>
+      </div>
+    </div>
+  </div>
+  <div class="button-group">
+    <h3>Participant Position Display</h3>
+    <div class="toggles-container">
+      <div class="toggle-item">
+        <input type="radio" name="participant-position" id="position-before" value="before" checked />
+        <label for="position-before">Before Name</label>
+      </div>
+      <div class="toggle-item">
+        <input type="radio" name="participant-position" id="position-after" value="after" />
+        <label for="position-after">After Name</label>
+      </div>
+      <div class="toggle-item">
+        <input type="radio" name="participant-position" id="position-none" value="none" />
+        <label for="position-none">Hide Position</label>
+      </div>
+    </div>
+  </div>
+  <div class="button-group">
+    <h3>Theme Selector</h3>
+    <div class="toggles-container">
+      <div class="toggle-item">
+        <label for="theme-selector">Theme:</label>
+        <select id="theme-selector">
+          <option value="default">Default</option>
+          <option value="dark">Dark</option>
+          <option value="compact">Compact</option>
+          <option value="admin-compact">Admin Compact</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="button-group">
+    <h3>Interaction & Layout</h3>
+    <div class="toggles-container">
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-connector-lines" checked />
+        <label for="toggle-connector-lines">Show Connector Lines</label>
+      </div>
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-participant-images" />
+        <label for="toggle-participant-images">Show Participant Images</label>
+      </div>
+      <div class="toggle-item">
+        <label for="connector-style">Connector Style:</label>
+        <select id="connector-style">
+          <option value="default">Default</option>
+          <option value="minimal">Minimal</option>
+          <option value="bold">Bold</option>
+          <option value="rounded">Rounded</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="button-group">
+    <h3>Bracket Alignment Mode (Double Elim)</h3>
+    <div class="toggles-container">
+      <div class="toggle-item">
+        <label for="bracket-alignment">Alignment:</label>
+        <select id="bracket-alignment">
+          <option value="bottom">Bottom</option>
+          <option value="top">Top</option>
+          <option value="center">Center</option>
+          <option value="finals-top">Finals Top</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="button-group">
+    <h3>Match Density Preset</h3>
+    <div class="toggles-container">
+      <div class="toggle-item">
+        <label for="match-density">Density:</label>
+        <select id="match-density">
+          <option value="auto">Auto (from view model)</option>
+          <option value="standard">Standard</option>
+          <option value="compact">Compact</option>
+          <option value="ultra-compact">Ultra Compact</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="button-group">
+    <h3>Swiss Options</h3>
+    <div class="toggles-container">
+      <div class="toggle-item">
+        <input type="radio" name="swiss-column-mode" id="swiss-round" value="round" checked />
+        <label for="swiss-round">Round-based Columns</label>
+      </div>
+      <div class="toggle-item">
+        <input type="radio" name="swiss-column-mode" id="swiss-layer" value="layer" />
+        <label for="swiss-layer">Layer-based Columns</label>
       </div>
     </div>
   </div>

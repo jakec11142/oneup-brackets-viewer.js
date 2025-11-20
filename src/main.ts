@@ -7,7 +7,7 @@ import { Locale } from './lang';
 import { helpers } from 'brackets-manager';
 import { BracketEdgeResponse } from './dto/types';
 import { computeLayout, computeSwissLayout } from './layout';
-import { getViewModel, type ViewModel, type LayoutConfig, type BracketKind } from './viewModels';
+import { getViewModel, VIEW_MODE_LAYOUTS, type ViewModel, type LayoutConfig, type BracketKind } from './viewModels';
 import { detectFormatSize, getDEProfile } from './profiles/deProfiles';
 import {
     Config,
@@ -88,6 +88,9 @@ export class BracketsViewer {
             showRankingTable: config?.showRankingTable ?? true,
             showStatusBadges: config?.showStatusBadges ?? true,
             showRoundHeaders: config?.showRoundHeaders ?? true,
+            showConnectors: config?.showConnectors ?? true,
+            showParticipantImages: config?.showParticipantImages ?? false,
+            connectorStyle: config?.connectorStyle ?? 'default',
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             rankingFormula: config?.rankingFormula ?? ((item): number => 3 * item.wins + 1 * item.draws + 0 * item.losses),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -110,6 +113,18 @@ export class BracketsViewer {
             ...this.viewModel.layout,
             ...(config?.layoutOverrides ?? {}),
         };
+
+        // Apply viewMode sizing preset for elimination brackets only
+        // viewMode provides quick sizing options (default/compact/logo) for SE/DE
+        if (config?.viewMode && (firstStageType === 'single_elimination' || firstStageType === 'double_elimination')) {
+            const viewModeLayout = VIEW_MODE_LAYOUTS[config.viewMode];
+            this.layoutConfig = {
+                ...this.layoutConfig,
+                ...viewModeLayout,
+                // Preserve user overrides - they take highest priority
+                ...(config?.layoutOverrides ?? {}),
+            };
+        }
 
         // Resolve doubleElimMode with priority: config > viewModel preset > default 'unified'
         if (!config?.doubleElimMode && this.viewModel.doubleElimMode) {
@@ -177,6 +192,9 @@ export class BracketsViewer {
 
         if (themeClass)
             target.classList.add(themeClass);
+
+        // Set dynamic CSS variables from layout config
+        target.style.setProperty('--bv-match-width', `${this.layoutConfig.matchWidth}px`);
 
         if (config?.clear)
             target.innerHTML = '';
@@ -379,15 +397,21 @@ export class BracketsViewer {
                 panelDiv.style.width = `${panel.width}px`;
                 panelDiv.dataset.key = panel.key;
 
-                // Create panel header
+                // Apply zone-based styling for visual hierarchy
+                if (panel.zone === 'advancing') {
+                    panelDiv.style.borderLeft = '3px solid #10b981'; // emerald-500
+                    panelDiv.style.backgroundColor = '#f0fdf4'; // emerald-50
+                } else if (panel.zone === 'eliminated') {
+                    panelDiv.style.borderLeft = '3px solid #ef4444'; // red-500
+                    panelDiv.style.backgroundColor = '#fef2f2'; // red-50
+                    panelDiv.style.opacity = '0.85';
+                }
+
+                // Create panel header with improved layout
                 const headerDiv = document.createElement('div');
                 headerDiv.className = 'swiss-panel-header';
 
-                const recordSpan = document.createElement('span');
-                recordSpan.className = 'record';
-                recordSpan.textContent = panel.record;
-                headerDiv.appendChild(recordSpan);
-
+                // Left: date (if available)
                 if (panel.date) {
                     const dateSpan = document.createElement('span');
                     dateSpan.className = 'date';
@@ -395,6 +419,13 @@ export class BracketsViewer {
                     headerDiv.appendChild(dateSpan);
                 }
 
+                // Center: record (bold, prominent)
+                const recordSpan = document.createElement('span');
+                recordSpan.className = 'record';
+                recordSpan.textContent = panel.record;
+                headerDiv.appendChild(recordSpan);
+
+                // Right: bestOf (if available)
                 if (panel.bestOf) {
                     const boSpan = document.createElement('span');
                     boSpan.className = 'bo-label';
