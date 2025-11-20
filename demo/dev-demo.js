@@ -12,7 +12,7 @@ const VIEW_MODELS = [
   { id: 'se-aggressive-compact', label: 'SE Aggressive Compact' },
   { id: 'se-super-compact', label: 'SE Super Compact' },
   { id: 'se-with-logos', label: 'SE With Logos' },
-  { id: 'de-default', label: 'DE Default (Bottom)' },
+  { id: 'de-default', label: 'DE Standard (Industry)' },
   { id: 'de-top-aligned', label: 'DE Top-Aligned' },
   { id: 'de-compact', label: 'DE Compact' },
   { id: 'de-admin-compact', label: 'DE Admin Compact' },

@@ -219,40 +219,80 @@ export function computeLayout(
     const groupOffsetsX = new Map<BracketGroup, number>();
     let currentColumn = 0;
 
-    // For 'finals-top' alignment, position Grand Finals to the right of Winners,
-    // and Losers aligned with Winners start (X=0)
-    const columnOrder: BracketGroup[] = layout.bracketAlignment === 'finals-top'
-        ? ['WINNERS_BRACKET', 'GRAND_FINAL_BRACKET', 'LOSERS_BRACKET', 'PLACEMENT_BRACKET']
-        : GROUP_ORDER;
-
     console.log(`📐 Column assignment (alignment: ${layout.bracketAlignment}):`);
-    for (const group of columnOrder) {
-        const rounds = roundsByGroup.get(group);
-        if (!rounds || rounds.size === 0) continue;
 
-        const sortedRounds = Array.from(rounds).sort((a, b) => a - b);
+    // For 'finals-top' alignment, use old behavior (for backward compatibility)
+    if (layout.bracketAlignment === 'finals-top') {
+        const columnOrder: BracketGroup[] = ['WINNERS_BRACKET', 'GRAND_FINAL_BRACKET', 'LOSERS_BRACKET', 'PLACEMENT_BRACKET'];
 
-        // Special case: For 'finals-top', Losers starts with configurable offset
-        if (layout.bracketAlignment === 'finals-top' && group === 'LOSERS_BRACKET') {
-            const offset = layout.losersBracketOffsetX ?? 0; // Default to 0 for backward compatibility
-            groupOffsetsX.set(group, offset);
-            console.log(`  ${group}: ${sortedRounds.length} rounds → columns ${offset} to ${offset + sortedRounds.length - 1} (offset by ${offset} columns)`);
-        } else {
-            groupOffsetsX.set(group, currentColumn);
-            console.log(`  ${group}: ${sortedRounds.length} rounds → columns ${currentColumn} to ${currentColumn + sortedRounds.length - 1}`);
-            currentColumn += sortedRounds.length + GROUP_GAP_X; // Add gap between groups
+        for (const group of columnOrder) {
+            const rounds = roundsByGroup.get(group);
+            if (!rounds || rounds.size === 0) continue;
+
+            const sortedRounds = Array.from(rounds).sort((a, b) => a - b);
+
+            // Special case: For 'finals-top', Losers starts with configurable offset
+            if (group === 'LOSERS_BRACKET') {
+                const offset = layout.losersBracketOffsetX ?? 0;
+                groupOffsetsX.set(group, offset);
+                console.log(`  ${group}: ${sortedRounds.length} rounds → columns ${offset} to ${offset + sortedRounds.length - 1} (offset by ${offset} columns)`);
+            } else {
+                groupOffsetsX.set(group, currentColumn);
+                console.log(`  ${group}: ${sortedRounds.length} rounds → columns ${currentColumn} to ${currentColumn + sortedRounds.length - 1}`);
+                currentColumn += sortedRounds.length + GROUP_GAP_X;
+            }
+        }
+    } else {
+        // Standard alignment: Winners and Losers both start at column 0,
+        // Grand Finals positioned after both brackets complete (right-convergence)
+
+        // First, calculate column counts for Winners and Losers
+        const winnersRounds = roundsByGroup.get('WINNERS_BRACKET');
+        const losersRounds = roundsByGroup.get('LOSERS_BRACKET');
+        const winnersColumns = winnersRounds ? winnersRounds.size : 0;
+        const losersColumns = losersRounds ? losersRounds.size : 0;
+
+        // Both brackets start at column 0
+        if (winnersColumns > 0) {
+            groupOffsetsX.set('WINNERS_BRACKET', 0);
+            console.log(`  WINNERS_BRACKET: ${winnersColumns} rounds → columns 0 to ${winnersColumns - 1}`);
+        }
+
+        if (losersColumns > 0) {
+            groupOffsetsX.set('LOSERS_BRACKET', 0);
+            console.log(`  LOSERS_BRACKET: ${losersColumns} rounds → columns 0 to ${losersColumns - 1}`);
+        }
+
+        // Grand Finals appears after both brackets complete
+        const maxBracketColumn = Math.max(winnersColumns, losersColumns);
+        const finalsColumn = maxBracketColumn + GROUP_GAP_X;
+
+        const finalsRounds = roundsByGroup.get('GRAND_FINAL_BRACKET');
+        if (finalsRounds && finalsRounds.size > 0) {
+            groupOffsetsX.set('GRAND_FINAL_BRACKET', finalsColumn);
+            console.log(`  GRAND_FINAL_BRACKET: ${finalsRounds.size} rounds → columns ${finalsColumn} to ${finalsColumn + finalsRounds.size - 1} (right-convergence)`);
+        }
+
+        // Placement bracket comes after everything
+        const placementRounds = roundsByGroup.get('PLACEMENT_BRACKET');
+        if (placementRounds && placementRounds.size > 0) {
+            const placementColumn = finalsColumn + (finalsRounds?.size ?? 0) + GROUP_GAP_X;
+            groupOffsetsX.set('PLACEMENT_BRACKET', placementColumn);
+            console.log(`  PLACEMENT_BRACKET: ${placementRounds.size} rounds → columns ${placementColumn} to ${placementColumn + placementRounds.size - 1}`);
         }
     }
 
     const matchPositions = new Map<string, MatchPosition>();
     let maxXRound = 0;
 
-    // Use same column order for position assignment
-    for (const group of columnOrder) {
+    // Assign positions for all groups based on calculated offsets
+    for (const group of GROUP_ORDER) {
         const groupRounds = matchesByGroupRound.get(group);
         if (!groupRounds) continue;
 
-        const baseCol = groupOffsetsX.get(group) ?? 0;
+        const baseCol = groupOffsetsX.get(group);
+        if (baseCol === undefined) continue; // Skip groups without position
+
         const sortedRounds = Array.from(groupRounds.keys()).sort((a, b) => a - b);
 
         sortedRounds.forEach((roundNumber, roundIdx) => {
@@ -470,12 +510,43 @@ export function computeLayout(
         }
     } else {
         // Bottom-aligned (default): Stack brackets naturally with gaps
+        // Grand Finals positioned vertically centered between Winners and Losers for better visibility
         let currentY = TOP_OFFSET;
-        for (const group of GROUP_ORDER) {
-            const height = groupHeights.get(group);
-            if (!height) continue;
-            groupOffsetY.set(group, currentY);
-            currentY += height + GROUP_GAP_Y;
+
+        const winnersHeight = groupHeights.get('WINNERS_BRACKET') || 0;
+        const losersHeight = groupHeights.get('LOSERS_BRACKET') || 0;
+        const finalsHeight = groupHeights.get('GRAND_FINAL_BRACKET') || 0;
+        const placementHeight = groupHeights.get('PLACEMENT_BRACKET') || 0;
+
+        // Position Winners at top
+        if (winnersHeight > 0) {
+            groupOffsetY.set('WINNERS_BRACKET', currentY);
+            currentY += winnersHeight + GROUP_GAP_Y;
+        }
+
+        // Store position where Losers will start
+        const losersStartY = currentY;
+
+        // Position Losers below Winners
+        if (losersHeight > 0) {
+            groupOffsetY.set('LOSERS_BRACKET', currentY);
+            currentY += losersHeight + GROUP_GAP_Y;
+        }
+
+        // Position Grand Finals vertically centered between Winners and Losers
+        if (finalsHeight > 0 && winnersHeight > 0 && losersHeight > 0) {
+            const winnersBottom = TOP_OFFSET + winnersHeight;
+            const finalsY = (winnersBottom + losersStartY) / 2 - finalsHeight / 2;
+            groupOffsetY.set('GRAND_FINAL_BRACKET', finalsY);
+        } else if (finalsHeight > 0) {
+            // Fallback: position after other brackets
+            groupOffsetY.set('GRAND_FINAL_BRACKET', currentY);
+            currentY += finalsHeight + GROUP_GAP_Y;
+        }
+
+        // Position Placement bracket at the end
+        if (placementHeight > 0) {
+            groupOffsetY.set('PLACEMENT_BRACKET', currentY);
         }
     }
 
@@ -660,9 +731,13 @@ export function computeSwissLayout(
         matchHeight: MATCH_HEIGHT,
         topOffset: TOP_OFFSET,
         leftOffset: LEFT_OFFSET,
+        swissLayerStepY,
     } = layout;
 
-    console.log(`🎯 computeSwissLayout: ${matches.length} matches`);
+    // Compute layer step with fallback to rowHeight * 1.5 (moderate spacing)
+    const LAYER_STEP_Y = swissLayerStepY ?? ROW_HEIGHT * 1.5;
+
+    console.log(`🎯 computeSwissLayout: ${matches.length} matches, layerStepY=${LAYER_STEP_Y}px`);
 
     if (matches.length === 0) {
         return {
@@ -752,6 +827,19 @@ export function computeSwissLayout(
 
     console.log(`📐 Bucket order: ${sortedBuckets.map(b => b.key).join(' → ')}`);
 
+    // Step 3.5: Build layer-to-Y mapping for progressive vertical stacking
+    // Each layer (wins + losses) gets its own vertical offset
+    const layerBaseY = new Map<number, number>();
+    sortedBuckets.forEach((bucket) => {
+        const layer = bucket.wins + bucket.losses;
+        if (!layerBaseY.has(layer)) {
+            // Simple downward stagger: layer 0 at top, each layer steps down by LAYER_STEP_Y
+            layerBaseY.set(layer, TOP_OFFSET + layer * LAYER_STEP_Y);
+        }
+    });
+
+    console.log(`📐 Swiss layers: ${Array.from(layerBaseY.entries()).map(([l, y]) => `L${l}=${y}px`).join(', ')}`);
+
     // Step 4: Assign column positions and compute match positions
     const matchPositions = new Map<string, MatchPosition>();
     const panelPositions: SwissPanelPosition[] = [];
@@ -759,6 +847,8 @@ export function computeSwissLayout(
 
     sortedBuckets.forEach((bucket, columnIndex) => {
         const bucketMatches = bucketMap.get(bucket.key) ?? [];
+        const layer = bucket.wins + bucket.losses;
+        const baseY = layerBaseY.get(layer) ?? TOP_OFFSET; // Get layer-specific Y position
 
         // Sort matches within bucket by match number for deterministic ordering
         bucketMatches.sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
@@ -768,11 +858,11 @@ export function computeSwissLayout(
         const roundDate = firstMatch?.metadata?.roundDate;
         const roundBestOf = firstMatch?.metadata?.roundBestOf;
 
-        // Position each match in this column
+        // Position each match in this column using layer-based Y offset
         let panelHeight = 0;
         bucketMatches.forEach((match, laneIndex) => {
             const xPx = LEFT_OFFSET + columnIndex * COLUMN_WIDTH;
-            const yPx = TOP_OFFSET + laneIndex * ROW_HEIGHT;
+            const yPx = baseY + laneIndex * ROW_HEIGHT; // CHANGED: Use baseY instead of TOP_OFFSET
 
             matchPositions.set(String(match.id), {
                 xRound: columnIndex,
@@ -793,7 +883,7 @@ export function computeSwissLayout(
             date: roundDate,
             bestOf: roundBestOf,
             xPx: LEFT_OFFSET + columnIndex * COLUMN_WIDTH,
-            yPx: TOP_OFFSET - 60, // Position header above matches (increased from 40 for panel header)
+            yPx: baseY - 60, // CHANGED: Use baseY instead of TOP_OFFSET for layer-based positioning
             width: COLUMN_WIDTH,
             height: panelHeight + 60, // Panel height = matches + header space
             matchCount: bucketMatches.length,

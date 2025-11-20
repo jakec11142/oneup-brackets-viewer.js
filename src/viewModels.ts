@@ -44,6 +44,13 @@ export interface LayoutConfig {
    * Example: 2 = offset by 2 columns (380px with default column width)
    */
   losersBracketOffsetX?: number;
+  /**
+   * Vertical step between Swiss layers (layer = wins + losses).
+   * Creates progressive vertical stacking of Swiss record buckets.
+   * Default: rowHeight * 1.5 (moderate spacing)
+   * Example: 120px for default layout, 90px for compact layout
+   */
+  swissLayerStepY?: number;
 }
 
 /**
@@ -95,8 +102,9 @@ export const DEFAULT_LAYOUT: LayoutConfig = {
   leftOffset: 0,      // Left padding
   groupGapX: 1,       // Minimal horizontal gap between groups
   groupGapY: 100,     // Vertical gap between winner/loser brackets
-  bracketAlignment: 'finals-top', // Grand Finals positioned at top with Winners
-  losersBracketOffsetX: 2, // Offset Losers by 2 columns (380px) for clear separation
+  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
+  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
+  swissLayerStepY: 120, // Swiss layer spacing (rowHeight * 1.5 = 80 * 1.5)
 };
 
 /**
@@ -112,8 +120,9 @@ export const COMPACT_LAYOUT: LayoutConfig = {
   leftOffset: 0,
   groupGapX: 1,
   groupGapY: 60,      // Reduced vertical gap between brackets
-  bracketAlignment: 'finals-top', // Grand Finals positioned at top with Winners
-  losersBracketOffsetX: 2, // Offset Losers by 2 columns for clear separation
+  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
+  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
+  swissLayerStepY: 90, // Swiss layer spacing (rowHeight * 1.5 = 60 * 1.5)
 };
 
 /**
@@ -129,8 +138,9 @@ export const ULTRA_COMPACT_LAYOUT: LayoutConfig = {
   leftOffset: 0,
   groupGapX: 1,
   groupGapY: 48,      // Tight vertical gap
-  bracketAlignment: 'finals-top', // Grand Finals positioned at top with Winners
-  losersBracketOffsetX: 2, // Offset Losers by 2 columns for clear separation
+  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
+  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
+  swissLayerStepY: 84, // Swiss layer spacing (rowHeight * 1.5 = 56 * 1.5)
 };
 
 /**
@@ -150,8 +160,9 @@ export const AGGRESSIVE_COMPACT_LAYOUT: LayoutConfig = {
   leftOffset: 0,
   groupGapX: 1,
   groupGapY: 36,      // 🎯 KEY: Dramatically reduced inter-bracket spacing
-  bracketAlignment: 'finals-top', // Grand Finals positioned at top with Winners
-  losersBracketOffsetX: 2, // Offset Losers by 2 columns for clear separation
+  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
+  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
+  swissLayerStepY: 99, // Swiss layer spacing (rowHeight * 1.5 = 66 * 1.5)
 };
 
 /**
@@ -171,8 +182,9 @@ export const SUPER_COMPACT_LAYOUT: LayoutConfig = {
   leftOffset: 0,
   groupGapX: 1,
   groupGapY: 32,      // 🎯 KEY: Maximum inter-bracket compaction
-  bracketAlignment: 'finals-top', // Grand Finals positioned at top with Winners
-  losersBracketOffsetX: 2, // Offset Losers by 2 columns for clear separation
+  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
+  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
+  swissLayerStepY: 99, // Swiss layer spacing (rowHeight * 1.5 = 66 * 1.5)
 };
 
 /**
@@ -188,8 +200,9 @@ export const SPACIOUS_LAYOUT: LayoutConfig = {
   leftOffset: 0,
   groupGapX: 1,
   groupGapY: 120,     // More vertical gap between brackets
-  bracketAlignment: 'finals-top', // Grand Finals positioned at top with Winners
-  losersBracketOffsetX: 2, // Offset Losers by 2 columns for clear separation
+  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
+  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
+  swissLayerStepY: 150, // Swiss layer spacing (rowHeight * 1.5 = 100 * 1.5)
 };
 
 /**
@@ -205,7 +218,9 @@ export const LAYOUT_WITH_LOGOS: LayoutConfig = {
   leftOffset: 0,
   groupGapX: 1,
   groupGapY: 100,
-  bracketAlignment: 'finals-top', // Grand Finals at top with Winners
+  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
+  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
+  swissLayerStepY: 150, // Swiss layer spacing (rowHeight * 1.5 = 100 * 1.5)
 };
 
 /**
@@ -220,7 +235,9 @@ export const COMPACT_LAYOUT_WITH_LOGOS: LayoutConfig = {
   leftOffset: 0,
   groupGapX: 1,
   groupGapY: 70,
-  bracketAlignment: 'finals-top', // Grand Finals at top with Winners
+  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
+  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
+  swissLayerStepY: 120, // Swiss layer spacing (rowHeight * 1.5 = 80 * 1.5)
 };
 
 /**
@@ -281,7 +298,7 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
 
   'de-default': {
     id: 'de-default',
-    label: 'Double Elimination - Default (Unified)',
+    label: 'Double Elimination - Standard (Industry Convention)',
     stageTypes: ['double_elimination'],
     layout: DEFAULT_LAYOUT,
     theme: { rootClassName: 'bv-theme-default' },
@@ -335,7 +352,7 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
 
   'de-spacious': {
     id: 'de-spacious',
-    label: 'Double Elimination - Spacious (Unified)',
+    label: 'Double Elimination - Spacious',
     stageTypes: ['double_elimination'],
     layout: SPACIOUS_LAYOUT,
     theme: { rootClassName: 'bv-theme-default' },
@@ -344,7 +361,7 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
 
   'de-with-logos': {
     id: 'de-with-logos',
-    label: 'Double Elimination - With Team Logos (Top-Aligned)',
+    label: 'Double Elimination - With Team Logos',
     stageTypes: ['double_elimination'],
     layout: LAYOUT_WITH_LOGOS,
     theme: { rootClassName: 'bv-theme-default' },
@@ -353,7 +370,7 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
 
   'de-compact-logos': {
     id: 'de-compact-logos',
-    label: 'Double Elimination - Compact with Logos (Top-Aligned)',
+    label: 'Double Elimination - Compact with Logos',
     stageTypes: ['double_elimination'],
     layout: COMPACT_LAYOUT_WITH_LOGOS,
     theme: { rootClassName: 'bv-theme-default' },
@@ -385,12 +402,9 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
 
   'de-compact-separated': {
     id: 'de-compact-separated',
-    label: 'Double Elimination - Compact with Clear Separation',
+    label: 'Double Elimination - Compact (Standard Positioning)',
     stageTypes: ['double_elimination'],
-    layout: {
-      ...AGGRESSIVE_COMPACT_LAYOUT,
-      losersBracketOffsetX: 2,
-    },
+    layout: AGGRESSIVE_COMPACT_LAYOUT,
     theme: { rootClassName: 'bv-theme-compact' },
     doubleElimMode: 'unified',
   },
