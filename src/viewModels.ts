@@ -59,6 +59,12 @@ export interface LayoutConfig {
    * Example: 24px for default, 16px for compact
    */
   swissBucketGapY?: number;
+  /**
+   * Swiss-specific layout configuration.
+   * When provided, overrides generic layout values for Swiss bracket rendering.
+   * Provides fine-grained control over Swiss panel spacing, sizing, and column modes.
+   */
+  swissConfig?: SwissLayoutConfig;
 }
 
 /**
@@ -78,6 +84,45 @@ export type BracketKind = 'single_elimination' | 'double_elimination' | 'round_r
  * Double elimination display modes
  */
 export type DoubleElimMode = 'unified' | 'split';
+
+/**
+ * Swiss view mode presets
+ */
+export type SwissViewMode = 'default' | 'compact-admin';
+
+/**
+ * Swiss column assignment strategy
+ * - 'round-based': One column per round (wins + losses + 1) - matches industry convention
+ * - 'layer-based': Columns grouped by layer (wins + losses) with optional gap columns
+ */
+export type SwissColumnMode = 'round-based' | 'layer-based';
+
+/**
+ * Swiss-specific layout configuration
+ * Provides fine-grained control over Swiss bracket rendering
+ */
+export interface SwissLayoutConfig {
+  /** Height per match row within a panel */
+  rowHeight: number;
+  /** Width of each panel/column */
+  columnWidth: number;
+  /** Horizontal gap between columns */
+  columnGapX: number;
+  /** Vertical spacing multiplier between layers (actual spacing = rowHeight * layerGapFactor) */
+  layerGapFactor: number;
+  /** Minimum vertical gap between layers in pixels (overrides layerGapFactor if larger) */
+  minLayerGapPx: number;
+  /** Gap between matches inside a panel */
+  panelInnerGap: number;
+  /** Height of panel header (record label, date, bestOf) */
+  panelHeaderHeight: number;
+  /** Vertical padding within panel body */
+  panelPadding: number;
+  /** Column assignment strategy: round-based or layer-based */
+  columnMode: SwissColumnMode;
+  /** Number of empty columns to insert between layers (only used in layer-based mode) */
+  layerGapColumns: number;
+}
 
 /**
  * Complete view model combining layout, theme, and metadata
@@ -208,6 +253,87 @@ export const COMPACT_LAYOUT_WITH_LOGOS: LayoutConfig = {
   losersBracketOffsetX: 0, // Natural left-alignment for both brackets
   swissLayerStepY: 120, // Swiss layer spacing (rowHeight * 1.5 = 80 * 1.5)
   swissBucketGapY: 24, // Vertical gap between Swiss panels in same column
+};
+
+/**
+ * Ultrawide layout for 21:9 ultrawide monitors (3440x1440, 5120x2160, etc.)
+ * Maximizes horizontal space to span across ultrawide displays
+ * Maintains standard vertical spacing for comfortable viewing
+ */
+export const ULTRAWIDE_LAYOUT: LayoutConfig = {
+  columnWidth: 340,   // 300px match width + 40px round gap - spans 21:9 ultrawide displays
+  rowHeight: 80,      // Standard height (same as DEFAULT) - no extra vertical space
+  matchHeight: 60,    // Standard height (same as DEFAULT) - no extra vertical space
+  matchWidth: 300,    // Extra wide match width to utilize 21:9 ultrawide horizontal space
+  topOffset: 50,      // Standard top padding
+  leftOffset: 0,
+  groupGapX: 1,
+  groupGapY: 100,     // Standard vertical gap (same as DEFAULT)
+  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
+  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
+  swissLayerStepY: 120, // Swiss layer spacing (rowHeight * 1.5 = 80 * 1.5)
+  swissBucketGapY: 24, // Vertical gap between Swiss panels in same column
+};
+
+/**
+ * View mode layout presets for elimination brackets
+ * Provides quick sizing options for SE/DE brackets via the viewMode config parameter
+ */
+export const VIEW_MODE_LAYOUTS = {
+  default: DEFAULT_LAYOUT,
+  compact: COMPACT_LAYOUT,
+  logo: LAYOUT_WITH_LOGOS,
+  ultrawide: ULTRAWIDE_LAYOUT,
+} as const;
+
+/**
+ * Swiss default layout configuration
+ * Balanced spacing suitable for most Swiss tournament displays
+ */
+export const SWISS_DEFAULT_CONFIG: SwissLayoutConfig = {
+  rowHeight: 56,
+  columnWidth: 220,
+  columnGapX: 24,
+  layerGapFactor: 1.6,
+  minLayerGapPx: 80,
+  panelInnerGap: 10,
+  panelHeaderHeight: 48,
+  panelPadding: 12,
+  columnMode: 'round-based',
+  layerGapColumns: 0,
+};
+
+/**
+ * Swiss compact admin layout configuration
+ * Dense layout optimized for admin dashboards with many matches
+ */
+export const SWISS_COMPACT_ADMIN_CONFIG: SwissLayoutConfig = {
+  rowHeight: 44,
+  columnWidth: 210,
+  columnGapX: 16,
+  layerGapFactor: 1.2,
+  minLayerGapPx: 60,
+  panelInnerGap: 6,
+  panelHeaderHeight: 40,
+  panelPadding: 8,
+  columnMode: 'round-based',
+  layerGapColumns: 0,
+};
+
+/**
+ * Swiss default layout (wrapper for compatibility with existing LayoutConfig)
+ */
+export const SWISS_DEFAULT_LAYOUT: LayoutConfig = {
+  ...DEFAULT_LAYOUT,
+  swissConfig: SWISS_DEFAULT_CONFIG,
+};
+
+/**
+ * Swiss compact admin layout (wrapper for compatibility with existing LayoutConfig)
+ */
+export const SWISS_COMPACT_ADMIN_LAYOUT: LayoutConfig = {
+  ...ULTRA_COMPACT_LAYOUT,
+  swissConfig: SWISS_COMPACT_ADMIN_CONFIG,
 };
 
 /**
@@ -358,6 +484,24 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
     theme: { rootClassName: 'bv-theme-default' },
   },
 
+  // === Swiss Presets ===
+
+  'swiss-default': {
+    id: 'swiss-default',
+    label: 'Swiss - Default',
+    stageTypes: ['swiss'],
+    layout: SWISS_DEFAULT_LAYOUT,
+    theme: { rootClassName: 'bv-theme-default' },
+  },
+
+  'swiss-compact-admin': {
+    id: 'swiss-compact-admin',
+    label: 'Swiss - Compact Admin',
+    stageTypes: ['swiss'],
+    layout: SWISS_COMPACT_ADMIN_LAYOUT,
+    theme: { rootClassName: 'bv-theme-admin-compact' },
+  },
+
   // === Generic Fallbacks ===
 
   'default': {
@@ -392,7 +536,7 @@ const DEFAULT_VIEW_MODEL_IDS: Record<BracketKind, string> = {
   single_elimination: 'se-default',
   double_elimination: 'de-default',
   round_robin: 'default',
-  swiss: 'default',
+  swiss: 'swiss-default',
 };
 
 /**

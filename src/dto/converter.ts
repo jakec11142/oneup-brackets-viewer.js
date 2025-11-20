@@ -75,6 +75,21 @@ export function convertStageStructureToViewerData(
         tournamentId,
     };
 
+    // Build team-to-record map from standings data (for Swiss format)
+    const teamRecords = new Map<string, {wins: number, losses: number}>();
+    if (type === 'swiss' && standings?.groups) {
+        standings.groups.forEach(group => {
+            group.entries?.forEach(entry => {
+                if (entry.teamName) {
+                    teamRecords.set(entry.teamName, {
+                        wins: entry.wins ?? 0,
+                        losses: entry.losses ?? 0,
+                    });
+                }
+            });
+        });
+    }
+
     // Extract all edges from stage items
     const edges: BracketEdgeResponse[] = [];
     stageItems.forEach(item => {
@@ -119,6 +134,40 @@ export function convertStageStructureToViewerData(
                 if (type === 'swiss') {
                     (baseMatch as any).swissRoundDate = round.date;
                     (baseMatch as any).swissRoundBestOf = round.bestOf;
+
+                    // Extract Swiss record (wins-losses) from match ID or team standings
+                    let swissWins: number | undefined;
+                    let swissLosses: number | undefined;
+
+                    // Method 1: Try to extract from semantic match ID pattern (match-{wins}-{losses}-{index})
+                    const swissPattern = /match-(\d+)-(\d+)-/;
+                    const swissMatch = (match.id ?? '').toString().match(swissPattern);
+                    if (swissMatch) {
+                        swissWins = parseInt(swissMatch[1], 10);
+                        swissLosses = parseInt(swissMatch[2], 10);
+                    }
+
+                    // Method 2: Use team records from standings data (for UUID-style IDs)
+                    if (swissWins === undefined || swissLosses === undefined) {
+                        const team1Name = match.slots?.[0]?.teamName;
+                        const team2Name = match.slots?.[1]?.teamName;
+
+                        if (team1Name && teamRecords.has(team1Name)) {
+                            const record = teamRecords.get(team1Name)!;
+                            swissWins = record.wins;
+                            swissLosses = record.losses;
+                        } else if (team2Name && teamRecords.has(team2Name)) {
+                            const record = teamRecords.get(team2Name)!;
+                            swissWins = record.wins;
+                            swissLosses = record.losses;
+                        }
+                    }
+
+                    // Store the extracted Swiss record metadata
+                    if (swissWins !== undefined && swissLosses !== undefined) {
+                        (baseMatch as any).swissWins = swissWins;
+                        (baseMatch as any).swissLosses = swissLosses;
+                    }
                 }
 
                 matches.push(baseMatch);

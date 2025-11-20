@@ -1,7 +1,7 @@
 import { Match } from 'brackets-model';
 import { BracketEdgeResponse } from './dto/types';
 import type { LayoutConfig } from './viewModels';
-import type { MatchWithMetadata } from './types';
+import type { MatchWithMetadata, SwissZone } from './types';
 import type { DoubleElimLayoutProfile } from './profiles/deProfiles';
 
 /**
@@ -85,6 +85,10 @@ export interface SwissPanelPosition {
     height: number;
     /** Number of matches in this panel */
     matchCount: number;
+    /** Layer index (wins + losses) for vertical positioning */
+    layer?: number;
+    /** Zone classification for visual hierarchy (advancing/neutral/eliminated) */
+    zone: SwissZone;
 }
 
 /**
@@ -738,6 +742,37 @@ interface SwissRecordBucket {
 }
 
 /**
+ * Auto-detects max wins and losses from match data
+ * Scans all matches to find the highest swissWins and swissLosses values
+ */
+function detectMaxWinsLosses(matches: MatchWithMetadata[]): { maxWins: number; maxLosses: number } {
+    let maxWins = 0;
+    let maxLosses = 0;
+
+    for (const match of matches) {
+        const wins = match.metadata.swissWins ?? 0;
+        const losses = match.metadata.swissLosses ?? 0;
+        maxWins = Math.max(maxWins, wins);
+        maxLosses = Math.max(maxLosses, losses);
+    }
+
+    // Default to 3-0 advancing and 0-3 elimination if no data found
+    return {
+        maxWins: maxWins || 3,
+        maxLosses: maxLosses || 3,
+    };
+}
+
+/**
+ * Classifies a Swiss record into a zone for visual hierarchy
+ */
+function classifyZone(wins: number, losses: number, maxWins: number, maxLosses: number): SwissZone {
+    if (wins >= maxWins) return 'advancing';
+    if (losses >= maxLosses) return 'eliminated';
+    return 'neutral';
+}
+
+/**
  * Bucket header for Swiss layout (legacy, kept for compatibility)
  */
 export interface SwissBucketHeader {
@@ -763,21 +798,28 @@ export function computeSwissLayout(
     matches: MatchWithMetadata[],
     layout: LayoutConfig,
 ): BracketLayout {
-    const {
-        columnWidth: COLUMN_WIDTH,
-        rowHeight: ROW_HEIGHT,
-        matchHeight: MATCH_HEIGHT,
-        topOffset: TOP_OFFSET,
-        leftOffset: LEFT_OFFSET,
-        swissLayerStepY,
-    } = layout;
+    // Use Swiss-specific config if provided, otherwise fall back to generic layout values
+    const swissConfig = layout.swissConfig;
 
-    // Swiss panel sizing constants
-    const PANEL_HEADER_HEIGHT = 60; // Height for panel header (record, date, BO label)
-    const PANEL_PADDING = 20; // Vertical padding within panel
-    const BUCKET_GAP_Y = layout.swissBucketGapY ?? 24; // Vertical gap between panels in same column
+    // Extract configuration values (Swiss config takes precedence)
+    const ROW_HEIGHT = swissConfig?.rowHeight ?? layout.rowHeight;
+    const COLUMN_WIDTH = swissConfig?.columnWidth ?? layout.columnWidth;
+    const COLUMN_GAP_X = swissConfig?.columnGapX ?? (layout.columnWidth - layout.matchWidth);
+    const PANEL_HEADER_HEIGHT = swissConfig?.panelHeaderHeight ?? 60;
+    const PANEL_PADDING = swissConfig?.panelPadding ?? 20;
+    const PANEL_INNER_GAP = swissConfig?.panelInnerGap ?? 10;
+    const LAYER_GAP_FACTOR = swissConfig?.layerGapFactor ?? 1.5;
+    const MIN_LAYER_GAP_PX = swissConfig?.minLayerGapPx ?? (layout.swissLayerStepY ?? ROW_HEIGHT * 1.5);
+    const COLUMN_MODE = swissConfig?.columnMode ?? 'round-based';
+    const LAYER_GAP_COLUMNS = swissConfig?.layerGapColumns ?? 0;
+    const TOP_OFFSET = layout.topOffset;
+    const LEFT_OFFSET = layout.leftOffset;
+    const MATCH_HEIGHT = layout.matchHeight;
 
-    console.log(`🎯 computeSwissLayout: ${matches.length} matches, bucketGapY=${BUCKET_GAP_Y}px`);
+    // Calculate effective layer step Y (vertical spacing between layers)
+    const layerStepY = Math.max(MIN_LAYER_GAP_PX, ROW_HEIGHT * LAYER_GAP_FACTOR);
+
+    console.log(`🎯 computeSwissLayout: ${matches.length} matches, mode=${COLUMN_MODE}, layerStep=${layerStepY}px`);
 
     if (matches.length === 0) {
         return {
@@ -849,7 +891,11 @@ export function computeSwissLayout(
 
     console.log(`📊 Swiss buckets: ${Array.from(bucketMap.keys()).join(', ')}`);
 
-    // Step 3: Order buckets in Swiss progression
+    // Step 3: Detect max wins/losses for zone classification
+    const { maxWins, maxLosses } = detectMaxWinsLosses(matchesWithRecords.map(m => m.match));
+    console.log(`🎯 Max wins=${maxWins}, max losses=${maxLosses}`);
+
+    // Step 4: Order buckets in Swiss progression
     // Primary sort: by total games (wins + losses)
     // Secondary sort: by wins (descending) within same total
     const sortedBuckets: SwissRecordBucket[] = Array.from(bucketMap.entries())
@@ -867,88 +913,151 @@ export function computeSwissLayout(
 
     console.log(`📐 Bucket order: ${sortedBuckets.map(b => b.key).join(' → ')}`);
 
-    // Step 3.5: Group buckets by round number for vertical stacking
-    // Each round gets ONE column with buckets stacked vertically
-    const bucketsByRound = new Map<number, SwissRecordBucket[]>();
-    sortedBuckets.forEach((bucket) => {
+    // Step 5: Determine column assignment based on mode
+    const bucketColumnMap = new Map<string, number>();
+
+    if (COLUMN_MODE === 'layer-based') {
+        // Layer-based: Group by layer (wins + losses), optionally add gap columns between layers
+        const bucketsByLayer = new Map<number, SwissRecordBucket[]>();
+        sortedBuckets.forEach((bucket) => {
+            const layer = bucket.wins + bucket.losses;
+            if (!bucketsByLayer.has(layer)) {
+                bucketsByLayer.set(layer, []);
+            }
+            bucketsByLayer.get(layer)!.push(bucket);
+        });
+
+        // Sort buckets within each layer by wins descending
+        bucketsByLayer.forEach(layerBuckets => {
+            layerBuckets.sort((a, b) => b.wins - a.wins);
+        });
+
+        const sortedLayers = Array.from(bucketsByLayer.keys()).sort((a, b) => a - b);
+        let currentCol = 0;
+
+        sortedLayers.forEach(layer => {
+            const layerBuckets = bucketsByLayer.get(layer)!;
+            layerBuckets.forEach(bucket => {
+                bucketColumnMap.set(bucket.key, currentCol++);
+            });
+            // Add gap columns between layers if configured
+            currentCol += LAYER_GAP_COLUMNS;
+        });
+    } else {
+        // Round-based: Group by round number (wins + losses + 1)
+        const bucketsByRound = new Map<number, SwissRecordBucket[]>();
+        sortedBuckets.forEach((bucket) => {
+            const roundNum = bucket.wins + bucket.losses + 1;
+            if (!bucketsByRound.has(roundNum)) {
+                bucketsByRound.set(roundNum, []);
+            }
+            bucketsByRound.get(roundNum)!.push(bucket);
+        });
+
+        // Sort buckets within each round by wins descending
+        bucketsByRound.forEach(roundBuckets => {
+            roundBuckets.sort((a, b) => b.wins - a.wins);
+        });
+
+        const sortedRounds = Array.from(bucketsByRound.keys()).sort((a, b) => a - b);
+        let currentCol = 0;
+
+        sortedRounds.forEach(roundNum => {
+            // All buckets in this round share the same column
+            const roundBuckets = bucketsByRound.get(roundNum)!;
+            roundBuckets.forEach(bucket => {
+                bucketColumnMap.set(bucket.key, currentCol);
+            });
+            currentCol++;
+        });
+    }
+
+    // Step 6: Compute max matches per round for panel centering
+    const matchCountByRound = new Map<number, number>();
+    sortedBuckets.forEach(bucket => {
         const roundNum = bucket.wins + bucket.losses + 1;
-        if (!bucketsByRound.has(roundNum)) {
-            bucketsByRound.set(roundNum, []);
-        }
-        bucketsByRound.get(roundNum)!.push(bucket);
+        const bucketMatches = bucketMap.get(bucket.key) ?? [];
+        const currentMax = matchCountByRound.get(roundNum) ?? 0;
+        matchCountByRound.set(roundNum, Math.max(currentMax, bucketMatches.length));
     });
 
-    // Sort buckets within each round by wins descending (best records on top)
-    bucketsByRound.forEach(roundBuckets => {
-        roundBuckets.sort((a, b) => b.wins - a.wins);
-    });
-
-    const sortedRounds = Array.from(bucketsByRound.keys()).sort((a, b) => a - b);
-    console.log(`📐 Swiss rounds: ${sortedRounds.map(r => `R${r}(${bucketsByRound.get(r)!.length} buckets)`).join(', ')}`);
-
-    // Step 4: Position buckets - one column per round, stacked vertically within column
+    // Step 7: Position buckets with layer-based Y positioning and centering
     const matchPositions = new Map<string, MatchPosition>();
     const panelPositions: SwissPanelPosition[] = [];
     let maxHeight = 0;
+    let maxColumnIndex = 0;
 
-    sortedRounds.forEach((roundNum, columnIndex) => {
-        const roundBuckets = bucketsByRound.get(roundNum)!;
-        let yOffset = TOP_OFFSET; // Track Y position within this round column
+    sortedBuckets.forEach((bucket) => {
+        const bucketMatches = bucketMap.get(bucket.key) ?? [];
 
-        roundBuckets.forEach((bucket) => {
-            const bucketMatches = bucketMap.get(bucket.key) ?? [];
+        // Sort matches within bucket by match number
+        bucketMatches.sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
 
-            // Sort matches within bucket by match number
-            bucketMatches.sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
+        // Extract metadata from first match
+        const firstMatch = bucketMatches[0];
+        const roundDate = firstMatch?.metadata?.roundDate;
+        const roundBestOf = firstMatch?.metadata?.roundBestOf;
 
-            // Extract metadata from first match
-            const firstMatch = bucketMatches[0];
-            const roundDate = firstMatch?.metadata?.roundDate;
-            const roundBestOf = firstMatch?.metadata?.roundBestOf;
+        // Get column assignment
+        const columnIndex = bucketColumnMap.get(bucket.key) ?? 0;
+        maxColumnIndex = Math.max(maxColumnIndex, columnIndex);
 
-            // Position each match within this bucket
-            let matchYOffset = yOffset + PANEL_HEADER_HEIGHT;
-            bucketMatches.forEach((match, matchIndex) => {
-                const xPx = LEFT_OFFSET + columnIndex * COLUMN_WIDTH;
-                const yPx = matchYOffset + matchIndex * ROW_HEIGHT;
+        // Calculate layer-based Y position
+        const roundNum = bucket.wins + bucket.losses + 1;
+        const layer = bucket.wins + bucket.losses;
+        const baseLayerY = TOP_OFFSET + layer * layerStepY;
 
-                matchPositions.set(String(match.id), {
-                    xRound: columnIndex,
-                    yLane: matchIndex,
-                    xPx,
-                    yPx,
-                });
+        // Calculate layer height based on max matches in this round
+        const maxMatchesInRound = matchCountByRound.get(roundNum) ?? 1;
+        const layerHeight = PANEL_HEADER_HEIGHT + maxMatchesInRound * ROW_HEIGHT + PANEL_PADDING;
 
-                maxHeight = Math.max(maxHeight, yPx + MATCH_HEIGHT);
+        // Calculate this panel's height
+        const panelHeight = PANEL_HEADER_HEIGHT + bucketMatches.length * ROW_HEIGHT + PANEL_PADDING;
+
+        // Center panel vertically within its layer
+        const panelY = baseLayerY + (layerHeight - panelHeight) / 2;
+
+        // Classify zone for visual hierarchy
+        const zone = classifyZone(bucket.wins, bucket.losses, maxWins, maxLosses);
+
+        // Position each match within this panel
+        bucketMatches.forEach((match, matchIndex) => {
+            const xPx = LEFT_OFFSET + columnIndex * (COLUMN_WIDTH + COLUMN_GAP_X);
+            const yPx = panelY + PANEL_HEADER_HEIGHT + matchIndex * (ROW_HEIGHT + PANEL_INNER_GAP);
+
+            matchPositions.set(String(match.id), {
+                xRound: columnIndex,
+                yLane: matchIndex,
+                xPx,
+                yPx,
             });
 
-            // Calculate panel height based on match count
-            const panelHeight = PANEL_HEADER_HEIGHT + bucketMatches.length * ROW_HEIGHT + PANEL_PADDING;
-
-            // Create panel for this bucket
-            panelPositions.push({
-                key: bucket.key,
-                record: bucket.key,
-                roundNumber: roundNum,
-                date: roundDate,
-                bestOf: roundBestOf,
-                xPx: LEFT_OFFSET + columnIndex * COLUMN_WIDTH,
-                yPx: yOffset,
-                width: COLUMN_WIDTH,
-                height: panelHeight,
-                matchCount: bucketMatches.length,
-            });
-
-            // Move Y offset down for next panel in this column
-            yOffset += panelHeight + BUCKET_GAP_Y;
-            maxHeight = Math.max(maxHeight, yOffset);
+            maxHeight = Math.max(maxHeight, yPx + MATCH_HEIGHT);
         });
+
+        // Create panel for this bucket
+        panelPositions.push({
+            key: bucket.key,
+            record: bucket.key,
+            roundNumber: roundNum,
+            date: roundDate,
+            bestOf: roundBestOf,
+            xPx: LEFT_OFFSET + columnIndex * (COLUMN_WIDTH + COLUMN_GAP_X),
+            yPx: panelY,
+            width: COLUMN_WIDTH,
+            height: panelHeight,
+            matchCount: bucketMatches.length,
+            layer,
+            zone,
+        });
+
+        maxHeight = Math.max(maxHeight, panelY + panelHeight);
     });
 
-    const totalWidth = LEFT_OFFSET + sortedRounds.length * COLUMN_WIDTH + layout.matchWidth;
+    const totalWidth = LEFT_OFFSET + (maxColumnIndex + 1) * (COLUMN_WIDTH + COLUMN_GAP_X) + layout.matchWidth;
     const totalHeight = maxHeight + 50; // Add bottom padding
 
-    console.log(`✅ Swiss layout: ${sortedRounds.length} rounds, ${panelPositions.length} panels, ${matchPositions.size} matches`);
+    console.log(`✅ Swiss layout: ${maxColumnIndex + 1} columns, ${panelPositions.length} panels, ${matchPositions.size} matches, mode=${COLUMN_MODE}`);
 
     return {
         matchPositions,
