@@ -51,6 +51,14 @@ export interface LayoutConfig {
    * Example: 120px for default layout, 90px for compact layout
    */
   swissLayerStepY?: number;
+  /**
+   * Vertical gap between Swiss panels stacked in the same column (round).
+   * Used for round-based vertical stacking where multiple buckets (e.g., 1-0, 0-1)
+   * appear in the same column.
+   * Default: 24px
+   * Example: 24px for default, 16px for compact
+   */
+  swissBucketGapY?: number;
 }
 
 /**
@@ -105,6 +113,7 @@ export const DEFAULT_LAYOUT: LayoutConfig = {
   bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
   losersBracketOffsetX: 0, // Natural left-alignment for both brackets
   swissLayerStepY: 120, // Swiss layer spacing (rowHeight * 1.5 = 80 * 1.5)
+  swissBucketGapY: 24, // Vertical gap between Swiss panels in same column
 };
 
 /**
@@ -123,6 +132,7 @@ export const COMPACT_LAYOUT: LayoutConfig = {
   bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
   losersBracketOffsetX: 0, // Natural left-alignment for both brackets
   swissLayerStepY: 90, // Swiss layer spacing (rowHeight * 1.5 = 60 * 1.5)
+  swissBucketGapY: 20, // Vertical gap between Swiss panels in same column (compact)
 };
 
 /**
@@ -141,50 +151,7 @@ export const ULTRA_COMPACT_LAYOUT: LayoutConfig = {
   bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
   losersBracketOffsetX: 0, // Natural left-alignment for both brackets
   swissLayerStepY: 84, // Swiss layer spacing (rowHeight * 1.5 = 56 * 1.5)
-};
-
-/**
- * Aggressive compact layout - optimized for minimal vertical scrolling
- * Respects CSS 60px min-height constraint while maximizing density
- * Ideal for 16+ team double elimination tournaments
- * - Vertical density: 1.10 (10% overhead) - professional standard
- * - Inter-bracket spacing: 36px (64% reduction from default)
- * - Estimated space savings: 25-35%
- */
-export const AGGRESSIVE_COMPACT_LAYOUT: LayoutConfig = {
-  columnWidth: 145,   // 120px match width + 25px round gap
-  rowHeight: 66,      // 60px match height + 6px vertical gap
-  matchHeight: 60,    // Matches CSS min-height constraint
-  matchWidth: 120,    // Maintains readability
-  topOffset: 24,      // Minimal but sufficient
-  leftOffset: 0,
-  groupGapX: 1,
-  groupGapY: 36,      // 🎯 KEY: Dramatically reduced inter-bracket spacing
-  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
-  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
-  swissLayerStepY: 99, // Swiss layer spacing (rowHeight * 1.5 = 66 * 1.5)
-};
-
-/**
- * Super compact layout - maximum density with CSS constraint
- * Even tighter than aggressive compact for extreme space optimization
- * Best for large tournaments (32+ teams) where scrolling is most problematic
- * - Vertical density: 1.10 (10% overhead)
- * - Inter-bracket spacing: 32px (68% reduction from default)
- * - Estimated space savings: 30-40%
- */
-export const SUPER_COMPACT_LAYOUT: LayoutConfig = {
-  columnWidth: 142,   // 116px match width + 26px round gap
-  rowHeight: 66,      // 60px match height + 6px vertical gap
-  matchHeight: 60,    // Matches CSS min-height constraint
-  matchWidth: 116,    // Minimal width for readability
-  topOffset: 20,      // Minimal padding
-  leftOffset: 0,
-  groupGapX: 1,
-  groupGapY: 32,      // 🎯 KEY: Maximum inter-bracket compaction
-  bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
-  losersBracketOffsetX: 0, // Natural left-alignment for both brackets
-  swissLayerStepY: 99, // Swiss layer spacing (rowHeight * 1.5 = 66 * 1.5)
+  swissBucketGapY: 16, // Vertical gap between Swiss panels in same column (ultra-compact)
 };
 
 /**
@@ -203,6 +170,7 @@ export const SPACIOUS_LAYOUT: LayoutConfig = {
   bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
   losersBracketOffsetX: 0, // Natural left-alignment for both brackets
   swissLayerStepY: 150, // Swiss layer spacing (rowHeight * 1.5 = 100 * 1.5)
+  swissBucketGapY: 32, // Vertical gap between Swiss panels in same column (spacious)
 };
 
 /**
@@ -221,6 +189,7 @@ export const LAYOUT_WITH_LOGOS: LayoutConfig = {
   bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
   losersBracketOffsetX: 0, // Natural left-alignment for both brackets
   swissLayerStepY: 150, // Swiss layer spacing (rowHeight * 1.5 = 100 * 1.5)
+  swissBucketGapY: 32, // Vertical gap between Swiss panels in same column (spacious)
 };
 
 /**
@@ -238,6 +207,7 @@ export const COMPACT_LAYOUT_WITH_LOGOS: LayoutConfig = {
   bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
   losersBracketOffsetX: 0, // Natural left-alignment for both brackets
   swissLayerStepY: 120, // Swiss layer spacing (rowHeight * 1.5 = 80 * 1.5)
+  swissBucketGapY: 24, // Vertical gap between Swiss panels in same column
 };
 
 /**
@@ -268,22 +238,6 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
     stageTypes: ['single_elimination'],
     layout: ULTRA_COMPACT_LAYOUT,
     theme: { rootClassName: 'bv-theme-compact' },
-  },
-
-  'se-aggressive-compact': {
-    id: 'se-aggressive-compact',
-    label: 'Single Elimination - Aggressive Compact',
-    stageTypes: ['single_elimination'],
-    layout: AGGRESSIVE_COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-compact' },
-  },
-
-  'se-super-compact': {
-    id: 'se-super-compact',
-    label: 'Single Elimination - Super Compact',
-    stageTypes: ['single_elimination'],
-    layout: SUPER_COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-admin-compact' },
   },
 
   'se-spacious': {
@@ -319,24 +273,6 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
     label: 'Double Elimination - Admin Compact',
     stageTypes: ['double_elimination'],
     layout: ULTRA_COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-admin-compact' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-aggressive-compact': {
-    id: 'de-aggressive-compact',
-    label: 'Double Elimination - Aggressive Compact',
-    stageTypes: ['double_elimination'],
-    layout: AGGRESSIVE_COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-compact' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-super-compact': {
-    id: 'de-super-compact',
-    label: 'Double Elimination - Super Compact',
-    stageTypes: ['double_elimination'],
-    layout: SUPER_COMPACT_LAYOUT,
     theme: { rootClassName: 'bv-theme-admin-compact' },
     doubleElimMode: 'unified',
   },
@@ -377,25 +313,11 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
     doubleElimMode: 'unified',
   },
 
-  'de-top-aligned': {
-    id: 'de-top-aligned',
-    label: 'Double Elimination - Top-Aligned (Finals Visible)',
-    stageTypes: ['double_elimination'],
-    layout: { ...DEFAULT_LAYOUT, bracketAlignment: 'top' },
-    theme: { rootClassName: 'bv-theme-default' },
-    doubleElimMode: 'unified',
-  },
-
   'de-separated-losers': {
     id: 'de-separated-losers',
     label: 'Double Elimination - Separated Losers (Max Clarity)',
     stageTypes: ['double_elimination'],
-    layout: {
-      ...DEFAULT_LAYOUT,
-      bracketAlignment: 'finals-top',
-      losersBracketOffsetX: 2, // Maximum separation
-      groupGapY: 120, // Increased vertical gap
-    },
+    layout: DEFAULT_LAYOUT,
     theme: { rootClassName: 'bv-theme-default' },
     doubleElimMode: 'unified',
   },
@@ -404,7 +326,7 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
     id: 'de-compact-separated',
     label: 'Double Elimination - Compact (Standard Positioning)',
     stageTypes: ['double_elimination'],
-    layout: AGGRESSIVE_COMPACT_LAYOUT,
+    layout: COMPACT_LAYOUT,
     theme: { rootClassName: 'bv-theme-compact' },
     doubleElimMode: 'unified',
   },
@@ -413,12 +335,7 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
     id: 'de-traditional',
     label: 'Double Elimination - Traditional Side-by-Side',
     stageTypes: ['double_elimination'],
-    layout: {
-      ...DEFAULT_LAYOUT,
-      bracketAlignment: 'bottom', // Stack naturally, no overlap
-      groupGapX: 2, // Wider horizontal gap
-      groupGapY: 0, // No vertical gap
-    },
+    layout: DEFAULT_LAYOUT,
     theme: { rootClassName: 'bv-theme-default' },
     doubleElimMode: 'unified',
   },

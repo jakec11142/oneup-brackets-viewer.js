@@ -1,0 +1,155 @@
+{
+  "stageId": "swiss-layer-test",
+  "stageType": "SWISS",
+  "stageItems": [{
+    "id": "group-1",
+    "groupIndex": 1,
+    "rounds": [
+      {
+        "number": 1,
+        "date": "2025-01-20",
+        "bestOf": 3,
+        "bracketGroup": null,
+        "matches": [
+          {
+            "id": "match-0-0-1",
+            "matchIndex": 0,
+            "status": "COMPLETE",
+            "slots": [
+              {"slot": 1, "teamName": "Team A", "gamesWon": 2, "winner": true},
+              {"slot": 2, "teamName": "Team B", "gamesWon": 0, "winner": false}
+            ]
+          },
+          {
+            "id": "match-0-0-2",
+            "matchIndex": 1,
+            "status": "COMPLETE",
+            "slots": [
+              {"slot": 1, "teamName": "Team C", "gamesWon": 2, "winner": true},
+              {"slot": 2, "teamName": "Team D", "gamesWon": 1, "winner": false}
+            ]
+          },
+          {
+            "id": "match-0-0-3",
+            "matchIndex": 2,
+            "status": "COMPLETE",
+            "slots": [
+              {"slot": 1, "teamName": "Team E", "gamesWon": 2, "winner": true},
+              {"slot": 2, "teamName": "Team F", "gamesWon": 0, "winner": false}
+            ]
+          },
+          {
+            "id": "match-0-0-4",
+            "matchIndex": 3,
+            "status": "COMPLETE",
+            "slots": [
+              {"slot": 1, "teamName": "Team G", "gamesWon": 2, "winner": true},
+              {"slot": 2, "teamName": "Team H", "gamesWon": 1, "winner": false}
+            ]
+          }
+        ]
+      },
+      {
+        "number": 2,
+        "date": "2025-01-21",
+        "bestOf": 3,
+        "bracketGroup": null,
+        "matches": [
+          {
+            "id": "match-1-0-1",
+            "matchIndex": 0,
+            "status": "COMPLETE",
+            "slots": [
+              {"slot": 1, "teamName": "Team A", "gamesWon": 2, "winner": true, "sourceRank": 1},
+              {"slot": 2, "teamName": "Team C", "gamesWon": 1, "winner": false, "sourceRank": 2}
+            ]
+          },
+          {
+            "id": "match-1-0-2",
+            "matchIndex": 1,
+            "status": "COMPLETE",
+            "slots": [
+              {"slot": 1, "teamName": "Team E", "gamesWon": 1, "winner": false, "sourceRank": 3},
+              {"slot": 2, "teamName": "Team G", "gamesWon": 2, "winner": true, "sourceRank": 4}
+            ]
+          },
+          {
+            "id": "match-0-1-1",
+            "matchIndex": 2,
+            "status": "COMPLETE",
+            "slots": [
+              {"slot": 1, "teamName": "Team B", "gamesWon": 2, "winner": true, "sourceRank": 5},
+              {"slot": 2, "teamName": "Team D", "gamesWon": 0, "winner": false, "sourceRank": 6}
+            ]
+          },
+          {
+            "id": "match-0-1-2",
+            "matchIndex": 3,
+            "status": "COMPLETE",
+            "slots": [
+              {"slot": 1, "teamName": "Team F", "gamesWon": 0, "winner": false, "sourceRank": 7},
+              {"slot": 2, "teamName": "Team H", "gamesWon": 2, "winner": true, "sourceRank": 8}
+            ]
+          }
+        ]
+      },
+      {
+        "number": 3,
+        "date": "2025-01-22",
+        "bestOf": 5,
+        "bracketGroup": null,
+        "matches": [
+          {
+            "id": "match-2-0-1",
+            "matchIndex": 0,
+            "status": "LIVE",
+            "slots": [
+              {"slot": 1, "teamName": "Team A", "gamesWon": 2, "winner": null, "sourceRank": 1},
+              {"slot": 2, "teamName": "Team G", "gamesWon": 1, "winner": null, "sourceRank": 2}
+            ]
+          },
+          {
+            "id": "match-1-1-1",
+            "matchIndex": 1,
+            "status": "PENDING",
+            "slots": [
+              {"slot": 1, "teamName": "Team C", "gamesWon": 0, "winner": null, "sourceRank": 3},
+              {"slot": 2, "teamName": "Team E", "gamesWon": 0, "winner": null, "sourceRank": 4}
+            ]
+          },
+          {
+            "id": "match-1-1-2",
+            "matchIndex": 2,
+            "status": "PENDING",
+            "slots": [
+              {"slot": 1, "teamName": "Team B", "gamesWon": 0, "winner": null, "sourceRank": 5},
+              {"slot": 2, "teamName": "Team H", "gamesWon": 0, "winner": null, "sourceRank": 6}
+            ]
+          },
+          {
+            "id": "match-0-2-1",
+            "matchIndex": 3,
+            "status": "PENDING",
+            "slots": [
+              {"slot": 1, "teamName": "Team D", "gamesWon": 0, "winner": null, "sourceRank": 7},
+              {"slot": 2, "teamName": "Team F", "gamesWon": 0, "winner": null, "sourceRank": 8}
+            ]
+          }
+        ]
+      }
+    ]
+  }],
+  "groups": [{
+    "groupIndex": 1,
+    "entries": [
+      {"rank": 1, "teamName": "Team A", "wins": 2, "losses": 0, "points": 6},
+      {"rank": 2, "teamName": "Team G", "wins": 2, "losses": 0, "points": 6},
+      {"rank": 3, "teamName": "Team C", "wins": 1, "losses": 1, "points": 3},
+      {"rank": 4, "teamName": "Team E", "wins": 1, "losses": 1, "points": 3},
+      {"rank": 5, "teamName": "Team B", "wins": 1, "losses": 1, "points": 3},
+      {"rank": 6, "teamName": "Team H", "wins": 1, "losses": 1, "points": 3},
+      {"rank": 7, "teamName": "Team D", "wins": 0, "losses": 2, "points": 0},
+      {"rank": 8, "teamName": "Team F", "wins": 0, "losses": 2, "points": 0}
+    ]
+  }]
+}

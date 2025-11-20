@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Swiss Layer Stacking Test</title>
+  <link rel="stylesheet" href="../dist/brackets-viewer.min.css" />
+  <script src="../dist/brackets-viewer.min.js"></script>
+  <style>
+    body { margin:0; padding:20px; background:#f5f5f5; font-family:sans-serif; }
+    h1 { font-size:20px; margin-bottom:10px; color:#1e293b; }
+    .subtitle { font-size:14px; color:#64748b; margin-bottom:20px; line-height:1.6; }
+    #viewer-root { background:#fff; border-radius:8px; padding:20px; box-shadow:0 6px 24px rgba(15,23,42,.1); }
+    #status { background:#fff; padding:15px; border-radius:4px; margin-bottom:20px; }
+    .log-item { padding:5px 0; font-size:13px; font-family:monospace; }
+    .log-success { color:#10b981; }
+    .log-error { color:#ef4444; }
+    .log-info { color:#3b82f6; }
+    .layer-info { background:#f8fafc; border-left:3px solid #3b82f6; padding:12px; margin-top:15px; font-size:13px; }
+    .layer-info strong { color:#1e293b; }
+  </style>
+</head>
+<body>
+  <h1>Swiss Layer Stacking Verification</h1>
+  <div class="subtitle">
+    This test demonstrates the progressive vertical stacking of Swiss tournament buckets.<br>
+    Each "layer" (wins + losses) should appear at a different Y position, creating a descending ladder effect.
+  </div>
+  <div id="status">
+    <div class="log-item log-info">⏳ Loading Swiss data with layered records...</div>
+  </div>
+  <section id="viewer-root" class="brackets-viewer"></section>
+
+  <script type="module">
+    const statusDiv = document.querySelector('#status');
+
+    function log(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `log-item log-${type}`;
+      div.textContent = message;
+      statusDiv.appendChild(div);
+      console.log(message);
+    }
+
+    async function testSwissLayering() {
+      try {
+        log('⏳ Fetching Swiss layered data...');
+        const response = await fetch('swissData-layered.json');
+        const structure = await response.json();
+        log('✓ Swiss data loaded', 'success');
+
+        log('⏳ Converting to viewer data...');
+        const viewerData = window.bracketsViewerDTO.convertStageStructureToViewerData(structure, undefined, {
+          stageName: 'Swiss Layer Test',
+        });
+        log(`✓ Converted: ${viewerData.matches.length} matches, ${viewerData.participants.length} participants`, 'success');
+
+        // Analyze expected buckets
+        const buckets = new Map();
+        viewerData.matches.forEach(match => {
+          const record = `${match.opponent1?.position || 0}-${match.opponent2?.position || 0}`;
+          if (!buckets.has(record)) buckets.set(record, []);
+          buckets.get(record).push(match);
+        });
+
+        log('📊 Expected bucket distribution:', 'info');
+        const sortedBuckets = Array.from(buckets.entries()).sort((a, b) => {
+          const [aWins, aLosses] = a[0].split('-').map(Number);
+          const [bWins, bLosses] = b[0].split('-').map(Number);
+          const aLayer = aWins + aLosses;
+          const bLayer = bWins + bLosses;
+          if (aLayer !== bLayer) return aLayer - bLayer;
+          return bLosses - aLosses; // More wins first within layer
+        });
+
+        sortedBuckets.forEach(([record, matches]) => {
+          const [wins, losses] = record.split('-').map(Number);
+          const layer = wins + losses;
+          log(`   Layer ${layer}: ${record} record (${matches.length} matches)`, 'info');
+        });
+
+        log('⏳ Rendering bracket with layer stacking...');
+        await window.bracketsViewer.render(viewerData, {
+          selector: '#viewer-root',
+          clear: true,
+          showRoundHeaders: false,
+        });
+        log('✓ Rendering complete', 'success');
+
+        // Verify Swiss panels and their Y positions
+        const panels = document.querySelectorAll('.swiss-panel');
+        log(`✓ Found ${panels.length} Swiss panels`, panels.length > 0 ? 'success' : 'error');
+
+        if (panels.length > 0) {
+          const layerInfo = document.createElement('div');
+          layerInfo.className = 'layer-info';
+          layerInfo.innerHTML = '<strong>Layer Positioning Verification:</strong><br>';
+
+          const panelPositions = [];
+          panels.forEach((panel, idx) => {
+            const header = panel.querySelector('.swiss-panel-header');
+            const record = header ? header.querySelector('.record')?.textContent : 'N/A';
+            const yPos = parseInt(panel.style.top) || 0;
+            const xPos = parseInt(panel.style.left) || 0;
+
+            panelPositions.push({ idx, record, yPos, xPos });
+            log(`  Panel ${idx + 1}: Record="${record}", Y=${yPos}px, X=${xPos}px`, 'info');
+          });
+
+          // Check if Y positions are properly layered
+          const uniqueYPositions = [...new Set(panelPositions.map(p => p.yPos))].sort((a, b) => a - b);
+          if (uniqueYPositions.length > 1) {
+            layerInfo.innerHTML += `✓ Found ${uniqueYPositions.length} distinct Y layers: ${uniqueYPositions.join('px, ')}px<br>`;
+            layerInfo.innerHTML += `✓ Layer spacing: ${uniqueYPositions.length > 1 ? uniqueYPositions[1] - uniqueYPositions[0] : 'N/A'}px<br>`;
+            layerInfo.style.borderColor = '#10b981';
+            log('✓ Progressive vertical stacking VERIFIED', 'success');
+          } else {
+            layerInfo.innerHTML += `⚠ WARNING: All panels at same Y position (${uniqueYPositions[0]}px)<br>`;
+            layerInfo.style.borderColor = '#ef4444';
+            log('✗ Layer stacking NOT working - all panels at same Y', 'error');
+          }
+
+          statusDiv.appendChild(layerInfo);
+        }
+
+        // Check for connectors (should be NONE for Swiss)
+        const connectors = document.querySelectorAll('.bracket-connectors line, .bracket-connectors path');
+        if (connectors.length === 0) {
+          log('✓ No SVG connectors found (correct for Swiss panels)', 'success');
+        } else {
+          log(`⚠ Found ${connectors.length} SVG connectors (should be 0)`, 'error');
+        }
+
+      } catch (error) {
+        log(`✗ Error: ${error.message}`, 'error');
+        console.error(error);
+      }
+    }
+
+    // Run test after page loads
+    window.addEventListener('load', testSwissLayering);
+  </script>
+</body>
+</html>
