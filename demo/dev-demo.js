@@ -32,7 +32,9 @@ async function renderSample(sample, btn) {
   const viewerData = window.bracketsViewerDTO.convertStageStructureToViewerData(structure, undefined, {
     stageName: sample.label,
   });
-  await window.bracketsViewer.render(viewerData, { selector: '#viewer-root', clear: true });
+  const config = { selector: '#viewer-root', clear: true, showRoundHeaders: false };
+  console.log('Rendering with config:', config);
+  await window.bracketsViewer.render(viewerData, config);
 }
 
 /**

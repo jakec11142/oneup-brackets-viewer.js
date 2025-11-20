@@ -82,6 +82,8 @@ export class BracketsViewer {
             showPopoverOnMatchLabelClick: config?.showPopoverOnMatchLabelClick ?? true,
             highlightParticipantOnHover: config?.highlightParticipantOnHover ?? true,
             showRankingTable: config?.showRankingTable ?? true,
+            showStatusBadges: config?.showStatusBadges ?? true,
+            showRoundHeaders: config?.showRoundHeaders ?? true,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             rankingFormula: config?.rankingFormula ?? ((item): number => 3 * item.wins + 1 * item.draws + 0 * item.losses),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -500,6 +502,7 @@ export class BracketsViewer {
 
         // Render round headers with semantic labels (if enabled)
         // For unified mode, we need to determine bracket type and round count from matches at each column
+        console.log('🎯 Unified DE showRoundHeaders config:', this.config.showRoundHeaders, 'will render?', this.config.showRoundHeaders !== false);
         if (this.config.showRoundHeaders !== false) {
             layout.headerPositions.forEach(header => {
                 // Find matches in this column to determine bracket type and round count
@@ -661,6 +664,7 @@ export class BracketsViewer {
         
 
         // Render round headers with semantic labels (if enabled)
+        console.log('showRoundHeaders config:', this.config.showRoundHeaders, 'will render?', this.config.showRoundHeaders !== false);
         if (this.config.showRoundHeaders !== false) {
             layout.headerPositions.forEach(header => {
                 const roundInfo = {
