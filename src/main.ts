@@ -5,6 +5,8 @@ import * as dom from './dom';
 import * as lang from './lang';
 import { Locale } from './lang';
 import { helpers } from 'brackets-manager';
+import { BracketEdgeResponse } from './dto/types';
+import { computeLayout } from './layout';
 import {
     Config,
     OriginHint,
@@ -28,6 +30,7 @@ export class BracketsViewer {
 
     private participants: Participant[] = [];
     private participantImages: ParticipantImage[] = [];
+    private edges: BracketEdgeResponse[] = [];
 
     private stage!: ViewerStage;
     private config!: Config;
@@ -98,6 +101,8 @@ export class BracketsViewer {
 
         this.participants = data.participants;
         data.participants.forEach(participant => this.participantRefs[participant.id] = []);
+
+        this.edges = data.edges ?? [];
 
         this.popover = document.createElement('div');
         this.popover.setAttribute('popover', 'auto');
@@ -460,21 +465,74 @@ export class BracketsViewer {
 
         this.alwaysConnectFirstRound = !fromToornament;
 
+        // Step 1: Calculate positions for ALL matches (original ordering)
+        // This ensures every match has a position for connectors
+        const allMatchesForLayout: MatchWithMetadata[] = [];
         for (let roundIndex = 0; roundIndex < matchesByRound.length; roundIndex++) {
-            const roundId = matchesByRound[roundIndex][0].round_id;
             const roundNumber = roundIndex + 1;
-            const roundName = this.getRoundName({
-                roundNumber,
-                roundCount,
-                fractionOfFinal: helpers.getFractionOfFinal(roundNumber, roundCount),
-                groupType: lang.toI18nKey(bracketType as Exclude<GroupType, 'final_group'>),
-            }, getRoundName);
+            for (const match of matchesByRound[roundIndex]) {
+                if (match) {
+                    allMatchesForLayout.push({
+                        ...match,
+                        metadata: {
+                            ...match.metadata,
+                            roundNumber,
+                            roundCount,
+                            matchLocation: bracketType,
+                            connectFinal,
+                        },
+                    });
+                }
+            }
+        }
 
-            const roundContainer = dom.createRoundContainer(roundId, roundName);
+        // Filter edges to only those connecting matches in this bracket
+        const matchIds = new Set(allMatchesForLayout.map(m => String(m.id)));
+        const bracketEdges = this.edges.filter(edge =>
+            matchIds.has(String(edge.fromMatchId ?? '')) &&
+            matchIds.has(String(edge.toMatchId ?? ''))
+        );
 
+        // Compute layout using ALL matches
+        const layout = computeLayout(allMatchesForLayout, bracketEdges, bracketType);
+
+        // Debug: Log connector count
+        console.log(`[${bracketType}] Matches: ${allMatchesForLayout.length}, Edges: ${bracketEdges.length}, Connectors: ${layout.connectors.length}`);
+        if (layout.connectors.length > 0) {
+            console.log('First connector:', layout.connectors[0]);
+        }
+
+        // Render round headers absolutely (temporarily disabled for testing)
+        // layout.headerPositions.forEach(header => {
+        //     const roundName = this.getRoundName({
+        //         roundNumber: header.roundNumber,
+        //         roundCount,
+        //         fractionOfFinal: helpers.getFractionOfFinal(header.roundNumber, roundCount),
+        //         groupType: lang.toI18nKey(bracketType as Exclude<GroupType, 'final_group'>),
+        //     }, getRoundName);
+
+        //     const h3 = document.createElement('h3');
+        //     h3.innerText = roundName;
+        //     h3.style.position = 'absolute';
+        //     h3.style.left = `${header.xPx}px`;
+        //     h3.style.top = `${header.yPx}px`;
+        //     h3.style.width = `var(--bv-match-width)`;
+        //     roundsContainer.append(h3);
+        // });
+
+        // Step 2: Render matches using the proper ordering
+        // Use completedMatches for round 1 if reordered, original for other rounds
+        let renderedCount = 0;
+        let positionedCount = 0;
+
+        for (let roundIndex = 0; roundIndex < matchesByRound.length; roundIndex++) {
+            const roundNumber = roundIndex + 1;
             const roundMatches = fromToornament && roundNumber === 1 ? completedMatches : matchesByRound[roundIndex];
-            for (const match of roundMatches) {
-                roundContainer.append(match && this.createBracketMatch({
+
+            roundMatches.forEach((match, idx) => {
+                if (!match) return; // Skip null entries from reordering
+
+                const matchWithMetadata: MatchWithMetadata = {
                     ...match,
                     metadata: {
                         ...match.metadata,
@@ -483,11 +541,35 @@ export class BracketsViewer {
                         matchLocation: bracketType,
                         connectFinal,
                     },
-                }) || this.skipBracketMatch());
-            }
+                };
 
-            roundsContainer.append(roundContainer);
+                const matchEl = this.createBracketMatch(matchWithMetadata);
+                const pos = layout.matchPositions.get(String(match.id));
+
+                if (pos) {
+                    matchEl.style.position = 'absolute';
+                    matchEl.style.left = `${pos.xPx}px`;
+                    matchEl.style.top = `${pos.yPx}px`;
+                    positionedCount++;
+                } else {
+                    console.warn(`⚠️ No position found for match ${match.id}`);
+                }
+
+                roundsContainer.append(matchEl);
+                renderedCount++;
+            });
         }
+
+        console.log(`✅ Rendered ${renderedCount} matches (${positionedCount} positioned)`);
+
+        // Set explicit size on rounds container to fit all absolutely positioned matches
+        roundsContainer.style.width = `${layout.totalWidth}px`;
+        roundsContainer.style.height = `${layout.totalHeight}px`;
+        console.log(`📐 Container sized to ${layout.totalWidth}x${layout.totalHeight}px`);
+
+        // Add SVG connectors overlay
+        const svg = dom.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
+        roundsContainer.prepend(svg);
 
         bracketContainer.append(roundsContainer);
         container.append(bracketContainer);
@@ -598,16 +680,14 @@ export class BracketsViewer {
      * @param match Information about the match.
      */
     private createBracketMatch(match: MatchWithMetadata): HTMLElement {
-        const { roundNumber, roundCount, matchLocation, connectFinal } = match.metadata;
+        const { roundNumber, roundCount, matchLocation } = match.metadata;
 
         if (roundNumber === undefined || roundCount === undefined || matchLocation === undefined)
             throw Error(`The match's internal data is missing roundNumber, roundCount or matchLocation: ${JSON.stringify(match)}`);
 
-        const connection = dom.getBracketConnection(this.alwaysConnectFirstRound, roundNumber, roundCount, match, matchLocation, connectFinal);
         const matchLabel = lang.getMatchLabel(match.number, roundNumber, roundCount, matchLocation);
         const originHint = lang.getOriginHint(roundNumber, roundCount, this.skipFirstRound, matchLocation);
 
-        match.metadata.connection = connection;
         match.metadata.label = matchLabel;
         match.metadata.originHint = originHint;
 
@@ -686,13 +766,6 @@ export class BracketsViewer {
         }
 
         matchContainer.append(opponents);
-
-        if (isMatch(match)) {
-            if (!match.metadata.connection)
-                return matchContainer;
-
-            dom.setupConnection(opponents, matchContainer, match.metadata.connection);
-        }
 
         return matchContainer;
     }

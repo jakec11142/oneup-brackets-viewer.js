@@ -6,6 +6,7 @@ import {
     StageStructureFormat,
     MatchSlotResponse,
     StageStructureConversionOptions,
+    BracketEdgeResponse,
 } from './types';
 import { ViewerStage, ViewerStageType } from '../models';
 
@@ -59,7 +60,12 @@ export function convertStageStructureToViewerData(
         tournamentId,
     };
 
+    // Extract all edges from stage items
+    const edges: BracketEdgeResponse[] = [];
     stageItems.forEach(item => {
+        if (item.edges) {
+            edges.push(...item.edges);
+        }
         item.rounds?.forEach(round => {
             round.matches?.forEach(match => {
                 (match.slots ?? []).forEach(slot => ensureParticipant(accumulator, slot.teamName));
@@ -110,6 +116,7 @@ export function convertStageStructureToViewerData(
         matches,
         matchGames: [],
         participants: accumulator.participants,
+        edges,
     };
 }
 

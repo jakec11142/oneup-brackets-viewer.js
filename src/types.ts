@@ -4,7 +4,7 @@ import { InMemoryDatabase } from 'brackets-memory-db';
 import { BracketsViewer } from './main';
 import { BracketsManager } from 'brackets-manager';
 import { ToI18nKey, TFunction } from './lang';
-import type { StageStructureResponse, StageStandingsResponse, StageStructureConversionOptions } from './dto/types';
+import type { StageStructureResponse, StageStandingsResponse, StageStructureConversionOptions, BracketEdgeResponse } from './dto/types';
 import { ViewerStage, ViewerStageType } from './models';
 
 export type { ToI18nKey, TFunction };
@@ -93,6 +93,9 @@ export interface ViewerData {
 
     /** The participants who play in the stage to display. */
     participants: Participant[],
+
+    /** The edges defining connections between matches in bracket stages. */
+    edges?: BracketEdgeResponse[],
 }
 
 /**
@@ -107,6 +110,9 @@ export interface InternalViewerData {
 
     /** The participants who play in the stage to display. */
     participants: Participant[],
+
+    /** The edges defining connections between matches in bracket stages. */
+    edges?: BracketEdgeResponse[],
 }
 
 /**

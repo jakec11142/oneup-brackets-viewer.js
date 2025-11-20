@@ -87,10 +87,12 @@
     font-size: 2em;
     margin-top: 30px;
     margin-bottom: 20px;
+    display: none; // Temporarily hidden for testing
   }
 
   h2 {
     font-size: 1.7em;
+    display: none; // Temporarily hidden for testing
   }
 
   h3 {
@@ -102,6 +104,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     width: var(--bv-match-width);
+    display: none; // Temporarily hidden for testing
   }
 
   .round-robin {
@@ -172,61 +175,38 @@
     }
 
     .rounds {
-      display: flex;
+      position: relative;
+      width: fit-content;
 
       &:not(:last-of-type) {
         margin-bottom: 15px;
       }
 
-      .round {
-        display: flex;
-        flex-direction: column;
-
-        &:not(:last-of-type) {
-          margin-right: var(--bv-round-gap);
-        }
+      // Round headers are positioned absolutely
+      h3 {
+        position: absolute;
+        z-index: 1;
       }
     }
   }
 
+  // SVG connectors overlay
+  .bracket-connectors {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
   .match {
-    flex: 1;
     display: flex;
     align-items: center;
-    margin: 10px 0;
     width: var(--bv-match-width);
-    position: relative;
-
-    &.connect-next {
-      &::after {
-        content: "";
-        display: block;
-        position: absolute;
-        right: calc(-1 * #{$connector-width});
-        width: calc(#{$connector-width});
-        height: 50%;
-        border-right: $connector-border;
-      }
-
-      &:nth-of-type(odd)::after {
-        top: 50%;
-        border-top: $connector-border;
-      }
-
-      &:nth-of-type(even)::after {
-        top: 0;
-        border-bottom: $connector-border;
-      }
-
-      &.straight::after {
-        width: var(--bv-round-gap);
-        right: calc(-1 * var(--bv-round-gap));
-        top: 0;
-        border-bottom: $connector-border;
-        border-top: unset;
-        border-right: unset;
-      }
-    }
+    min-height: 60px;
+    position: relative; // Ensure matches can have z-index
+    z-index: 1; // Render above connectors
+    // Position is set via inline styles by layout engine
   }
 
   .opponents {
@@ -262,40 +242,6 @@
     // Child count label (e.g. Bo3)
     & > span:nth-of-type(2) {
       right: 3px;
-    }
-
-    &.connect-previous {
-      &::before {
-        content: "";
-        display: block;
-        position: absolute;
-        left: calc(-1 * #{$connector-width});
-        width: calc(#{$connector-width});
-        height: 50%;
-        border-bottom: $connector-border;
-      }
-
-      %straight {
-        border-left: unset;
-        left: var(--bv-round-gap);
-        width: var(--bv-round-gap);
-      }
-
-      .bracket:nth-of-type(1) &.straight::before {
-        content: unset;
-      }
-
-      .bracket:nth-of-type(1) &.straight::after {
-        @extend %straight;
-      }
-
-      .bracket:nth-of-type(2) &.straight::before {
-        @extend %straight;
-      }
-
-      .bracket:nth-of-type(2) &.straight::after {
-        content: unset;
-      }
     }
   }
 
