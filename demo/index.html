@@ -14,6 +14,13 @@
     .button-row button { padding:8px 16px; border:1px solid #ccc; border-radius:4px; background:#fff; cursor:pointer; font-size:14px; }
     .button-row button:hover { background:#f0f0f0; }
     .button-row button[aria-pressed="true"] { background:#212121; color:#fff; border-color:#212121; }
+    .toggles-container { display:flex; gap:16px; flex-wrap:wrap; }
+    .toggle-item { display:flex; align-items:center; gap:8px; }
+    .toggle-item label { font-size:13px; color:#444; cursor:pointer; user-select:none; }
+    .toggle-item input[type="checkbox"] {
+      width:18px; height:18px; cursor:pointer;
+      accent-color:#212121;
+    }
     #viewer-root { background:#fff; border-radius:8px; padding:20px; box-shadow:0 6px 24px rgba(15,23,42,.1); }
   </style>
 </head>
@@ -25,6 +32,35 @@
   <div class="button-group">
     <h3>View Model (Layout & Theme Preset)</h3>
     <nav id="view-model-buttons" class="button-row"></nav>
+  </div>
+  <div class="button-group">
+    <h3>Display Options</h3>
+    <div class="toggles-container">
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-round-headers" checked />
+        <label for="toggle-round-headers">Show Round Headers</label>
+      </div>
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-status-badges" checked />
+        <label for="toggle-status-badges">Show Status Badges</label>
+      </div>
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-slots-origin" checked />
+        <label for="toggle-slots-origin">Show Slots Origin</label>
+      </div>
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-lower-slots-origin" checked />
+        <label for="toggle-lower-slots-origin">Show Lower Bracket Slots Origin</label>
+      </div>
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-ranking-table" checked />
+        <label for="toggle-ranking-table">Show Ranking Table</label>
+      </div>
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-match-popover" checked />
+        <label for="toggle-match-popover">Show Match Popover on Click</label>
+      </div>
+    </div>
   </div>
   <section id="viewer-root" class="brackets-viewer"></section>
   <script type="module" src="./dev-demo.js"></script>
