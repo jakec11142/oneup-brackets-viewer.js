@@ -8,6 +8,7 @@ import { helpers } from 'brackets-manager';
 import { BracketEdgeResponse } from './dto/types';
 import { computeLayout, computeSwissLayout } from './layout';
 import { getViewModel, type ViewModel, type LayoutConfig, type BracketKind } from './viewModels';
+import { detectFormatSize, getDEProfile } from './profiles/deProfiles';
 import {
     Config,
     OriginHint,
@@ -591,9 +592,19 @@ export class BracketsViewer {
 
         console.log(`🔧 Unified DE: ${allMatchesWithMetadata.length} matches, ${allEdges.length} edges`);
 
-        // Single computeLayout call with all matches + all edges
+        // Detect tournament format size and get appropriate layout profile
+        const formatSize = detectFormatSize(allMatchesWithMetadata);
+        const deProfile = formatSize ? getDEProfile(formatSize) : undefined;
+
+        if (deProfile) {
+            console.log(`📊 Using DE profile: ${deProfile.id} (${deProfile.formatSize}-team format)`);
+        } else {
+            console.log(`📊 No profile detected, using block-based layout`);
+        }
+
+        // Single computeLayout call with all matches + all edges + optional profile
         // Use 'winner_bracket' as the type (it's used mainly for logging)
-        const layout = computeLayout(allMatchesWithMetadata, allEdges, 'winner_bracket', this.layoutConfig);
+        const layout = computeLayout(allMatchesWithMetadata, allEdges, 'winner_bracket', this.layoutConfig, deProfile);
 
         // Create bracket container for unified view
         const groupId = allMatchesWithMetadata[0]?.group_id ?? 'unified-de';

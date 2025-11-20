@@ -2,6 +2,7 @@ import { Match } from 'brackets-model';
 import { BracketEdgeResponse } from './dto/types';
 import type { LayoutConfig } from './viewModels';
 import type { MatchWithMetadata } from './types';
+import type { DoubleElimLayoutProfile } from './profiles/deProfiles';
 
 /**
  * Bracket group types in display order
@@ -114,21 +115,26 @@ function extractBracketGroup(groupId: string): BracketGroup {
     const normalized = groupId.toLowerCase();
 
     // Check placement/third-place matches first
-    if (normalized.includes('placement') || normalized.includes('third') || normalized.includes('3rd')) 
+    if (normalized.includes('placement') || normalized.includes('third') || normalized.includes('3rd'))
         return 'PLACEMENT_BRACKET';
-    
-    // Check for losers bracket
-    if (normalized.includes('loser')) 
+
+    // Check for losers/lower bracket (handle both "loser" and "lower" terminology)
+    if (normalized.includes('loser') || normalized.includes('lower'))
         return 'LOSERS_BRACKET';
-    
-    // Check for grand finals (check 'grand-final' before 'final' to avoid ambiguity)
-    if (normalized.includes('grand-final') || normalized.includes('final')) 
+
+    // Check for grand finals (check 'grand-final' or 'grand final' before 'final' to avoid ambiguity)
+    if (normalized.includes('grand-final') || normalized.includes('grand') ||
+        (normalized.includes('grand') && normalized.includes('final')))
         return 'GRAND_FINAL_BRACKET';
-    
-    // Check for winners bracket explicitly
-    if (normalized.includes('winner')) 
+
+    // Check for finals bracket (but only if not already caught by grand finals)
+    if (normalized.includes('final'))
+        return 'GRAND_FINAL_BRACKET';
+
+    // Check for winners/upper bracket (handle both "winner" and "upper" terminology)
+    if (normalized.includes('winner') || normalized.includes('upper'))
         return 'WINNERS_BRACKET';
-    
+
     // Default to winners bracket (includes single elimination without group suffix)
     return 'WINNERS_BRACKET';
 }
@@ -140,6 +146,7 @@ function extractBracketGroup(groupId: string): BracketGroup {
  * @param edges All edges defining connections between matches
  * @param bracketType Type of bracket (winner_bracket, loser_bracket, etc.)
  * @param layout Layout configuration parameters (column width, spacing, etc.)
+ * @param deProfile Optional DE layout profile for per-format column mappings (unified DE only)
  * @returns Complete layout with positions and connectors
  */
 export function computeLayout(
@@ -147,6 +154,7 @@ export function computeLayout(
     edges: BracketEdgeResponse[],
     bracketType: string,
     layout: LayoutConfig,
+    deProfile?: DoubleElimLayoutProfile,
 ): BracketLayout {
     // Destructure layout parameters for use throughout the function
     const {
@@ -219,7 +227,12 @@ export function computeLayout(
     const groupOffsetsX = new Map<BracketGroup, number>();
     let currentColumn = 0;
 
-    console.log(`📐 Column assignment (alignment: ${layout.bracketAlignment}):`);
+    // Check if we should use profile-based column mapping (unified DE only)
+    const useProfile = deProfile
+        && Object.keys(deProfile.winnersRoundColumns).length > 0
+        && Object.keys(deProfile.losersRoundColumns).length > 0;
+
+    console.log(`📐 Column assignment (${useProfile ? `profile: ${deProfile?.id}` : `alignment: ${layout.bracketAlignment}`}):`);
 
     // For 'finals-top' alignment, use old behavior (for backward compatibility)
     if (layout.bracketAlignment === 'finals-top') {
@@ -285,18 +298,43 @@ export function computeLayout(
     const matchPositions = new Map<string, MatchPosition>();
     let maxXRound = 0;
 
-    // Assign positions for all groups based on calculated offsets
+    // Assign positions for all groups based on calculated offsets or profile
     for (const group of GROUP_ORDER) {
         const groupRounds = matchesByGroupRound.get(group);
         if (!groupRounds) continue;
 
-        const baseCol = groupOffsetsX.get(group);
-        if (baseCol === undefined) continue; // Skip groups without position
-
         const sortedRounds = Array.from(groupRounds.keys()).sort((a, b) => a - b);
 
         sortedRounds.forEach((roundNumber, roundIdx) => {
-            const col = baseCol + roundIdx;
+            let col: number;
+
+            // Use profile-based column mapping if available
+            if (useProfile && deProfile) {
+                if (group === 'WINNERS_BRACKET') {
+                    col = deProfile.winnersRoundColumns[roundNumber];
+                } else if (group === 'LOSERS_BRACKET') {
+                    col = deProfile.losersRoundColumns[roundNumber];
+                } else if (group === 'GRAND_FINAL_BRACKET') {
+                    col = deProfile.finalsColumns[roundNumber];
+                } else {
+                    // Fallback for PLACEMENT_BRACKET or other groups
+                    const baseCol = groupOffsetsX.get(group);
+                    col = baseCol !== undefined ? baseCol + roundIdx : roundIdx;
+                }
+
+                // Check if profile provided a valid column
+                if (col === undefined) {
+                    console.warn(`⚠️ Profile ${deProfile.id} missing column for ${group} round ${roundNumber}, using fallback`);
+                    const baseCol = groupOffsetsX.get(group);
+                    col = baseCol !== undefined ? baseCol + roundIdx : roundIdx;
+                }
+            } else {
+                // Use block-based offset logic
+                const baseCol = groupOffsetsX.get(group);
+                if (baseCol === undefined) return; // Skip groups without position
+                col = baseCol + roundIdx;
+            }
+
             const idsInRound = groupRounds.get(roundNumber) ?? [];
 
             for (const id of idsInRound) {
@@ -734,10 +772,12 @@ export function computeSwissLayout(
         swissLayerStepY,
     } = layout;
 
-    // Compute layer step with fallback to rowHeight * 1.5 (moderate spacing)
-    const LAYER_STEP_Y = swissLayerStepY ?? ROW_HEIGHT * 1.5;
+    // Swiss panel sizing constants
+    const PANEL_HEADER_HEIGHT = 60; // Height for panel header (record, date, BO label)
+    const PANEL_PADDING = 20; // Vertical padding within panel
+    const BUCKET_GAP_Y = layout.swissBucketGapY ?? 24; // Vertical gap between panels in same column
 
-    console.log(`🎯 computeSwissLayout: ${matches.length} matches, layerStepY=${LAYER_STEP_Y}px`);
+    console.log(`🎯 computeSwissLayout: ${matches.length} matches, bucketGapY=${BUCKET_GAP_Y}px`);
 
     if (matches.length === 0) {
         return {
@@ -827,73 +867,88 @@ export function computeSwissLayout(
 
     console.log(`📐 Bucket order: ${sortedBuckets.map(b => b.key).join(' → ')}`);
 
-    // Step 3.5: Build layer-to-Y mapping for progressive vertical stacking
-    // Each layer (wins + losses) gets its own vertical offset
-    const layerBaseY = new Map<number, number>();
+    // Step 3.5: Group buckets by round number for vertical stacking
+    // Each round gets ONE column with buckets stacked vertically
+    const bucketsByRound = new Map<number, SwissRecordBucket[]>();
     sortedBuckets.forEach((bucket) => {
-        const layer = bucket.wins + bucket.losses;
-        if (!layerBaseY.has(layer)) {
-            // Simple downward stagger: layer 0 at top, each layer steps down by LAYER_STEP_Y
-            layerBaseY.set(layer, TOP_OFFSET + layer * LAYER_STEP_Y);
+        const roundNum = bucket.wins + bucket.losses + 1;
+        if (!bucketsByRound.has(roundNum)) {
+            bucketsByRound.set(roundNum, []);
         }
+        bucketsByRound.get(roundNum)!.push(bucket);
     });
 
-    console.log(`📐 Swiss layers: ${Array.from(layerBaseY.entries()).map(([l, y]) => `L${l}=${y}px`).join(', ')}`);
+    // Sort buckets within each round by wins descending (best records on top)
+    bucketsByRound.forEach(roundBuckets => {
+        roundBuckets.sort((a, b) => b.wins - a.wins);
+    });
 
-    // Step 4: Assign column positions and compute match positions
+    const sortedRounds = Array.from(bucketsByRound.keys()).sort((a, b) => a - b);
+    console.log(`📐 Swiss rounds: ${sortedRounds.map(r => `R${r}(${bucketsByRound.get(r)!.length} buckets)`).join(', ')}`);
+
+    // Step 4: Position buckets - one column per round, stacked vertically within column
     const matchPositions = new Map<string, MatchPosition>();
     const panelPositions: SwissPanelPosition[] = [];
-    let maxY = 0;
+    let maxHeight = 0;
 
-    sortedBuckets.forEach((bucket, columnIndex) => {
-        const bucketMatches = bucketMap.get(bucket.key) ?? [];
-        const layer = bucket.wins + bucket.losses;
-        const baseY = layerBaseY.get(layer) ?? TOP_OFFSET; // Get layer-specific Y position
+    sortedRounds.forEach((roundNum, columnIndex) => {
+        const roundBuckets = bucketsByRound.get(roundNum)!;
+        let yOffset = TOP_OFFSET; // Track Y position within this round column
 
-        // Sort matches within bucket by match number for deterministic ordering
-        bucketMatches.sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
+        roundBuckets.forEach((bucket) => {
+            const bucketMatches = bucketMap.get(bucket.key) ?? [];
 
-        // Extract date/bestOf from first match in bucket (all matches in same bucket share same round)
-        const firstMatch = bucketMatches[0];
-        const roundDate = firstMatch?.metadata?.roundDate;
-        const roundBestOf = firstMatch?.metadata?.roundBestOf;
+            // Sort matches within bucket by match number
+            bucketMatches.sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
 
-        // Position each match in this column using layer-based Y offset
-        let panelHeight = 0;
-        bucketMatches.forEach((match, laneIndex) => {
-            const xPx = LEFT_OFFSET + columnIndex * COLUMN_WIDTH;
-            const yPx = baseY + laneIndex * ROW_HEIGHT; // CHANGED: Use baseY instead of TOP_OFFSET
+            // Extract metadata from first match
+            const firstMatch = bucketMatches[0];
+            const roundDate = firstMatch?.metadata?.roundDate;
+            const roundBestOf = firstMatch?.metadata?.roundBestOf;
 
-            matchPositions.set(String(match.id), {
-                xRound: columnIndex,
-                yLane: laneIndex,
-                xPx,
-                yPx,
+            // Position each match within this bucket
+            let matchYOffset = yOffset + PANEL_HEADER_HEIGHT;
+            bucketMatches.forEach((match, matchIndex) => {
+                const xPx = LEFT_OFFSET + columnIndex * COLUMN_WIDTH;
+                const yPx = matchYOffset + matchIndex * ROW_HEIGHT;
+
+                matchPositions.set(String(match.id), {
+                    xRound: columnIndex,
+                    yLane: matchIndex,
+                    xPx,
+                    yPx,
+                });
+
+                maxHeight = Math.max(maxHeight, yPx + MATCH_HEIGHT);
             });
 
-            maxY = Math.max(maxY, yPx + MATCH_HEIGHT);
-            panelHeight = (laneIndex + 1) * ROW_HEIGHT;
-        });
+            // Calculate panel height based on match count
+            const panelHeight = PANEL_HEADER_HEIGHT + bucketMatches.length * ROW_HEIGHT + PANEL_PADDING;
 
-        // Create panel position with metadata for boxed rendering
-        panelPositions.push({
-            key: bucket.key,
-            record: bucket.key,
-            roundNumber: bucket.wins + bucket.losses + 1, // Infer round from total games
-            date: roundDate,
-            bestOf: roundBestOf,
-            xPx: LEFT_OFFSET + columnIndex * COLUMN_WIDTH,
-            yPx: baseY - 60, // CHANGED: Use baseY instead of TOP_OFFSET for layer-based positioning
-            width: COLUMN_WIDTH,
-            height: panelHeight + 60, // Panel height = matches + header space
-            matchCount: bucketMatches.length,
+            // Create panel for this bucket
+            panelPositions.push({
+                key: bucket.key,
+                record: bucket.key,
+                roundNumber: roundNum,
+                date: roundDate,
+                bestOf: roundBestOf,
+                xPx: LEFT_OFFSET + columnIndex * COLUMN_WIDTH,
+                yPx: yOffset,
+                width: COLUMN_WIDTH,
+                height: panelHeight,
+                matchCount: bucketMatches.length,
+            });
+
+            // Move Y offset down for next panel in this column
+            yOffset += panelHeight + BUCKET_GAP_Y;
+            maxHeight = Math.max(maxHeight, yOffset);
         });
     });
 
-    const totalWidth = LEFT_OFFSET + sortedBuckets.length * COLUMN_WIDTH + layout.matchWidth;
-    const totalHeight = maxY + 50; // Add bottom padding
+    const totalWidth = LEFT_OFFSET + sortedRounds.length * COLUMN_WIDTH + layout.matchWidth;
+    const totalHeight = maxHeight + 50; // Add bottom padding
 
-    console.log(`✅ Swiss layout: ${sortedBuckets.length} panels, ${matchPositions.size} matches (NO connectors)`);
+    console.log(`✅ Swiss layout: ${sortedRounds.length} rounds, ${panelPositions.length} panels, ${matchPositions.size} matches`);
 
     return {
         matchPositions,
