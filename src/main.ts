@@ -88,9 +88,6 @@ export class BracketsViewer {
             showRankingTable: config?.showRankingTable ?? true,
             showStatusBadges: config?.showStatusBadges ?? true,
             showRoundHeaders: config?.showRoundHeaders ?? true,
-            showConnectors: config?.showConnectors ?? true,
-            showParticipantImages: config?.showParticipantImages ?? false,
-            connectorStyle: config?.connectorStyle ?? 'default',
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             rankingFormula: config?.rankingFormula ?? ((item): number => 3 * item.wins + 1 * item.draws + 0 * item.losses),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -114,13 +111,21 @@ export class BracketsViewer {
             ...(config?.layoutOverrides ?? {}),
         };
 
-        // Apply viewMode sizing preset for elimination brackets only
-        // viewMode provides quick sizing options (default/compact/logo) for SE/DE
-        if (config?.viewMode && (firstStageType === 'single_elimination' || firstStageType === 'double_elimination')) {
-            const viewModeLayout = VIEW_MODE_LAYOUTS[config.viewMode];
+        // Apply sizing preset for elimination brackets only
+        // Sizing provides quick dimension options (default/compact/logo/ultrawide) for SE/DE
+        // Support both 'sizing' (new) and 'viewMode' (deprecated) for backward compatibility
+        const sizingValue = config?.sizing ?? config?.viewMode;
+
+        if (sizingValue && (firstStageType === 'single_elimination' || firstStageType === 'double_elimination')) {
+            // Log deprecation warning if viewMode is used
+            if (config?.viewMode && !config?.sizing) {
+                console.warn('[BracketsViewer] The "viewMode" parameter is deprecated. Please use "sizing" instead.');
+            }
+
+            const sizingLayout = VIEW_MODE_LAYOUTS[sizingValue];
             this.layoutConfig = {
                 ...this.layoutConfig,
-                ...viewModeLayout,
+                ...sizingLayout,
                 // Preserve user overrides - they take highest priority
                 ...(config?.layoutOverrides ?? {}),
             };
@@ -361,6 +366,8 @@ export class BracketsViewer {
                             // Transfer Swiss-specific round data from Match object to metadata
                             roundDate: (match as any).swissRoundDate,
                             roundBestOf: (match as any).swissRoundBestOf,
+                            swissWins: (match as any).swissWins,
+                            swissLosses: (match as any).swissLosses,
                         },
                     });
                 });

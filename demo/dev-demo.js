@@ -7,42 +7,41 @@ const SAMPLES = [
 
 const VIEW_MODELS = [
   { id: undefined, label: 'Default', formats: ['single', 'double', 'roundRobin', 'swiss'] },
-  { id: 'se-default', label: 'SE Default', formats: ['single'] },
-  { id: 'se-compact', label: 'SE Compact', formats: ['single'] },
-  { id: 'se-ultra-compact', label: 'SE Ultra Compact', formats: ['single'] },
-  { id: 'se-spacious', label: 'SE Spacious', formats: ['single'] },
-  { id: 'se-with-logos', label: 'SE With Logos', formats: ['single'] },
-  { id: 'se-compact-logos', label: 'SE Compact Logos', formats: ['single'] },
-  { id: 'de-default', label: 'DE Standard (Industry)', formats: ['double'] },
-  { id: 'de-compact', label: 'DE Compact', formats: ['double'] },
-  { id: 'de-admin-compact', label: 'DE Admin Compact', formats: ['double'] },
-  { id: 'de-split', label: 'DE Split View', formats: ['double'] },
-  { id: 'de-spacious', label: 'DE Spacious', formats: ['double'] },
-  { id: 'de-with-logos', label: 'DE With Logos', formats: ['double'] },
-  { id: 'de-compact-logos', label: 'DE Compact Logos', formats: ['double'] },
-  { id: 'de-separated-losers', label: 'DE Separated Losers', formats: ['double'] },
-  { id: 'de-compact-separated', label: 'DE Compact Separated', formats: ['double'] },
-  { id: 'de-traditional', label: 'DE Traditional', formats: ['double'] },
+  { id: 'se-default', label: 'Default', formats: ['single'] },
+  { id: 'se-compact', label: 'Compact', formats: ['single'] },
+  { id: 'se-ultra-compact', label: 'Ultra Compact', formats: ['single'] },
+  { id: 'se-spacious', label: 'Spacious', formats: ['single'] },
+  { id: 'se-ultrawide', label: 'Ultrawide (21:9)', formats: ['single'] },
+  { id: 'se-with-logos', label: 'With Logos', formats: ['single'] },
+  { id: 'se-compact-logos', label: 'Compact with Logos', formats: ['single'] },
+  { id: 'de-default', label: 'Standard', formats: ['double'] },
+  { id: 'de-compact', label: 'Compact', formats: ['double'] },
+  { id: 'de-admin-compact', label: 'Admin Compact', formats: ['double'] },
+  { id: 'de-split', label: 'Split View', formats: ['double'] },
+  { id: 'de-spacious', label: 'Spacious', formats: ['double'] },
+  { id: 'de-ultrawide', label: 'Ultrawide (21:9)', formats: ['double'] },
+  { id: 'de-with-logos', label: 'With Logos', formats: ['double'] },
+  { id: 'de-compact-logos', label: 'Compact with Logos', formats: ['double'] },
   { id: 'compact', label: 'Compact (Any)', formats: ['single', 'double', 'roundRobin', 'swiss'] },
   { id: 'admin', label: 'Admin (Any)', formats: ['single', 'double', 'roundRobin', 'swiss'] },
 ];
 
-const VIEW_MODES = [
-  { id: undefined, label: 'Auto (from view model)' },
-  { id: 'default', label: 'Default (150px)' },
+const SIZING_OPTIONS = [
+  { id: undefined, label: 'Auto' },
+  { id: 'default', label: 'Standard (150px)' },
   { id: 'compact', label: 'Compact (130px)' },
   { id: 'logo', label: 'Logo (200px)' },
-  { id: 'ultrawide', label: 'Ultrawide (220px)' },
+  { id: 'ultrawide', label: 'Ultrawide (300px)' },
 ];
 
 const buttonsHost = document.querySelector('#format-buttons');
 const viewModelHost = document.querySelector('#view-model-buttons');
-const viewModeHost = document.querySelector('#view-mode-buttons');
+const sizingHost = document.querySelector('#sizing-buttons');
 const cache = new Map();
 
 let currentSample = SAMPLES[0];
 let currentViewModel = VIEW_MODELS[0];
-let currentViewMode = VIEW_MODES[0];
+let currentSizing = SIZING_OPTIONS[0];
 
 // Display options state (defaults to all enabled)
 const displayOptions = {
@@ -52,19 +51,10 @@ const displayOptions = {
   showLowerBracketSlotsOrigin: true,
   showRankingTable: true,
   showPopoverOnMatchLabelClick: true,
-  // Tier 1 visual options
+  // Additional visual options
   highlightParticipantOnHover: true,
-  separateBestOfLabel: true,
+  separatedChildCountLabel: true,
   participantOriginPlacement: 'before',
-  theme: 'default',
-  // Tier 2 interaction & layout options
-  showConnectors: true,
-  showParticipantImages: false,
-  bracketAlignment: 'bottom',
-  matchDensity: 'auto',
-  swissColumnMode: 'round',
-  // Tier 3 advanced options
-  connectorStyle: 'default',
 };
 
 SAMPLES.forEach(sample => {
@@ -92,16 +82,16 @@ VIEW_MODELS.forEach(vm => {
   viewModelHost.appendChild(btn);
 });
 
-VIEW_MODES.forEach(mode => {
+SIZING_OPTIONS.forEach(option => {
   const btn = document.createElement('button');
   btn.type = 'button';
-  btn.textContent = mode.label;
-  btn.dataset.viewMode = mode.id;
+  btn.textContent = option.label;
+  btn.dataset.sizing = option.id;
   btn.addEventListener('click', () => {
-    currentViewMode = mode;
+    currentSizing = option;
     renderCurrentConfig(null, null, btn);
   });
-  viewModeHost.appendChild(btn);
+  sizingHost.appendChild(btn);
 });
 
 // Set up display option toggles
@@ -136,7 +126,7 @@ if (highlightHoverCheckbox) {
 const separateBestOfCheckbox = document.getElementById('toggle-separate-bestof');
 if (separateBestOfCheckbox) {
   separateBestOfCheckbox.addEventListener('change', () => {
-    displayOptions.separateBestOfLabel = separateBestOfCheckbox.checked;
+    displayOptions.separatedChildCountLabel = separateBestOfCheckbox.checked;
     renderCurrentConfig(null, null, null);
   });
 }
@@ -149,66 +139,6 @@ positionRadios.forEach(radio => {
     renderCurrentConfig(null, null, null);
   });
 });
-
-// Theme selector
-const themeSelector = document.getElementById('theme-selector');
-if (themeSelector) {
-  themeSelector.addEventListener('change', () => {
-    displayOptions.theme = themeSelector.value;
-    renderCurrentConfig(null, null, null);
-  });
-}
-
-// Tier 2 customization option handlers
-const connectorLinesCheckbox = document.getElementById('toggle-connector-lines');
-if (connectorLinesCheckbox) {
-  connectorLinesCheckbox.addEventListener('change', () => {
-    displayOptions.showConnectors = connectorLinesCheckbox.checked;
-    renderCurrentConfig(null, null, null);
-  });
-}
-
-const participantImagesCheckbox = document.getElementById('toggle-participant-images');
-if (participantImagesCheckbox) {
-  participantImagesCheckbox.addEventListener('change', () => {
-    displayOptions.showParticipantImages = participantImagesCheckbox.checked;
-    renderCurrentConfig(null, null, null);
-  });
-}
-
-const bracketAlignmentSelector = document.getElementById('bracket-alignment');
-if (bracketAlignmentSelector) {
-  bracketAlignmentSelector.addEventListener('change', () => {
-    displayOptions.bracketAlignment = bracketAlignmentSelector.value;
-    renderCurrentConfig(null, null, null);
-  });
-}
-
-const matchDensitySelector = document.getElementById('match-density');
-if (matchDensitySelector) {
-  matchDensitySelector.addEventListener('change', () => {
-    displayOptions.matchDensity = matchDensitySelector.value;
-    renderCurrentConfig(null, null, null);
-  });
-}
-
-// Swiss column mode radio buttons
-const swissRadios = document.querySelectorAll('input[name="swiss-column-mode"]');
-swissRadios.forEach(radio => {
-  radio.addEventListener('change', () => {
-    displayOptions.swissColumnMode = radio.value;
-    renderCurrentConfig(null, null, null);
-  });
-});
-
-// Tier 3 customization option handlers
-const connectorStyleSelector = document.getElementById('connector-style');
-if (connectorStyleSelector) {
-  connectorStyleSelector.addEventListener('change', () => {
-    displayOptions.connectorStyle = connectorStyleSelector.value;
-    renderCurrentConfig(null, null, null);
-  });
-}
 
 /**
  * Filters view model buttons to show only those compatible with the current format
@@ -267,19 +197,10 @@ async function renderCurrentConfig(sampleBtn, vmBtn, viewModeBtn) {
     showLowerBracketSlotsOrigin: displayOptions.showLowerBracketSlotsOrigin,
     showRankingTable: displayOptions.showRankingTable,
     showPopoverOnMatchLabelClick: displayOptions.showPopoverOnMatchLabelClick,
-    // Tier 1 visual customization options
+    // Additional visual customization options
     highlightParticipantOnHover: displayOptions.highlightParticipantOnHover,
-    separateBestOfLabel: displayOptions.separateBestOfLabel,
+    separatedChildCountLabel: displayOptions.separatedChildCountLabel,
     participantOriginPlacement: displayOptions.participantOriginPlacement,
-    theme: displayOptions.theme,
-    // Tier 2 interaction & layout options
-    showConnectors: displayOptions.showConnectors,
-    showParticipantImages: displayOptions.showParticipantImages,
-    bracketAlignment: displayOptions.bracketAlignment,
-    matchDensity: displayOptions.matchDensity,
-    swissColumnMode: displayOptions.swissColumnMode,
-    // Tier 3 advanced options
-    connectorStyle: displayOptions.connectorStyle,
   };
 
   console.log('Rendering with config:', config);

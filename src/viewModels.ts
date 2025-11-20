@@ -374,6 +374,14 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
     theme: { rootClassName: 'bv-theme-default' },
   },
 
+  'se-ultrawide': {
+    id: 'se-ultrawide',
+    label: 'Single Elimination - Ultrawide (21:9)',
+    stageTypes: ['single_elimination'],
+    layout: ULTRAWIDE_LAYOUT,
+    theme: { rootClassName: 'bv-theme-default' },
+  },
+
   // === Double Elimination Presets ===
 
   'de-default': {
@@ -421,6 +429,15 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
     doubleElimMode: 'unified',
   },
 
+  'de-ultrawide': {
+    id: 'de-ultrawide',
+    label: 'Double Elimination - Ultrawide (21:9)',
+    stageTypes: ['double_elimination'],
+    layout: ULTRAWIDE_LAYOUT,
+    theme: { rootClassName: 'bv-theme-default' },
+    doubleElimMode: 'unified',
+  },
+
   'de-with-logos': {
     id: 'de-with-logos',
     label: 'Double Elimination - With Team Logos',
@@ -435,33 +452,6 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
     label: 'Double Elimination - Compact with Logos',
     stageTypes: ['double_elimination'],
     layout: COMPACT_LAYOUT_WITH_LOGOS,
-    theme: { rootClassName: 'bv-theme-default' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-separated-losers': {
-    id: 'de-separated-losers',
-    label: 'Double Elimination - Separated Losers (Max Clarity)',
-    stageTypes: ['double_elimination'],
-    layout: DEFAULT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-default' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-compact-separated': {
-    id: 'de-compact-separated',
-    label: 'Double Elimination - Compact (Standard Positioning)',
-    stageTypes: ['double_elimination'],
-    layout: COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-compact' },
-    doubleElimMode: 'unified',
-  },
-
-  'de-traditional': {
-    id: 'de-traditional',
-    label: 'Double Elimination - Traditional Side-by-Side',
-    stageTypes: ['double_elimination'],
-    layout: DEFAULT_LAYOUT,
     theme: { rootClassName: 'bv-theme-default' },
     doubleElimMode: 'unified',
   },
