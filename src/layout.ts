@@ -5,145 +5,32 @@ import { DEFAULT_LOSERS_CONFIG } from './viewModels';
 import type { MatchWithMetadata, SwissZone } from './types';
 import type { DoubleElimLayoutProfile } from './profiles/deProfiles';
 
-/**
- * Bracket group types in display order
- */
-type BracketGroup = 'WINNERS_BRACKET' | 'LOSERS_BRACKET' | 'GRAND_FINAL_BRACKET' | 'PLACEMENT_BRACKET';
+// Import and re-export types from layout/types module
+import {
+    type BracketGroup,
+    GROUP_ORDER,
+    type Point,
+    type ConnectorType,
+    type ConnectorLine,
+    type RoundHeader,
+    type MatchPosition,
+    type SwissPanelPosition,
+    type BracketLayout,
+    extractBracketGroup,
+} from './layout/types';
 
-const GROUP_ORDER: BracketGroup[] = [
-    'WINNERS_BRACKET',
-    'LOSERS_BRACKET',
-    'GRAND_FINAL_BRACKET',
-    // PLACEMENT_BRACKET is positioned separately after other brackets to ensure correct ordering
-];
-
-/**
- * A point in 2D space.
- */
-export interface Point {
-    x: number;
-    y: number;
-}
-
-/**
- * Type of connector based on bracket relationship.
- */
-export type ConnectorType = 'internal' | 'cross-bracket' | 'grand-final';
-
-/**
- * A connector line between two matches.
- */
-export interface ConnectorLine {
-    id: string;
-    fromMatchId: string;
-    toMatchId: string;
-    points: Point[];
-    connectorType: ConnectorType;
-}
-
-/**
- * Position information for a round header.
- */
-export interface RoundHeader {
-    roundNumber: number;
-    roundName: string;
-    columnIndex: number;
-    xPx: number;
-    yPx: number;
-}
-
-/**
- * Position information for a match.
- */
-export interface MatchPosition {
-    xRound: number;  // Column index
-    yLane: number;   // Row/lane index
-    xPx: number;     // Pixel X position
-    yPx: number;     // Pixel Y position
-}
-
-/**
- * Panel position for boxed Swiss layout
- */
-export interface SwissPanelPosition {
-    /** Record key (e.g., "0-0", "1-0", "2-1") */
-    key: string;
-    /** Display label for the record */
-    record: string;
-    /** Optional round number associated with this bucket */
-    roundNumber?: number;
-    /** Date string for panel header (from round data if available) */
-    date?: string;
-    /** Best-of label (e.g., "BO1", "BO3") from round data if available */
-    bestOf?: string;
-    /** X position in pixels */
-    xPx: number;
-    /** Y position in pixels */
-    yPx: number;
-    /** Panel width in pixels */
-    width: number;
-    /** Panel height in pixels (based on match count) */
-    height: number;
-    /** Number of matches in this panel */
-    matchCount: number;
-    /** Layer index (wins + losses) for vertical positioning */
-    layer?: number;
-    /** Zone classification for visual hierarchy (advancing/neutral/eliminated) */
-    zone: SwissZone;
-}
-
-/**
- * Complete layout result.
- */
-export interface BracketLayout {
-    matchPositions: Map<string, MatchPosition>;
-    headerPositions: RoundHeader[];
-    connectors: ConnectorLine[];
-    panelPositions?: SwissPanelPosition[]; // Swiss-specific: boxed panel positions
-    groupOffsetY?: Map<BracketGroup, number>; // Y offsets for bracket groups (for section titles)
-    totalWidth: number;
-    totalHeight: number;
-}
-
-/**
- * Extracts bracket group from group_id.
- * Examples:
- * - "group-1-winners-bracket" -> "WINNERS_BRACKET"
- * - "group-1-losers-bracket" -> "LOSERS_BRACKET"
- * - "group-1-grand-final-bracket" -> "GRAND_FINAL_BRACKET"
- * - "group-1-placement-bracket" -> "PLACEMENT_BRACKET"
- * - "stage-1-third-place" -> "PLACEMENT_BRACKET"
- *
- * @param groupId The group_id from a match
- * @returns BracketGroup type
- */
-function extractBracketGroup(groupId: string): BracketGroup {
-    const normalized = groupId.toLowerCase();
-
-    // Check placement/third-place matches first
-    if (normalized.includes('placement') || normalized.includes('third') || normalized.includes('3rd'))
-        return 'PLACEMENT_BRACKET';
-
-    // Check for losers/lower bracket (handle both "loser" and "lower" terminology)
-    if (normalized.includes('loser') || normalized.includes('lower'))
-        return 'LOSERS_BRACKET';
-
-    // Check for grand finals (check 'grand-final' or 'grand final' before 'final' to avoid ambiguity)
-    if (normalized.includes('grand-final') || normalized.includes('grand') ||
-        (normalized.includes('grand') && normalized.includes('final')))
-        return 'GRAND_FINAL_BRACKET';
-
-    // Check for finals bracket (but only if not already caught by grand finals)
-    if (normalized.includes('final'))
-        return 'GRAND_FINAL_BRACKET';
-
-    // Check for winners/upper bracket (handle both "winner" and "upper" terminology)
-    if (normalized.includes('winner') || normalized.includes('upper'))
-        return 'WINNERS_BRACKET';
-
-    // Default to winners bracket (includes single elimination without group suffix)
-    return 'WINNERS_BRACKET';
-}
+export {
+    type BracketGroup,
+    GROUP_ORDER,
+    type Point,
+    type ConnectorType,
+    type ConnectorLine,
+    type RoundHeader,
+    type MatchPosition,
+    type SwissPanelPosition,
+    type BracketLayout,
+    extractBracketGroup,
+};
 
 /**
  * Computes the complete layout for a bracket.

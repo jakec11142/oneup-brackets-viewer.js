@@ -47,6 +47,10 @@ export function renderRoundRobin(
         const groupContainer = dom.createGroupContainer(groupId, lang.getGroupName(groupNumber++));
         const matchesByRound = splitBy(groupMatches, 'round_id').map(matches => sortBy(matches, 'number'));
 
+        // Create horizontal scroll container for rounds
+        const roundsContainer = document.createElement('div');
+        roundsContainer.classList.add('rounds-container');
+
         let roundNumber = 1;
 
         for (const roundMatches of matchesByRound) {
@@ -62,16 +66,19 @@ export function renderRoundRobin(
 
             const roundContainer = dom.createRoundContainer(roundId, roundName);
 
-            // Create match grid container
+            // Create vertical match stack container
             const matchGrid = document.createElement('div');
             matchGrid.classList.add('round-matches');
             for (const match of roundMatches)
                 matchGrid.append(context.createMatch(match, true));
 
             roundContainer.append(matchGrid);
-            groupContainer.append(roundContainer);
+            roundsContainer.append(roundContainer);
             roundNumber++;
         }
+
+        // Add the rounds container to the group
+        groupContainer.append(roundsContainer);
 
         // Wrap the group container in the card-style section
         groupSection.append(groupContainer);
