@@ -33,7 +33,8 @@ export declare class TanStackVirtualManager {
     /**
      * Initializes the virtual bracket with container, layout, and render callback.
      */
-    initialize(container: HTMLElement, layout: BracketLayout, matches: MatchWithMetadata[], renderMatch: (match: MatchWithMetadata) => HTMLElement): void;
+    initialize(scrollContainer: HTMLElement, // The element with scrollbars (.brackets-viewer)
+    layout: BracketLayout, matches: MatchWithMetadata[], renderMatch: (match: MatchWithMetadata) => HTMLElement, renderTarget?: HTMLElement): void;
     /**
      * Updates the virtual items based on current scroll position.
      */

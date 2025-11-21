@@ -55,22 +55,26 @@ export class TanStackVirtualManager {
      * Initializes the virtual bracket with container, layout, and render callback.
      */
     initialize(
-        container: HTMLElement,
+        scrollContainer: HTMLElement,  // The element with scrollbars (.brackets-viewer)
         layout: BracketLayout,
         matches: MatchWithMetadata[],
         renderMatch: (match: MatchWithMetadata) => HTMLElement,
+        renderTarget?: HTMLElement  // Where to render matches (roundsContainer)
     ): void {
-        this.container = container;
+        this.container = scrollContainer;
         this.layout = layout;
         this.matches = matches;
         this.renderMatch = renderMatch;
 
-        // Create an inner container for virtual items
-        const innerContainer = document.createElement('div');
-        innerContainer.style.position = 'relative';
-        innerContainer.style.width = '100%';
-        innerContainer.style.height = '100%';
-        container.appendChild(innerContainer);
+        // Use existing render target or create inner container
+        const innerContainer = renderTarget || (() => {
+            const inner = document.createElement('div');
+            inner.style.position = 'relative';
+            inner.style.width = '100%';
+            inner.style.height = '100%';
+            scrollContainer.appendChild(inner);
+            return inner;
+        })();
 
         // Get match positions as an array sorted by Y position
         const matchItems = matches.map(match => {
@@ -86,14 +90,15 @@ export class TanStackVirtualManager {
         matchItems.sort((a, b) => (a.position?.yPx || 0) - (b.position?.yPx || 0));
 
         // Log container dimensions for debugging
-        console.log(`[TanStackVirtual] Container dimensions: ${container.offsetWidth}x${container.offsetHeight}`);
+        console.log(`[TanStackVirtual] Scroll container dimensions: ${scrollContainer.offsetWidth}x${scrollContainer.offsetHeight}`);
         console.log(`[TanStackVirtual] Layout total: ${layout.totalWidth}x${layout.totalHeight}`);
         console.log(`[TanStackVirtual] Match items to virtualize: ${matchItems.length}`);
+        console.log(`[TanStackVirtual] Scroll container element:`, scrollContainer.className || scrollContainer.tagName);
 
-        // Create the virtualizer
+        // Create the virtualizer with the scrollable container
         this.virtualizer = new Virtualizer({
             count: matchItems.length,
-            getScrollElement: () => container,
+            getScrollElement: () => scrollContainer,  // The element with scrollbars
             estimateSize: () => 80, // Estimated match height
             overscan: this.config.overscan,
             observeElementRect: observeElementRect,
@@ -108,8 +113,8 @@ export class TanStackVirtualManager {
         console.log(`[TanStackVirtual] Calling initial updateVirtualItems...`);
         this.updateVirtualItems(innerContainer, matchItems);
 
-        // Set up scroll listener for updates
-        container.addEventListener('scroll', () => {
+        // Set up scroll listener for updates on the SCROLLABLE container
+        scrollContainer.addEventListener('scroll', () => {
             console.log(`[TanStackVirtual] Scroll event triggered`);
             this.updateVirtualItems(innerContainer, matchItems);
         }, { passive: true });
@@ -161,9 +166,9 @@ export class TanStackVirtualManager {
             this.renderedElements.set(item.id, element);
         }
 
-        // Update container height to match total size
-        const totalHeight = this.layout?.totalHeight || 0;
-        innerContainer.style.height = `${totalHeight}px`;
+        // Don't set height on inner container - matches are absolutely positioned
+        // Setting height would defeat virtualization by making everything "visible"
+        // innerContainer.style.height is left auto
         innerContainer.style.width = `${this.layout?.totalWidth || 0}px`;
 
         const stats = this.getStats();

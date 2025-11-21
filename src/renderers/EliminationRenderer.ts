@@ -100,10 +100,11 @@ export function renderUnifiedDoubleElimination(
     const roundsContainer = dom.createRoundsContainer();
 
     // Check if virtual scrolling should be used
-    // DISABLED until properly debugged - matches not rendering
-    const enableVirtualization = context.config.enableVirtualization ?? false;
-    const threshold = context.config.virtualizationThreshold ?? 500; // Set high to avoid auto-enable
-    const shouldVirtualize = enableVirtualization === true; // Only enable if explicitly set to true
+    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
+    const threshold = context.config.virtualizationThreshold ?? 50;
+    const shouldVirtualize =
+        enableVirtualization === true ||
+        (enableVirtualization === 'auto' && allMatchesWithMetadata.length >= threshold);
 
 
     // Render matches with absolute positioning (skip if virtualization will handle it)
@@ -147,8 +148,28 @@ export function renderUnifiedDoubleElimination(
     bracketContainer.append(roundsContainer);
     container.append(bracketContainer);
 
-    // Virtual scrolling temporarily disabled - not rendering matches properly
-    // TODO: Debug why TanStack Virtual isn't showing matches initially
+    // Initialize virtual scrolling for large brackets
+    if (shouldVirtualize) {
+        debug.log(`🚀 Initializing TanStack Virtual for ${allMatchesWithMetadata.length} matches`);
+
+        // Find the actual scrollable container (.brackets-viewer)
+        const scrollableContainer = container.closest('.brackets-viewer') || container;
+
+        const virtualManager = new TanStackVirtualManager({
+            enabled: true,
+            autoThreshold: threshold,
+            debug: true
+        });
+
+        // Pass the scrollable element and the content container
+        virtualManager.initialize(
+            scrollableContainer as HTMLElement,  // The element with scrollbars
+            layout,
+            allMatchesWithMetadata,
+            (match: MatchWithMetadata) => context.createBracketMatch(match),
+            roundsContainer  // Where to render the matches
+        );
+    }
 }
 
 /**
@@ -194,10 +215,11 @@ export function renderUnifiedSingleElimination(
     const roundsContainer = dom.createRoundsContainer();
 
     // Check if virtual scrolling should be used
-    // DISABLED until properly debugged - matches not rendering
-    const enableVirtualization = context.config.enableVirtualization ?? false;
-    const threshold = context.config.virtualizationThreshold ?? 500; // Set high to avoid auto-enable
-    const shouldVirtualize = enableVirtualization === true; // Only enable if explicitly set to true
+    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
+    const threshold = context.config.virtualizationThreshold ?? 50;
+    const shouldVirtualize =
+        enableVirtualization === true ||
+        (enableVirtualization === 'auto' && allMatchesWithMetadata.length >= threshold);
 
 
     // Render matches with absolute positioning (skip if virtualization will handle it)
@@ -232,8 +254,28 @@ export function renderUnifiedSingleElimination(
     bracketContainer.append(roundsContainer);
     container.append(bracketContainer);
 
-    // Virtual scrolling temporarily disabled - not rendering matches properly
-    // TODO: Debug why TanStack Virtual isn't showing matches initially
+    // Initialize virtual scrolling for large brackets
+    if (shouldVirtualize) {
+        debug.log(`🚀 Initializing TanStack Virtual for ${allMatchesWithMetadata.length} matches`);
+
+        // Find the actual scrollable container (.brackets-viewer)
+        const scrollableContainer = container.closest('.brackets-viewer') || container;
+
+        const virtualManager = new TanStackVirtualManager({
+            enabled: true,
+            autoThreshold: threshold,
+            debug: true
+        });
+
+        // Pass the scrollable element and the content container
+        virtualManager.initialize(
+            scrollableContainer as HTMLElement,  // The element with scrollbars
+            layout,
+            allMatchesWithMetadata,
+            (match: MatchWithMetadata) => context.createBracketMatch(match),
+            roundsContainer  // Where to render the matches
+        );
+    }
 }
 
 /**
