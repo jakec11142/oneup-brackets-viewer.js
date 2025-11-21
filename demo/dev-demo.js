@@ -85,6 +85,19 @@ if (highlightHoverCheckbox) {
   });
 }
 
+// Dark mode toggle
+const darkModeCheckbox = document.getElementById('toggle-dark-mode');
+if (darkModeCheckbox) {
+  darkModeCheckbox.addEventListener('change', () => {
+    const isDark = darkModeCheckbox.checked;
+    document.body.classList.toggle('dark', isDark);
+    const viewer = document.querySelector('#viewer-root');
+    if (viewer) {
+      viewer.classList.toggle('bv-theme-dark', isDark);
+    }
+  });
+}
+
 const positionRadios = document.querySelectorAll('input[name="participant-position"]');
 positionRadios.forEach(radio => {
   radio.addEventListener('change', () => {

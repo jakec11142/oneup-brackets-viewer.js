@@ -1274,6 +1274,14 @@ export class BracketsViewer {
         if (found) {
             containers.name.innerText = found.name;
             containers.participant.setAttribute('title', found.name);
+
+            // Check for placeholder names (TBD, BYE, empty, etc.)
+            if (dom.isPlaceholderName(found.name)) {
+                dom.setupPlaceholder(containers.participant, containers.name);
+                containers.result.innerText = '-';
+                return; // Don't apply win/loss styling to placeholders
+            }
+
             this.renderParticipantImage(containers.name, found.id);
             this.renderParticipantOrigin(containers.name, participant, side, matchLocation, roundNumber);
         } else

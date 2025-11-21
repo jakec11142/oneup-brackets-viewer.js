@@ -366,6 +366,31 @@ export function setupBye(nameContainer: HTMLElement): void {
     nameContainer.classList.add('bye');
 }
 
+/**
+ * Checks if a participant name is a placeholder value.
+ *
+ * @param name The participant name to check.
+ */
+export function isPlaceholderName(name: string | null | undefined): boolean {
+    if (!name || name.trim() === '') return true;
+    const lower = name.toLowerCase().trim();
+    return lower === 'tbd' || lower === 'bye' || lower === 'unknown' || lower === 'pending';
+}
+
+/**
+ * Sets placeholder styling on a participant.
+ *
+ * @param participantContainer The participant container.
+ * @param nameContainer The name container.
+ * @param displayText Optional text to display (defaults to current text or "TBD").
+ */
+export function setupPlaceholder(participantContainer: HTMLElement, nameContainer: HTMLElement, displayText?: string): void {
+    participantContainer.classList.add('placeholder');
+    nameContainer.classList.add('placeholder');
+    if (displayText) {
+        nameContainer.innerText = displayText;
+    }
+}
 
 /**
  * Sets a win for a participant.
