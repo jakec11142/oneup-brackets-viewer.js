@@ -99,21 +99,29 @@ export function renderUnifiedDoubleElimination(
     const bracketContainer = dom.createBracketContainer(groupId, lang.getBracketName(context.stage, 'winner_bracket'));
     const roundsContainer = dom.createRoundsContainer();
 
-    // Render matches with absolute positioning
+    // Check if virtual scrolling should be used
+    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
+    const threshold = context.config.virtualizationThreshold ?? 50;
+    const shouldVirtualize =
+        enableVirtualization === true ||
+        (enableVirtualization === 'auto' && allMatchesWithMetadata.length >= threshold);
+
+    // Render matches with absolute positioning (skip if virtualization will handle it)
     let renderedCount = 0;
-    for (const match of allMatchesWithMetadata) {
-        const pos = layout.matchPositions.get(String(match.id));
-        if (!pos) continue;
+    if (!shouldVirtualize) {
+        for (const match of allMatchesWithMetadata) {
+            const pos = layout.matchPositions.get(String(match.id));
+            if (!pos) continue;
 
-        const matchEl = context.createBracketMatch(match);
-        matchEl.style.position = 'absolute';
-        matchEl.style.left = `${pos.xPx}px`;
-        matchEl.style.top = `${pos.yPx}px`;
-        roundsContainer.append(matchEl);
-        renderedCount++;
+            const matchEl = context.createBracketMatch(match);
+            matchEl.style.position = 'absolute';
+            matchEl.style.left = `${pos.xPx}px`;
+            matchEl.style.top = `${pos.yPx}px`;
+            roundsContainer.append(matchEl);
+            renderedCount++;
+        }
+        debug.log(`✅ Rendered ${renderedCount} matches`);
     }
-
-    debug.log(`✅ Rendered ${renderedCount} matches`);
 
     // Render round headers
     if (context.config.showRoundHeaders !== false) {
@@ -140,12 +148,6 @@ export function renderUnifiedDoubleElimination(
     container.append(bracketContainer);
 
     // Initialize virtual scrolling for large brackets
-    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
-    const threshold = context.config.virtualizationThreshold ?? 50;
-    const shouldVirtualize =
-        enableVirtualization === true ||
-        (enableVirtualization === 'auto' && allMatchesWithMetadata.length >= threshold);
-
     if (shouldVirtualize) {
         debug.log(`🚀 Initializing virtual scrolling for ${allMatchesWithMetadata.length} matches`);
         const virtualManager = new VirtualBracketManager({
@@ -157,8 +159,9 @@ export function renderUnifiedDoubleElimination(
         });
 
         // Initialize virtual scrolling with match render function
+        // Virtual manager will handle rendering matches into roundsContainer
         virtualManager.initialize(
-            container,
+            roundsContainer,
             layout,
             allMatchesWithMetadata,
             (match: MatchWithMetadata) => context.createBracketMatch(match)
@@ -208,20 +211,29 @@ export function renderUnifiedSingleElimination(
     const bracketContainer = dom.createBracketContainer(groupId, lang.getBracketName(context.stage, 'single_bracket'));
     const roundsContainer = dom.createRoundsContainer();
 
+    // Check if virtual scrolling should be used
+    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
+    const threshold = context.config.virtualizationThreshold ?? 50;
+    const shouldVirtualize =
+        enableVirtualization === true ||
+        (enableVirtualization === 'auto' && allMatchesWithMetadata.length >= threshold);
+
+    // Render matches with absolute positioning (skip if virtualization will handle it)
     let renderedCount = 0;
-    for (const match of allMatchesWithMetadata) {
-        const pos = layout.matchPositions.get(String(match.id));
-        if (!pos) continue;
+    if (!shouldVirtualize) {
+        for (const match of allMatchesWithMetadata) {
+            const pos = layout.matchPositions.get(String(match.id));
+            if (!pos) continue;
 
-        const matchEl = context.createBracketMatch(match);
-        matchEl.style.position = 'absolute';
-        matchEl.style.left = `${pos.xPx}px`;
-        matchEl.style.top = `${pos.yPx}px`;
-        roundsContainer.append(matchEl);
-        renderedCount++;
+            const matchEl = context.createBracketMatch(match);
+            matchEl.style.position = 'absolute';
+            matchEl.style.left = `${pos.xPx}px`;
+            matchEl.style.top = `${pos.yPx}px`;
+            roundsContainer.append(matchEl);
+            renderedCount++;
+        }
+        debug.log(`✅ Rendered ${renderedCount} matches`);
     }
-
-    debug.log(`✅ Rendered ${renderedCount} matches`);
 
     if (context.config.showRoundHeaders !== false) {
         renderRoundHeaders(roundsContainer, layout, allMatchesWithMetadata, context.layoutConfig);
@@ -239,12 +251,6 @@ export function renderUnifiedSingleElimination(
     container.append(bracketContainer);
 
     // Initialize virtual scrolling for large brackets
-    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
-    const threshold = context.config.virtualizationThreshold ?? 50;
-    const shouldVirtualize =
-        enableVirtualization === true ||
-        (enableVirtualization === 'auto' && allMatchesWithMetadata.length >= threshold);
-
     if (shouldVirtualize) {
         debug.log(`🚀 Initializing virtual scrolling for ${allMatchesWithMetadata.length} matches`);
         const virtualManager = new VirtualBracketManager({
@@ -255,8 +261,9 @@ export function renderUnifiedSingleElimination(
             debug: false
         });
 
+        // Virtual manager will handle rendering matches into roundsContainer
         virtualManager.initialize(
-            container,
+            roundsContainer,
             layout,
             allMatchesWithMetadata,
             (match: MatchWithMetadata) => context.createBracketMatch(match)
