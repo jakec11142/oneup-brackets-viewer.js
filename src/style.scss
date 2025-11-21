@@ -383,9 +383,40 @@
       }
     }
 
+    // Round card - contains header + match grid
     .round {
-      width: fit-content;
-      margin: 0 auto 16px auto;
+      background: var(--bv-surface-color);
+      border: 1px solid var(--bv-border-color);
+      border-radius: var(--bv-radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+
+      // Round header inside card
+      h3 {
+        margin: 0 0 12px 0;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--bv-border-color);
+      }
+
+      // Match grid - 2 columns
+      .round-matches {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      // Single match container within grid
+      .match {
+        width: 100%;
+        min-height: auto;
+      }
+    }
+  }
+
+  // Responsive: stack round matches to 1 column on mobile
+  @media (max-width: 600px) {
+    .round-robin .round .round-matches {
+      grid-template-columns: 1fr;
     }
   }
 

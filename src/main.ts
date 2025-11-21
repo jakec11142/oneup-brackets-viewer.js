@@ -326,9 +326,14 @@ export class BracketsViewer {
                 }, lang.t) || lang.t('common.round-name', { roundNumber });
 
                 const roundContainer = dom.createRoundContainer(roundId, roundName);
-                for (const match of roundMatches)
-                    roundContainer.append(this.createMatch(match, true));
 
+                // Create match grid container
+                const matchGrid = document.createElement('div');
+                matchGrid.classList.add('round-matches');
+                for (const match of roundMatches)
+                    matchGrid.append(this.createMatch(match, true));
+
+                roundContainer.append(matchGrid);
                 groupContainer.append(roundContainer);
                 roundNumber++;
             }
