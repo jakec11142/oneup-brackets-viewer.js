@@ -390,57 +390,101 @@ export class BracketsViewer {
                 matchesByRecord.get(key)!.push(match);
             });
 
-            // Render Swiss panels (boxed columns)
+            // Group panels by round number for visual grouping
+            const panelsByRound = new Map<number, typeof swissLayout.panelPositions>();
             swissLayout.panelPositions?.forEach(panel => {
-                // Create panel container
-                const panelDiv = document.createElement('div');
-                panelDiv.className = 'swiss-panel';
-                panelDiv.style.position = 'absolute';
-                panelDiv.style.left = `${panel.xPx}px`;
-                panelDiv.style.top = `${panel.yPx}px`;
-                panelDiv.style.width = `${panel.width}px`;
-                panelDiv.dataset.key = panel.key;
-
-                // Apply zone styling via data attribute (CSS handles colors)
-                if (panel.zone === 'advancing' || panel.zone === 'eliminated') {
-                    panelDiv.setAttribute('data-zone', panel.zone);
+                const roundNum = panel.roundNumber ?? 1;
+                if (!panelsByRound.has(roundNum)) {
+                    panelsByRound.set(roundNum, []);
                 }
+                panelsByRound.get(roundNum)!.push(panel);
+            });
 
-                // Create simplified panel header - only show record
-                const headerDiv = document.createElement('div');
-                headerDiv.className = 'swiss-panel-header';
+            // Render Swiss round groups
+            panelsByRound.forEach((panels, roundNumber) => {
+                if (!panels || !panels.length) return;
 
-                // Record only (clean, focused)
-                const recordSpan = document.createElement('span');
-                recordSpan.className = 'record';
-                recordSpan.textContent = panel.record;
-                headerDiv.appendChild(recordSpan);
+                // Calculate group bounds (leftmost x, topmost y, total width/height)
+                const minX = Math.min(...panels.map(p => p!.xPx));
+                const minY = Math.min(...panels.map(p => p!.yPx));
+                const maxX = Math.max(...panels.map(p => p!.xPx + p!.width));
+                const maxY = Math.max(...panels.map(p => p!.yPx + p!.height));
+                const groupWidth = maxX - minX;
+                const groupHeaderHeight = 36;
+                const groupHeight = maxY - minY + groupHeaderHeight;
 
-                panelDiv.appendChild(headerDiv);
+                // Create round group wrapper
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'swiss-round-group';
+                groupDiv.style.position = 'absolute';
+                groupDiv.style.left = `${minX}px`;
+                groupDiv.style.top = `${minY}px`;
+                groupDiv.style.width = `${groupWidth}px`;
+                groupDiv.style.height = `${groupHeight}px`;
+                groupDiv.dataset.round = String(roundNumber);
 
-                // Create panel body for matches
-                const bodyDiv = document.createElement('div');
-                bodyDiv.className = 'swiss-panel-body';
+                // Shared round title
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'swiss-round-group__title';
+                titleDiv.textContent = `Round ${roundNumber}`;
+                groupDiv.appendChild(titleDiv);
 
-                // Calculate body height for proper panel sizing
-                const bodyHeight = panel.height - (this.layoutConfig.swissConfig?.panelHeaderHeight ?? 40);
-                bodyDiv.style.height = `${bodyHeight}px`;
+                // Columns container
+                const columnsDiv = document.createElement('div');
+                columnsDiv.className = 'swiss-round-group__columns';
 
-                // Render matches within this panel using computed positions
-                const panelMatches = matchesByRecord.get(panel.key) ?? [];
-                const rowHeight = this.layoutConfig.swissConfig?.rowHeight ?? this.layoutConfig.rowHeight;
-                const innerGap = this.layoutConfig.swissConfig?.panelInnerGap ?? 14;
+                // Render each panel/column within this round group
+                panels.forEach(panel => {
+                    const panelDiv = document.createElement('div');
+                    panelDiv.className = 'round-column';
+                    panelDiv.style.position = 'absolute';
+                    panelDiv.style.left = `${panel.xPx - minX}px`;
+                    panelDiv.style.top = `${(panel.yPx - minY) + groupHeaderHeight}px`;
+                    panelDiv.style.width = `${panel.width}px`;
+                    panelDiv.dataset.key = panel.key;
 
-                panelMatches.forEach((match, idx) => {
-                    const matchEl = this.createBracketMatch(match);
-                    matchEl.classList.add('swiss-match-row');
-                    // Position match using computed layout (relative to panel body)
-                    matchEl.style.top = `${idx * (rowHeight + innerGap)}px`;
-                    bodyDiv.appendChild(matchEl);
+                    // Apply zone styling via data attribute (CSS handles colors)
+                    if (panel.zone === 'advancing' || panel.zone === 'eliminated') {
+                        panelDiv.setAttribute('data-zone', panel.zone);
+                    }
+
+                    // Column header shows only record (round title is at group level)
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'round-column__header';
+
+                    const recordSpan = document.createElement('span');
+                    recordSpan.className = 'record';
+                    recordSpan.textContent = panel.record;
+                    headerDiv.appendChild(recordSpan);
+
+                    panelDiv.appendChild(headerDiv);
+
+                    // Create panel body for matches
+                    const bodyDiv = document.createElement('div');
+                    bodyDiv.className = 'round-column__matches';
+
+                    // Calculate body height for proper panel sizing
+                    const bodyHeight = panel.height - (this.layoutConfig.swissConfig?.panelHeaderHeight ?? 40);
+                    bodyDiv.style.height = `${bodyHeight}px`;
+
+                    // Render matches within this panel
+                    const panelMatches = matchesByRecord.get(panel.key) ?? [];
+                    const rowHeight = this.layoutConfig.swissConfig?.rowHeight ?? this.layoutConfig.rowHeight;
+                    const innerGap = this.layoutConfig.swissConfig?.panelInnerGap ?? 14;
+
+                    panelMatches.forEach((match, idx) => {
+                        const matchEl = this.createBracketMatch(match);
+                        matchEl.classList.add('round-column__match');
+                        matchEl.style.top = `${idx * (rowHeight + innerGap)}px`;
+                        bodyDiv.appendChild(matchEl);
+                    });
+
+                    panelDiv.appendChild(bodyDiv);
+                    columnsDiv.appendChild(panelDiv);
                 });
 
-                panelDiv.appendChild(bodyDiv);
-                roundsContainer.appendChild(panelDiv);
+                groupDiv.appendChild(columnsDiv);
+                roundsContainer.appendChild(groupDiv);
             });
 
             // Set explicit size on rounds container
