@@ -19,6 +19,31 @@ import { debug } from './debug';
 export type BracketAlignment = 'top' | 'center' | 'bottom' | 'finals-top' | 'split-horizontal';
 
 /**
+ * Losers bracket layout configuration.
+ * Controls spacing and positioning for the feeder-match centering algorithm.
+ */
+export interface LosersLayoutConfig {
+  /** Height of each match card in pixels */
+  cardHeight: number;
+  /** Vertical gap between match cards in pixels */
+  cardGap: number;
+  /** Width of each column in pixels */
+  columnWidth: number;
+  /** Horizontal gap between columns in pixels */
+  columnGap: number;
+}
+
+/**
+ * Default losers bracket layout configuration
+ */
+export const DEFAULT_LOSERS_CONFIG: LosersLayoutConfig = {
+  cardHeight: 60,
+  cardGap: 16,
+  columnWidth: 190,
+  columnGap: 40,
+};
+
+/**
  * Layout configuration parameters that control spacing and sizing of bracket elements
  */
 export interface LayoutConfig {
@@ -84,6 +109,13 @@ export interface LayoutConfig {
    * Provides fine-grained control over Swiss panel spacing, sizing, and column modes.
    */
   swissConfig?: SwissLayoutConfig;
+
+  /**
+   * Losers bracket layout configuration.
+   * When provided, uses feeder-match centering algorithm for losers bracket.
+   * LB Round 1 uses sequential positioning, later rounds center between feeder matches.
+   */
+  losersConfig?: LosersLayoutConfig;
 }
 
 /**
@@ -361,6 +393,21 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
       upperBracketRowHeight: 48,  // Compress upper bracket rows (40% reduction from 80px)
       lowerBracketRowHeight: 48,  // Compress lower bracket rows (40% reduction from 80px)
       losersBracketOffsetX: 1,  // Offset lower bracket to align with Upper Round 2
+    },
+    theme: { rootClassName: 'bv-theme-default' },
+    doubleElimMode: 'unified',
+  },
+
+  'de-feeder-centered': {
+    id: 'de-feeder-centered',
+    label: 'Double Elim - Feeder-Centered Losers',
+    stageTypes: ['double_elimination'],
+    layout: {
+      ...DEFAULT_LAYOUT,
+      bracketAlignment: 'split-horizontal',
+      groupGapY: 100,
+      groupGapX: 2,
+      losersConfig: DEFAULT_LOSERS_CONFIG,  // Enable feeder-match centering for losers bracket
     },
     theme: { rootClassName: 'bv-theme-default' },
     doubleElimMode: 'unified',

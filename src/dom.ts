@@ -102,6 +102,33 @@ export function createGroupContainer(groupId: Id, title: string): HTMLElement {
 }
 
 /**
+ * Creates a wrapper section for round-robin group content with card styling.
+ */
+export function createRoundRobinGroupSection(): HTMLElement {
+    const section = document.createElement('section');
+    section.classList.add('round-robin-group');
+    return section;
+}
+
+/**
+ * Creates a "Standings" subheading for the rankings table.
+ */
+export function createStandingsHeading(): HTMLElement {
+    const h3 = document.createElement('h3');
+    h3.innerText = 'Standings';
+    return h3;
+}
+
+/**
+ * Creates a wrapper div for ranking tables to enable horizontal scrolling on mobile.
+ */
+export function createRankingTableWrapper(): HTMLElement {
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('ranking-table-wrapper');
+    return wrapper;
+}
+
+/**
  * Creates a container which contains a list of rounds.
  */
 export function createRoundsContainer(): HTMLElement {
@@ -515,13 +542,13 @@ export function addEnhancedMetadata(
     if (round) parts.push(`R${round}`);
     if (bestOf) parts.push(bestOf);
 
-    // Add status text
+    // Add status text (wrapped in span for targeted styling)
     if (isLive) {
-        parts.push('Live');
+        parts.push('<span class="status-text">Live</span>');
     } else if (isCompleted) {
-        parts.push('Completed');
+        parts.push('<span class="status-text">Completed</span>');
     } else if (isNotStarted) {
-        parts.push('Not Started');
+        parts.push('<span class="status-text">Not Started</span>');
     }
 
     metadata.innerHTML = parts.join(' <span class="metadata-separator">•</span> ');

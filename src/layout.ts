@@ -1,6 +1,7 @@
 import { Match } from 'brackets-model';
 import { BracketEdgeResponse } from './dto/types';
-import type { LayoutConfig } from './viewModels';
+import type { LayoutConfig, LosersLayoutConfig } from './viewModels';
+import { DEFAULT_LOSERS_CONFIG } from './viewModels';
 import type { MatchWithMetadata, SwissZone } from './types';
 import type { DoubleElimLayoutProfile } from './profiles/deProfiles';
 
@@ -439,46 +440,101 @@ export function computeLayout(
         // Process rounds in order
         const sortedRounds = Array.from(groupRounds.keys()).sort((a, b) => a - b);
 
-        // For LOSERS_BRACKET: use convergence-aware lane assignment
-        // Only create step-downs when 2+ matches converge into 1
-        // Matches with single input stay on the same lane (horizontal connection)
+        // For LOSERS_BRACKET: use feeder-match centering when losersConfig is provided
+        // Otherwise, fall back to convergence-aware lane assignment
         if (group === 'LOSERS_BRACKET') {
-            // Process all rounds forward, assigning lanes
-            let currentLane = 0;
-            for (const roundNumber of sortedRounds) {
-                const idsInRound = groupRounds.get(roundNumber) ?? [];
-                idsInRound.sort((a, b) => {
-                    const matchA = matchesById.get(a)?.match;
-                    const matchB = matchesById.get(b)?.match;
-                    return (matchA?.number ?? 0) - (matchB?.number ?? 0);
-                });
+            if (layout.losersConfig) {
+                // NEW: Feeder-match centering algorithm
+                // LB Round 1: sequential positioning
+                // Later rounds: center between feeder match Y positions
+                const losersConfig = layout.losersConfig;
+                let currentLane = 0;
 
-                for (const matchId of idsInRound) {
-                    const inboundEdges = inEdgesByToId.get(matchId) ?? [];
-                    const childLanes: number[] = [];
+                for (const roundNumber of sortedRounds) {
+                    const idsInRound = groupRounds.get(roundNumber) ?? [];
+                    const roundIdx = sortedRounds.indexOf(roundNumber);
 
-                    for (const edge of inboundEdges) {
-                        const childId = String(edge.fromMatchId ?? '');
-                        const lane = laneFloatById.get(childId);
-                        if (lane !== undefined)
-                            childLanes.push(lane);
-                    }
+                    idsInRound.sort((a, b) => {
+                        const matchA = matchesById.get(a)?.match;
+                        const matchB = matchesById.get(b)?.match;
+                        return (matchA?.number ?? 0) - (matchB?.number ?? 0);
+                    });
 
-                    if (childLanes.length >= 2) {
-                        // CONVERGENCE: center between children
-                        const avgLane = childLanes.reduce((sum, lane) => sum + lane, 0) / childLanes.length;
-                        laneFloatById.set(matchId, avgLane);
-                    } else if (childLanes.length === 1) {
-                        // Single internal child: SAME lane (horizontal connection)
-                        laneFloatById.set(matchId, childLanes[0]);
-                    } else {
-                        // No internal children: assign sequential lane
-                        laneFloatById.set(matchId, currentLane);
-                        currentLane++;
+                    idsInRound.forEach((matchId, slotIndex) => {
+                        if (roundIdx === 0) {
+                            // LB Round 1: Sequential positioning
+                            laneFloatById.set(matchId, slotIndex);
+                            currentLane = Math.max(currentLane, slotIndex + 1);
+                        } else {
+                            // Later rounds: Center between feeder matches
+                            const inboundEdges = inEdgesByToId.get(matchId) ?? [];
+                            const feederLanes: number[] = [];
+
+                            for (const edge of inboundEdges) {
+                                const feederId = String(edge.fromMatchId ?? '');
+                                // Check losers bracket first
+                                const loserLane = laneFloatById.get(feederId);
+                                if (loserLane !== undefined) {
+                                    feederLanes.push(loserLane);
+                                }
+                            }
+
+                            if (feederLanes.length >= 2) {
+                                // Center between feeders
+                                const avgLane = feederLanes.reduce((sum, l) => sum + l, 0) / feederLanes.length;
+                                laneFloatById.set(matchId, avgLane);
+                            } else if (feederLanes.length === 1) {
+                                // Single feeder: align with it
+                                laneFloatById.set(matchId, feederLanes[0]);
+                            } else {
+                                // Fallback: sequential
+                                laneFloatById.set(matchId, currentLane);
+                                currentLane++;
+                            }
+                        }
+                    });
+                }
+                nextLane = currentLane;
+            } else {
+                // LEGACY: Convergence-aware lane assignment
+                // Only create step-downs when 2+ matches converge into 1
+                // Matches with single input stay on the same lane (horizontal connection)
+                let currentLane = 0;
+                for (const roundNumber of sortedRounds) {
+                    const idsInRound = groupRounds.get(roundNumber) ?? [];
+                    idsInRound.sort((a, b) => {
+                        const matchA = matchesById.get(a)?.match;
+                        const matchB = matchesById.get(b)?.match;
+                        return (matchA?.number ?? 0) - (matchB?.number ?? 0);
+                    });
+
+                    for (const matchId of idsInRound) {
+                        const inboundEdges = inEdgesByToId.get(matchId) ?? [];
+                        const childLanes: number[] = [];
+
+                        for (const edge of inboundEdges) {
+                            const childId = String(edge.fromMatchId ?? '');
+                            const lane = laneFloatById.get(childId);
+                            if (lane !== undefined)
+                                childLanes.push(lane);
+                        }
+
+                        if (childLanes.length >= 2) {
+                            // CONVERGENCE: center between children
+                            const avgLane = childLanes.reduce((sum, lane) => sum + lane, 0) / childLanes.length;
+                            laneFloatById.set(matchId, avgLane);
+                        } else if (childLanes.length === 1) {
+                            // Single internal child: SAME lane (horizontal connection)
+                            laneFloatById.set(matchId, childLanes[0]);
+                        } else {
+                            // No internal children: assign sequential lane
+                            laneFloatById.set(matchId, currentLane);
+                            currentLane++;
+                        }
                     }
                 }
+                nextLane = currentLane;
             }
-            nextLane = currentLane;
         } else {
             // Original algorithm for other brackets (WINNERS, GRAND_FINAL, etc.)
             for (const roundNumber of sortedRounds) {
@@ -973,6 +1029,9 @@ function generateConnectors(
                 // Cross-bracket connection
                 if (toNode.bracketGroup === 'GRAND_FINAL_BRACKET') {
                     connectorType = 'grand-final';
+                } else if (toNode.bracketGroup === 'LOSERS_BRACKET') {
+                    // Skip cross-bracket connectors from winners to losers (drop-down lines)
+                    return;
                 } else {
                     connectorType = 'cross-bracket';
                 }
@@ -1010,6 +1069,152 @@ function generateConnectors(
     });
 
     return connectors;
+}
+
+/**
+ * Match layout position for losers bracket.
+ */
+export interface LosersMatchLayout {
+    matchId: string;
+    x: number;
+    y: number;
+}
+
+/**
+ * Computes layout positions for losers bracket matches using feeder-match centering.
+ *
+ * Layout rules:
+ * - LB Round 1: Sequential vertical positioning (slotIndex * (cardHeight + cardGap))
+ * - Later LB rounds: Center Y between feeder match positions (y = (yA + yB) / 2)
+ * - X position: roundIndex * (columnWidth + columnGap)
+ *
+ * @param matches All matches (upper + lower) for coordinate lookups
+ * @param edges All edges defining connections between matches
+ * @param losersConfig Layout configuration for losers bracket spacing
+ * @param winnersPositions Computed positions of winners bracket matches (for cross-bracket feeders)
+ * @returns Map of losers match IDs to their computed x, y positions
+ */
+export function computeLowerBracketLayout(
+    matches: Match[],
+    edges: BracketEdgeResponse[],
+    losersConfig: LosersLayoutConfig = DEFAULT_LOSERS_CONFIG,
+    winnersPositions?: Map<string, { x: number; y: number }>,
+): Record<string, LosersMatchLayout> {
+    const { cardHeight, cardGap, columnWidth, columnGap } = losersConfig;
+
+    // 1. Filter to losers bracket matches only
+    const losersMatches = matches.filter(m => {
+        const groupId = String(m.group_id).toLowerCase();
+        return groupId.includes('loser') || groupId.includes('lower');
+    });
+
+    if (losersMatches.length === 0) {
+        return {};
+    }
+
+    // 2. Group losers matches by round
+    const matchesByRound = new Map<number, Match[]>();
+    const matchesById = new Map<string, { match: Match; roundNumber: number }>();
+
+    losersMatches.forEach(match => {
+        const matchId = String(match.id);
+        const roundMatch = String(match.round_id).match(/round-(\d+)/);
+        const roundNumber = roundMatch ? parseInt(roundMatch[1], 10) : 1;
+
+        matchesById.set(matchId, { match, roundNumber });
+
+        if (!matchesByRound.has(roundNumber)) {
+            matchesByRound.set(roundNumber, []);
+        }
+        matchesByRound.get(roundNumber)!.push(match);
+    });
+
+    // Sort rounds in ascending order
+    const sortedRounds = Array.from(matchesByRound.keys()).sort((a, b) => a - b);
+
+    // 3. Build edge lookup: toMatchId -> [fromMatchIds]
+    const inEdgesByToId = new Map<string, string[]>();
+    edges.forEach(edge => {
+        const toId = String(edge.toMatchId ?? '');
+        const fromId = String(edge.fromMatchId ?? '');
+        if (!toId || !fromId) return;
+
+        if (!inEdgesByToId.has(toId)) {
+            inEdgesByToId.set(toId, []);
+        }
+        inEdgesByToId.get(toId)!.push(fromId);
+    });
+
+    // 4. Compute positions
+    const result: Record<string, LosersMatchLayout> = {};
+    const positionCache = new Map<string, { x: number; y: number }>();
+
+    // Helper to get a match's Y position (from cache, winnersPositions, or compute)
+    const getMatchY = (matchId: string): number | undefined => {
+        // Check losers cache first
+        const cached = positionCache.get(matchId);
+        if (cached) return cached.y;
+
+        // Check winners positions (cross-bracket feeder)
+        if (winnersPositions) {
+            const winnersPos = winnersPositions.get(matchId);
+            if (winnersPos) return winnersPos.y;
+        }
+
+        return undefined;
+    };
+
+    // Process rounds in order (LB R1 first, then R2, etc.)
+    sortedRounds.forEach((roundNumber, roundIdx) => {
+        const roundMatches = matchesByRound.get(roundNumber) ?? [];
+
+        // Sort matches within round by match number
+        roundMatches.sort((a, b) => (a.number ?? 0) - (b.number ?? 0));
+
+        roundMatches.forEach((match, slotIndex) => {
+            const matchId = String(match.id);
+
+            // X position: based on round index (0-based for losers bracket)
+            const x = roundIdx * (columnWidth + columnGap);
+
+            let y: number;
+
+            if (roundIdx === 0) {
+                // LB Round 1: Sequential vertical positioning
+                y = slotIndex * (cardHeight + cardGap);
+            } else {
+                // Later rounds: Center between feeder matches
+                const feederIds = inEdgesByToId.get(matchId) ?? [];
+                const feederYs: number[] = [];
+
+                feederIds.forEach(feederId => {
+                    const feederY = getMatchY(feederId);
+                    if (feederY !== undefined) {
+                        feederYs.push(feederY);
+                    }
+                });
+
+                if (feederYs.length >= 2) {
+                    // Center between feeders
+                    y = feederYs.reduce((sum, fy) => sum + fy, 0) / feederYs.length;
+                } else if (feederYs.length === 1) {
+                    // Single feeder: align with it
+                    y = feederYs[0];
+                } else {
+                    // Fallback: sequential positioning
+                    y = slotIndex * (cardHeight + cardGap);
+                }
+            }
+
+            // Store position
+            positionCache.set(matchId, { x, y });
+            result[matchId] = { matchId, x, y };
+        });
+    });
+
+    console.log(`🎯 computeLowerBracketLayout: ${Object.keys(result).length} matches, ${sortedRounds.length} rounds`);
+
+    return result;
 }
 
 /**
