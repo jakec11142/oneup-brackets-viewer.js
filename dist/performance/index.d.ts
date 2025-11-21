@@ -4,12 +4,10 @@
  * This module provides:
  * - Layout caching for faster re-renders
  * - SVG connector pooling for reduced memory churn
- * - Virtual scrolling for large brackets
  * - Performance monitoring utilities
  */
 export { LayoutCache, globalLayoutCache, cachedComputeLayout, type LayoutCacheConfig, } from '../cache/LayoutCache';
 export { SVGConnectorPool, globalConnectorPool, createPooledConnectorSVG, type SVGPoolConfig, } from '../rendering/SVGConnectorPool';
-export { VirtualBracketManager, globalVirtualBracket, shouldUseVirtualization, type VirtualBracketConfig, } from '../rendering/VirtualBracket';
 export { PerformanceMonitor, globalPerfMonitor } from './PerformanceMonitor';
 /**
  * Performance configuration for BracketsViewer.
@@ -25,16 +23,6 @@ export interface PerformanceConfig {
      * @default true
      */
     enableSVGPooling?: boolean;
-    /**
-     * Enable virtual scrolling for large brackets.
-     * @default 'auto' (enabled for 50+ matches)
-     */
-    enableVirtualization?: boolean | 'auto';
-    /**
-     * Threshold for auto-enabling virtualization.
-     * @default 50
-     */
-    virtualizationThreshold?: number;
     /**
      * Enable performance monitoring.
      * @default false

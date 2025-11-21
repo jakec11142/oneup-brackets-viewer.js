@@ -24,8 +24,6 @@ const CONFIG_DEFAULTS: Partial<Config> = {
     // Performance defaults
     enableLayoutCache: true,
     enableSVGPooling: true,
-    enableVirtualization: 'auto',
-    virtualizationThreshold: 50,
 };
 
 /**
@@ -92,8 +90,6 @@ export function resolveConfig(
         // Performance options
         enableLayoutCache: userConfig?.enableLayoutCache ?? CONFIG_DEFAULTS.enableLayoutCache,
         enableSVGPooling: userConfig?.enableSVGPooling ?? CONFIG_DEFAULTS.enableSVGPooling,
-        enableVirtualization: userConfig?.enableVirtualization ?? CONFIG_DEFAULTS.enableVirtualization,
-        virtualizationThreshold: userConfig?.virtualizationThreshold ?? CONFIG_DEFAULTS.virtualizationThreshold,
         // Granular layout options (will be applied to layoutConfig)
         matchWidth: userConfig?.matchWidth,
         matchHeight: userConfig?.matchHeight,

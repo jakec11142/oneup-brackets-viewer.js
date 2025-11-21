@@ -407,24 +407,4 @@ export interface Config {
      * @default true
      */
     enableSVGPooling?: boolean,
-
-    /**
-     * Enable virtual scrolling for large brackets.
-     * Only renders visible matches + buffer zone for optimal performance.
-     *
-     * - `true`: Always enabled
-     * - `false`: Always disabled
-     * - `'auto'`: Enabled for 50+ matches (recommended)
-     *
-     * @default 'auto'
-     */
-    enableVirtualization?: boolean | 'auto',
-
-    /**
-     * Threshold for auto-enabling virtualization.
-     * Only applies when enableVirtualization is 'auto'.
-     *
-     * @default 50
-     */
-    virtualizationThreshold?: number,
 }
