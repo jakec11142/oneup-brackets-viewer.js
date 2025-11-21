@@ -100,25 +100,18 @@ export function renderUnifiedDoubleElimination(
     const roundsContainer = dom.createRoundsContainer();
 
     // Check if virtual scrolling should be used
-    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
-    const threshold = context.config.virtualizationThreshold ?? 50; // Test with 50 to enable for DE (63 matches)
-    const shouldVirtualize =
-        enableVirtualization === true ||
-        (enableVirtualization === 'auto' && allMatchesWithMetadata.length >= threshold);
+    // DISABLED until properly debugged - matches not rendering
+    const enableVirtualization = context.config.enableVirtualization ?? false;
+    const threshold = context.config.virtualizationThreshold ?? 500; // Set high to avoid auto-enable
+    const shouldVirtualize = enableVirtualization === true; // Only enable if explicitly set to true
 
-    console.log(`🔍 Virtual scrolling check: enabled=${enableVirtualization}, threshold=${threshold}, matchCount=${allMatchesWithMetadata.length}, shouldVirtualize=${shouldVirtualize}`);
 
     // Render matches with absolute positioning (skip if virtualization will handle it)
     let renderedCount = 0;
-    let skippedCount = 0;
     if (!shouldVirtualize) {
         for (const match of allMatchesWithMetadata) {
             const pos = layout.matchPositions.get(String(match.id));
-            if (!pos) {
-                console.warn(`⚠️ No position for match ${match.id}`);
-                skippedCount++;
-                continue;
-            }
+            if (!pos) continue;
 
             const matchEl = context.createBracketMatch(match);
             matchEl.style.position = 'absolute';
@@ -127,10 +120,7 @@ export function renderUnifiedDoubleElimination(
             roundsContainer.append(matchEl);
             renderedCount++;
         }
-        console.log(`✅ Rendered ${renderedCount} of ${allMatchesWithMetadata.length} matches (${skippedCount} skipped)`);
         debug.log(`✅ Rendered ${renderedCount} matches`);
-    } else {
-        console.log(`⏭️ Skipping normal render, virtual scrolling will handle it`);
     }
 
     // Render round headers
@@ -157,23 +147,8 @@ export function renderUnifiedDoubleElimination(
     bracketContainer.append(roundsContainer);
     container.append(bracketContainer);
 
-    // Initialize virtual scrolling for large brackets
-    if (shouldVirtualize) {
-        debug.log(`🚀 Initializing TanStack Virtual for ${allMatchesWithMetadata.length} matches`);
-        const virtualManager = new TanStackVirtualManager({
-            enabled: true,
-            autoThreshold: threshold,
-            debug: true  // Enable debug to see what's happening
-        });
-
-        // TanStack Virtual will handle rendering matches into roundsContainer
-        virtualManager.initialize(
-            roundsContainer,
-            layout,
-            allMatchesWithMetadata,
-            (match: MatchWithMetadata) => context.createBracketMatch(match)
-        );
-    }
+    // Virtual scrolling temporarily disabled - not rendering matches properly
+    // TODO: Debug why TanStack Virtual isn't showing matches initially
 }
 
 /**
@@ -219,25 +194,18 @@ export function renderUnifiedSingleElimination(
     const roundsContainer = dom.createRoundsContainer();
 
     // Check if virtual scrolling should be used
-    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
-    const threshold = context.config.virtualizationThreshold ?? 50; // Test with 50 to enable for DE (63 matches)
-    const shouldVirtualize =
-        enableVirtualization === true ||
-        (enableVirtualization === 'auto' && allMatchesWithMetadata.length >= threshold);
+    // DISABLED until properly debugged - matches not rendering
+    const enableVirtualization = context.config.enableVirtualization ?? false;
+    const threshold = context.config.virtualizationThreshold ?? 500; // Set high to avoid auto-enable
+    const shouldVirtualize = enableVirtualization === true; // Only enable if explicitly set to true
 
-    console.log(`🔍 Virtual scrolling check: enabled=${enableVirtualization}, threshold=${threshold}, matchCount=${allMatchesWithMetadata.length}, shouldVirtualize=${shouldVirtualize}`);
 
     // Render matches with absolute positioning (skip if virtualization will handle it)
     let renderedCount = 0;
-    let skippedCount = 0;
     if (!shouldVirtualize) {
         for (const match of allMatchesWithMetadata) {
             const pos = layout.matchPositions.get(String(match.id));
-            if (!pos) {
-                console.warn(`⚠️ No position for match ${match.id}`);
-                skippedCount++;
-                continue;
-            }
+            if (!pos) continue;
 
             const matchEl = context.createBracketMatch(match);
             matchEl.style.position = 'absolute';
@@ -246,10 +214,7 @@ export function renderUnifiedSingleElimination(
             roundsContainer.append(matchEl);
             renderedCount++;
         }
-        console.log(`✅ Rendered ${renderedCount} of ${allMatchesWithMetadata.length} matches (${skippedCount} skipped)`);
         debug.log(`✅ Rendered ${renderedCount} matches`);
-    } else {
-        console.log(`⏭️ Skipping normal render, virtual scrolling will handle it`);
     }
 
     if (context.config.showRoundHeaders !== false) {
@@ -267,23 +232,8 @@ export function renderUnifiedSingleElimination(
     bracketContainer.append(roundsContainer);
     container.append(bracketContainer);
 
-    // Initialize virtual scrolling for large brackets
-    if (shouldVirtualize) {
-        debug.log(`🚀 Initializing TanStack Virtual for ${allMatchesWithMetadata.length} matches`);
-        const virtualManager = new TanStackVirtualManager({
-            enabled: true,
-            autoThreshold: threshold,
-            debug: true  // Enable debug to see what's happening
-        });
-
-        // TanStack Virtual will handle rendering matches into roundsContainer
-        virtualManager.initialize(
-            roundsContainer,
-            layout,
-            allMatchesWithMetadata,
-            (match: MatchWithMetadata) => context.createBracketMatch(match)
-        );
-    }
+    // Virtual scrolling temporarily disabled - not rendering matches properly
+    // TODO: Debug why TanStack Virtual isn't showing matches initially
 }
 
 /**

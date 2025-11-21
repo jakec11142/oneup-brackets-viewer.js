@@ -85,6 +85,11 @@ export class TanStackVirtualManager {
         // Sort by Y position for vertical virtualization
         matchItems.sort((a, b) => (a.position?.yPx || 0) - (b.position?.yPx || 0));
 
+        // Log container dimensions for debugging
+        console.log(`[TanStackVirtual] Container dimensions: ${container.offsetWidth}x${container.offsetHeight}`);
+        console.log(`[TanStackVirtual] Layout total: ${layout.totalWidth}x${layout.totalHeight}`);
+        console.log(`[TanStackVirtual] Match items to virtualize: ${matchItems.length}`);
+
         // Create the virtualizer
         this.virtualizer = new Virtualizer({
             count: matchItems.length,
@@ -96,16 +101,18 @@ export class TanStackVirtualManager {
             scrollToFn: elementScroll,
         });
 
+        // Force initial render BEFORE setting up listeners
+        this.virtualizer._willUpdate();
+
         // Initial update to render visible items
+        console.log(`[TanStackVirtual] Calling initial updateVirtualItems...`);
         this.updateVirtualItems(innerContainer, matchItems);
 
         // Set up scroll listener for updates
         container.addEventListener('scroll', () => {
+            console.log(`[TanStackVirtual] Scroll event triggered`);
             this.updateVirtualItems(innerContainer, matchItems);
         }, { passive: true });
-
-        // Force initial render
-        this.virtualizer._willUpdate();
 
         this.log(`Initialized TanStack Virtual with ${matches.length} matches`);
     }
@@ -117,6 +124,13 @@ export class TanStackVirtualManager {
         if (!this.virtualizer || !this.renderMatch) return;
 
         const virtualItems = this.virtualizer.getVirtualItems();
+        console.log(`[TanStackVirtual] Virtual items from TanStack:`, virtualItems.length);
+        console.log(`[TanStackVirtual] Virtual items details:`, virtualItems.map(vi => ({
+            index: vi.index,
+            start: vi.start,
+            end: vi.end,
+            size: vi.size
+        })));
 
         // Remove items that are no longer visible
         const visibleIds = new Set(virtualItems.map(vi => matchItems[vi.index].id));
@@ -130,8 +144,13 @@ export class TanStackVirtualManager {
         // Render visible items
         for (const virtualItem of virtualItems) {
             const item = matchItems[virtualItem.index];
-            if (!item || this.renderedElements.has(item.id)) continue;
+            if (!item) {
+                console.warn(`[TanStackVirtual] No item at index ${virtualItem.index}`);
+                continue;
+            }
+            if (this.renderedElements.has(item.id)) continue;
 
+            console.log(`[TanStackVirtual] Rendering match ${item.id} at position:`, item.position);
             const element = this.renderMatch(item.match);
             element.style.position = 'absolute';
             element.style.left = `${item.position.xPx}px`;
@@ -145,6 +164,7 @@ export class TanStackVirtualManager {
         // Update container height to match total size
         const totalHeight = this.layout?.totalHeight || 0;
         innerContainer.style.height = `${totalHeight}px`;
+        innerContainer.style.width = `${this.layout?.totalWidth || 0}px`;
 
         const stats = this.getStats();
         this.log(`Updated: ${stats.renderedMatches}/${stats.totalMatches} matches visible`);
