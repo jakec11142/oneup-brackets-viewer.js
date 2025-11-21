@@ -446,6 +446,11 @@
         width: 100%;
         min-height: auto;
       }
+
+      // Hide metadata in round robin matches (not enough space)
+      .match-metadata {
+        display: none;
+      }
     }
   }
 
