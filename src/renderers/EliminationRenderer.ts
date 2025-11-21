@@ -100,7 +100,8 @@ export function renderUnifiedDoubleElimination(
     const roundsContainer = dom.createRoundsContainer();
 
     // Check if virtual scrolling should be used
-    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
+    // TEMPORARILY DISABLED - VirtualBracketManager needs fixing for initial render
+    const enableVirtualization = context.config.enableVirtualization ?? false; // Changed from 'auto'
     const threshold = context.config.virtualizationThreshold ?? 50;
     const shouldVirtualize =
         enableVirtualization === true ||
@@ -212,7 +213,8 @@ export function renderUnifiedSingleElimination(
     const roundsContainer = dom.createRoundsContainer();
 
     // Check if virtual scrolling should be used
-    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
+    // TEMPORARILY DISABLED - VirtualBracketManager needs fixing for initial render
+    const enableVirtualization = context.config.enableVirtualization ?? false; // Changed from 'auto'
     const threshold = context.config.virtualizationThreshold ?? 50;
     const shouldVirtualize =
         enableVirtualization === true ||
