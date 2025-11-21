@@ -33,7 +33,7 @@ export function renderRoundRobin(
     context: RoundRobinRenderContext,
 ): void {
     const container = dom.createRoundRobinContainer(stage.id);
-    container.append(dom.createTitle(stage.name));
+    // Stage title removed - not needed on canvas
 
     let groupNumber = 1;
 

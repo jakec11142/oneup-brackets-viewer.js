@@ -252,7 +252,7 @@ export class BracketsViewer {
      */
     private renderElimination(root: DocumentFragment, stage: ViewerStage, matchesByGroup: MatchWithMetadata[][]): void {
         const container = dom.createEliminationContainer(stage.id);
-        container.append(dom.createTitle(stage.name));
+        // Stage title removed - not needed on canvas
 
         if (stage.type === 'single_elimination')
             this.renderSingleElimination(container, matchesByGroup);

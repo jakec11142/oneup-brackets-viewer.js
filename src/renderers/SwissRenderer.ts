@@ -36,7 +36,7 @@ export function renderSwiss(
     context: SwissRenderContext,
 ): void {
     const container = dom.createEliminationContainer(stage.id);
-    container.append(dom.createTitle(stage.name));
+    // Stage title removed - not needed on canvas
 
     let groupNumber = 1;
 

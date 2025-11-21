@@ -2,7 +2,9 @@ import { Match, ParticipantResult, FinalType, GroupType, Id, MatchGame, type Ran
 import { Connection, Placement } from './types';
 import { isMatchGame, rankingHeader, getDisplayStatus, DisplayStatus } from './helpers';
 import { t } from './lang';
-import { ConnectorLine } from './layout';
+
+// Re-export connector utilities from dedicated module
+export { createConnectorSVG } from './dom/connectors';
 
 /**
  * Creates the title of the viewer.
@@ -135,59 +137,6 @@ export function createRoundsContainer(): HTMLElement {
     const round = document.createElement('div');
     round.classList.add('rounds');
     return round;
-}
-
-/**
- * Creates an SVG element for rendering bracket connectors.
- *
- * @param connectors Array of connector lines to render
- * @param width Total width of the SVG canvas
- * @param height Total height of the SVG canvas
- */
-export function createConnectorSVG(connectors: ConnectorLine[], width: number, height: number): SVGElement {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('class', 'bracket-connectors');
-    svg.setAttribute('width', width.toString());
-    svg.setAttribute('height', height.toString());
-
-    for (const conn of connectors) {
-        const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-        const pointsStr = conn.points.map(p => `${p.x},${p.y}`).join(' ');
-        polyline.setAttribute('points', pointsStr);
-        polyline.setAttribute('fill', 'none');
-
-        // Apply styling based on connector type
-        polyline.setAttribute('class', `connector-${conn.connectorType}`);
-
-        switch (conn.connectorType) {
-            case 'cross-bracket':
-                // Cross-bracket connectors: lower opacity, dashed, thinner
-                polyline.setAttribute('stroke', 'var(--bv-connector-cross-bracket)');
-                polyline.setAttribute('stroke-width', '1.5');
-                polyline.setAttribute('opacity', '0.3');
-                polyline.setAttribute('stroke-dasharray', '4,3');
-                break;
-
-            case 'grand-final':
-                // Grand final connectors: bold, full opacity, distinct color
-                polyline.setAttribute('stroke', 'var(--bv-connector-grand-final)');
-                polyline.setAttribute('stroke-width', '3');
-                polyline.setAttribute('opacity', '1');
-                break;
-
-            case 'internal':
-            default:
-                // Internal connectors: standard styling
-                polyline.setAttribute('stroke', 'var(--bv-connector-internal)');
-                polyline.setAttribute('stroke-width', '2');
-                polyline.setAttribute('opacity', '0.8');
-                break;
-        }
-
-        svg.appendChild(polyline);
-    }
-
-    return svg;
 }
 
 /**
