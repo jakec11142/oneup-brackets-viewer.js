@@ -45,7 +45,9 @@ export function renderSwiss(
             continue;
 
         const groupId = groupMatches[0].group_id;
-        const bracket = dom.createBracketContainer(groupId, lang.getGroupName(groupNumber++));
+        // Don't pass title to avoid displaying "Group 1" text
+        const bracket = dom.createBracketContainer(groupId);
+        groupNumber++;
         const roundsContainer = dom.createRoundsContainer();
 
         // Organize matches with metadata

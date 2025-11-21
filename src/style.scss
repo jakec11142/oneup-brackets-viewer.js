@@ -91,22 +91,22 @@
   --bv-match-winner-accent: var(--bv-win-color);
   --bv-match-loser-muted: var(--bv-hint-color);
 
-  /* Sizes */
+  /* Sizes - Using rem for zoom consistency */
   --bv-font-size: 0.75rem; /* 12px - legacy, use typography scale instead */
-  --bv-round-gap: 40px;
-  --bv-match-width: 150px;
-  --bv-match-horizontal-padding: 8px;
-  --bv-match-vertical-padding: 6px;
-  --bv-connector-border-width: 2px;
-  --bv-match-border-width: 1px;
-  --bv-match-border-radius: 0.3em;
+  --bv-round-gap: 2.5rem; /* 40px */
+  --bv-match-width: 9.375rem; /* 150px */
+  --bv-match-horizontal-padding: 0.5rem; /* 8px */
+  --bv-match-vertical-padding: 0.375rem; /* 6px */
+  --bv-connector-border-width: 0.125rem; /* 2px */
+  --bv-match-border-width: 0.0625rem; /* 1px */
+  --bv-match-border-radius: 0.375rem; /* 6px */
   --bv-participant-image-size: 1em;
 
   /* Swiss format responsive variables */
-  --bv-swiss-column-gap: 14px;
-  --bv-swiss-column-min-width: 140px;
-  --bv-swiss-match-padding-v: 10px;
-  --bv-swiss-match-padding-h: 12px;
+  --bv-swiss-column-gap: 0.875rem; /* 14px */
+  --bv-swiss-column-min-width: 8.75rem; /* 140px */
+  --bv-swiss-match-padding-v: 0.625rem; /* 10px */
+  --bv-swiss-match-padding-h: 0.75rem; /* 12px */
   --bv-swiss-match-alt-bg: var(--bv-row-alt);
   --bv-swiss-separator-color: var(--bv-border-color);
 
@@ -186,8 +186,21 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  overflow-y: auto;
-  overflow-x: hidden;
+
+  // Fixed viewport for predictable scrolling (industry standard)
+  height: 80vh;
+  max-height: 800px;
+  min-height: 400px;
+  max-width: calc(100vw - 40px); // Account for body margins
+
+  // Improved scroll behavior
+  overflow: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+
+  // Zoom stability
+  transform-origin: top left;
+
   user-select: none;
   margin: 0 auto;
   padding: 10px 50px;
@@ -390,33 +403,13 @@
       }
     }
 
-    // Horizontal scroll container for all rounds
+    // Container for all rounds (no scrolling - handled by brackets-viewer)
     .rounds-container {
       display: flex;
       gap: 20px;
-      overflow-x: auto;
-      overflow-y: visible;
+      overflow: visible;
       padding: 8px 4px 20px 4px;
       margin: 0 -4px;
-
-      // Scroll styling
-      &::-webkit-scrollbar {
-        height: 8px;
-      }
-
-      &::-webkit-scrollbar-track {
-        background: var(--bv-surface-color);
-        border-radius: 4px;
-      }
-
-      &::-webkit-scrollbar-thumb {
-        background: var(--bv-border-color);
-        border-radius: 4px;
-
-        &:hover {
-          background: var(--bv-border-hover-color);
-        }
-      }
     }
 
     // Round column - vertical stack of matches
@@ -927,26 +920,80 @@
 // Tablet responsive breakpoint
 @media (max-width: 900px) {
   .brackets-viewer {
-    --bv-match-width: 140px;
-    --bv-swiss-column-gap: 12px;
-    --bv-swiss-column-min-width: 130px;
+    --bv-match-width: 8.75rem; /* 140px */
+    --bv-swiss-column-gap: 0.75rem; /* 12px */
+    --bv-swiss-column-min-width: 8.125rem; /* 130px */
     --bv-font-size: 0.72rem;
 
-    padding: 10px 24px;
+    // Adjust viewport for tablets
+    height: 70vh;
+    max-height: 600px;
+
+    padding: 0.625rem 1.5rem; /* 10px 24px */
   }
 }
 
 // Mobile responsive breakpoint
 @media (max-width: 600px) {
   .brackets-viewer {
-    --bv-match-width: 120px;
-    --bv-round-gap: 20px;
-    --bv-swiss-column-gap: 10px;
-    --bv-swiss-column-min-width: 110px;
-    --bv-swiss-match-padding-v: 8px;
-    --bv-swiss-match-padding-h: 10px;
+    --bv-match-width: 7.5rem; /* 120px */
+    --bv-round-gap: 1.25rem; /* 20px */
+    --bv-swiss-column-gap: 0.625rem; /* 10px */
+    --bv-swiss-column-min-width: 6.875rem; /* 110px */
+    --bv-swiss-match-padding-v: 0.5rem; /* 8px */
+    --bv-swiss-match-padding-h: 0.625rem; /* 10px */
     --bv-font-size: 0.7rem;
 
-    padding: 10px 16px;
+    // Adjust viewport for mobile
+    height: 60vh;
+    max-height: 500px;
+
+    padding: 0.625rem 1rem; /* 10px 16px */
+  }
+}
+
+// Improved scrollbar styling for consistency
+.brackets-viewer {
+  &::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--bv-surface-color);
+    border-radius: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--bv-border-color);
+    border-radius: 6px;
+
+    &:hover {
+      background: var(--bv-border-hover-color);
+    }
+  }
+
+  // Firefox scrollbar styling
+  scrollbar-width: thin;
+  scrollbar-color: var(--bv-border-color) var(--bv-surface-color);
+}
+
+// High-DPI / Zoom detection for fine-tuning
+@media (-webkit-min-device-pixel-ratio: 1.5),
+       (min-resolution: 144dpi) {
+  .brackets-viewer {
+    // Adjust spacing for high zoom/DPI
+    --bv-match-horizontal-padding: 0.375rem; /* 6px */
+    --bv-match-vertical-padding: 0.25rem; /* 4px */
+  }
+}
+
+// Print styles
+@media print {
+  .brackets-viewer {
+    height: auto !important;
+    overflow: visible !important;
+    max-width: 100% !important;
+    max-height: none !important;
   }
 }

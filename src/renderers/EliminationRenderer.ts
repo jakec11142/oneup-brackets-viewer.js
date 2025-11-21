@@ -10,6 +10,7 @@ import { splitBy, sortBy } from '../helpers';
 import { computeLayout } from '../layout';
 import { detectFormatSize, getDEProfile } from '../profiles/deProfiles';
 import { debug } from '../debug';
+import { VirtualBracketManager } from '../rendering/VirtualBracket';
 import type { GroupType } from 'brackets-model';
 import type { MatchWithMetadata, Config, RoundNameGetter, DoubleElimMode } from '../types';
 import type { ViewerStage } from '../models';
@@ -137,6 +138,32 @@ export function renderUnifiedDoubleElimination(
 
     bracketContainer.append(roundsContainer);
     container.append(bracketContainer);
+
+    // Initialize virtual scrolling for large brackets
+    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
+    const threshold = context.config.virtualizationThreshold ?? 50;
+    const shouldVirtualize =
+        enableVirtualization === true ||
+        (enableVirtualization === 'auto' && allMatchesWithMetadata.length >= threshold);
+
+    if (shouldVirtualize) {
+        debug.log(`🚀 Initializing virtual scrolling for ${allMatchesWithMetadata.length} matches`);
+        const virtualManager = new VirtualBracketManager({
+            enabled: true,
+            autoThreshold: threshold,
+            viewportHeight: container.offsetHeight || 600,
+            viewportWidth: container.offsetWidth || 800,
+            debug: false
+        });
+
+        // Initialize virtual scrolling with match render function
+        virtualManager.initialize(
+            container,
+            layout,
+            allMatchesWithMetadata,
+            (match: MatchWithMetadata) => context.createBracketMatch(match)
+        );
+    }
 }
 
 /**
@@ -210,6 +237,31 @@ export function renderUnifiedSingleElimination(
 
     bracketContainer.append(roundsContainer);
     container.append(bracketContainer);
+
+    // Initialize virtual scrolling for large brackets
+    const enableVirtualization = context.config.enableVirtualization ?? 'auto';
+    const threshold = context.config.virtualizationThreshold ?? 50;
+    const shouldVirtualize =
+        enableVirtualization === true ||
+        (enableVirtualization === 'auto' && allMatchesWithMetadata.length >= threshold);
+
+    if (shouldVirtualize) {
+        debug.log(`🚀 Initializing virtual scrolling for ${allMatchesWithMetadata.length} matches`);
+        const virtualManager = new VirtualBracketManager({
+            enabled: true,
+            autoThreshold: threshold,
+            viewportHeight: container.offsetHeight || 600,
+            viewportWidth: container.offsetWidth || 800,
+            debug: false
+        });
+
+        virtualManager.initialize(
+            container,
+            layout,
+            allMatchesWithMetadata,
+            (match: MatchWithMetadata) => context.createBracketMatch(match)
+        );
+    }
 }
 
 /**
