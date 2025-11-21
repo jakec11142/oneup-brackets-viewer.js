@@ -7,66 +7,28 @@ const SAMPLES = [
 
 const VIEW_MODELS = [
   { id: 'default', label: 'Default', formats: ['single', 'double', 'roundRobin', 'swiss'] },
-  { id: 'admin', label: 'Admin Dashboard', formats: ['single', 'double', 'roundRobin', 'swiss'] },
   { id: 'broadcast', label: 'Broadcast / Streaming', formats: ['single', 'double', 'roundRobin', 'swiss'] },
-];
-
-const SIZING_OPTIONS = [
-  { id: undefined, label: 'None (Use Manual)' },
-  { id: 'default', label: 'Standard (150px)' },
-  { id: 'compact', label: 'Compact (130px)' },
-  { id: 'ultra-compact', label: 'Ultra Compact (120px)' },
-  { id: 'spacious', label: 'Spacious (170px)' },
-  { id: 'logo', label: 'Logo (200px)' },
-  { id: 'logo-compact', label: 'Logo Compact (180px)' },
-  { id: 'ultrawide', label: 'Ultrawide (300px)' },
+  { id: 'de-split-horizontal', label: 'DE Split Horizontal (VCT)', formats: ['double'] },
 ];
 
 const buttonsHost = document.querySelector('#format-buttons');
 const viewModelHost = document.querySelector('#view-model-buttons');
-const sizingHost = document.querySelector('#sizing-buttons');
 const cache = new Map();
 
 let currentSample = SAMPLES[0];
-let currentViewModel = VIEW_MODELS[0];
-let currentSizing = SIZING_OPTIONS[0];
+let currentViewModel = VIEW_MODELS.find(vm => vm.id === 'broadcast') || VIEW_MODELS[0];
 
 // Display options state (defaults to all enabled)
 const displayOptions = {
   showRoundHeaders: true,
-  showStatusBadges: true,
   showSlotsOrigin: true,
   showLowerBracketSlotsOrigin: true,
-  showRankingTable: true,
   showPopoverOnMatchLabelClick: true,
   highlightParticipantOnHover: true,
-  separatedChildCountLabel: true,
   participantOriginPlacement: 'before',
-};
-
-// Granular customization state (character-creator style)
-const granularOptions = {
-  matchWidth: undefined,
-  matchHeight: undefined,
-  columnWidth: undefined,
-  rowHeight: undefined,
-  groupGapY: undefined,
-  bracketAlignment: undefined,
-  fontSize: undefined,
-  fontWeight: undefined,
-  borderRadius: undefined,
-  matchPadding: undefined,
-};
-
-// Default values for slider reset
-const DEFAULT_SLIDER_VALUES = {
-  matchWidth: 150,
-  matchHeight: 60,
-  columnWidth: 190,
-  rowHeight: 80,
-  groupGapY: 100,
-  borderRadius: 4,
-  matchPadding: 8,
+  showParticipantImages: true,
+  showConnectors: true,
+  showMatchMetadata: true,
 };
 
 SAMPLES.forEach(sample => {
@@ -76,7 +38,7 @@ SAMPLES.forEach(sample => {
   btn.dataset.sample = sample.id;
   btn.addEventListener('click', () => {
     currentSample = sample;
-    renderCurrentConfig(btn, null, null);
+    renderCurrentConfig(btn, null);
   });
   buttonsHost.appendChild(btn);
 });
@@ -89,33 +51,20 @@ VIEW_MODELS.forEach(vm => {
   btn.dataset.formats = JSON.stringify(vm.formats);
   btn.addEventListener('click', () => {
     currentViewModel = vm;
-    resetGranularControls(); // Reset sliders when preset is selected
-    renderCurrentConfig(null, btn, null);
+    renderCurrentConfig(null, btn);
   });
   viewModelHost.appendChild(btn);
-});
-
-SIZING_OPTIONS.forEach(option => {
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.textContent = option.label;
-  btn.dataset.sizing = option.id;
-  btn.addEventListener('click', () => {
-    currentSizing = option;
-    resetGranularControls(); // Reset sliders when preset is selected
-    renderCurrentConfig(null, null, btn);
-  });
-  sizingHost.appendChild(btn);
 });
 
 // Set up display option toggles
 const toggles = {
   'toggle-round-headers': 'showRoundHeaders',
-  'toggle-status-badges': 'showStatusBadges',
   'toggle-slots-origin': 'showSlotsOrigin',
   'toggle-lower-slots-origin': 'showLowerBracketSlotsOrigin',
-  'toggle-ranking-table': 'showRankingTable',
   'toggle-match-popover': 'showPopoverOnMatchLabelClick',
+  'toggle-participant-images': 'showParticipantImages',
+  'toggle-connectors': 'showConnectors',
+  'toggle-match-metadata': 'showMatchMetadata',
 };
 
 Object.entries(toggles).forEach(([toggleId, optionKey]) => {
@@ -123,7 +72,7 @@ Object.entries(toggles).forEach(([toggleId, optionKey]) => {
   if (checkbox) {
     checkbox.addEventListener('change', () => {
       displayOptions[optionKey] = checkbox.checked;
-      renderCurrentConfig(null, null, null);
+      renderCurrentConfig(null, null);
     });
   }
 });
@@ -132,15 +81,7 @@ const highlightHoverCheckbox = document.getElementById('toggle-highlight-hover')
 if (highlightHoverCheckbox) {
   highlightHoverCheckbox.addEventListener('change', () => {
     displayOptions.highlightParticipantOnHover = highlightHoverCheckbox.checked;
-    renderCurrentConfig(null, null, null);
-  });
-}
-
-const separateBestOfCheckbox = document.getElementById('toggle-separate-bestof');
-if (separateBestOfCheckbox) {
-  separateBestOfCheckbox.addEventListener('change', () => {
-    displayOptions.separatedChildCountLabel = separateBestOfCheckbox.checked;
-    renderCurrentConfig(null, null, null);
+    renderCurrentConfig(null, null);
   });
 }
 
@@ -148,115 +89,38 @@ const positionRadios = document.querySelectorAll('input[name="participant-positi
 positionRadios.forEach(radio => {
   radio.addEventListener('change', () => {
     displayOptions.participantOriginPlacement = radio.value;
-    renderCurrentConfig(null, null, null);
+    renderCurrentConfig(null, null);
   });
 });
-
-// === GRANULAR CUSTOMIZATION CONTROLS (CHARACTER CREATOR) ===
 
 /**
- * Resets all granular controls to their default values
- * Called when a view model or sizing preset is selected
+ * Generates participant images using ui-avatars.com API
+ *
+ * @param {Array} participants - The participants array from ViewerData
+ * @returns {Array} Array of ParticipantImage objects { participantId, imageUrl }
  */
-function resetGranularControls() {
-  // Reset granular options state
-  Object.keys(granularOptions).forEach(key => {
-    granularOptions[key] = undefined;
-  });
+function generateParticipantImages(participants) {
+  return participants.map(participant => {
+    // Extract initials from participant name (e.g., "Team Alpha" -> "TA")
+    const initials = participant.name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
 
-  // Reset sliders to default values
-  const sliderResets = [
-    { sliderId: 'slider-match-width', valueId: 'value-match-width', defaultValue: DEFAULT_SLIDER_VALUES.matchWidth },
-    { sliderId: 'slider-match-height', valueId: 'value-match-height', defaultValue: DEFAULT_SLIDER_VALUES.matchHeight },
-    { sliderId: 'slider-column-width', valueId: 'value-column-width', defaultValue: DEFAULT_SLIDER_VALUES.columnWidth },
-    { sliderId: 'slider-row-height', valueId: 'value-row-height', defaultValue: DEFAULT_SLIDER_VALUES.rowHeight },
-    { sliderId: 'slider-group-gap-y', valueId: 'value-group-gap-y', defaultValue: DEFAULT_SLIDER_VALUES.groupGapY },
-    { sliderId: 'slider-border-radius', valueId: 'value-border-radius', defaultValue: DEFAULT_SLIDER_VALUES.borderRadius },
-    { sliderId: 'slider-match-padding', valueId: 'value-match-padding', defaultValue: DEFAULT_SLIDER_VALUES.matchPadding },
-  ];
+    // Generate a consistent color based on participant ID
+    const colors = ['3498db', 'e74c3c', '2ecc71', 'f39c12', '9b59b6', '1abc9c', 'e67e22', '34495e'];
+    const colorIndex = participant.id % colors.length;
+    const background = colors[colorIndex];
 
-  sliderResets.forEach(({ sliderId, valueId, defaultValue }) => {
-    const slider = document.getElementById(sliderId);
-    const valueDisplay = document.getElementById(valueId);
-    if (slider && valueDisplay) {
-      slider.value = defaultValue;
-      valueDisplay.textContent = defaultValue;
-    }
-  });
+    // Use ui-avatars.com API to generate avatar
+    const imageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&size=64&background=${background}&color=fff&bold=true&format=png`;
 
-  // Reset dropdowns to default (empty selection)
-  const fontSizeSelect = document.getElementById('select-font-size');
-  if (fontSizeSelect) {
-    fontSizeSelect.value = '';
-  }
-
-  const fontWeightSelect = document.getElementById('select-font-weight');
-  if (fontWeightSelect) {
-    fontWeightSelect.value = '';
-  }
-
-  // Reset bracket alignment to default (bottom)
-  const alignmentRadios = document.querySelectorAll('input[name="bracket-alignment"]');
-  alignmentRadios.forEach(radio => {
-    radio.checked = radio.value === 'bottom';
-  });
-}
-
-// Match dimension sliders
-function setupSlider(sliderId, valueId, granularKey) {
-  const slider = document.getElementById(sliderId);
-  const valueDisplay = document.getElementById(valueId);
-
-  if (!slider || !valueDisplay) return;
-
-  slider.addEventListener('input', () => {
-    const value = parseInt(slider.value);
-    valueDisplay.textContent = value;
-    granularOptions[granularKey] = value;
-    renderCurrentConfig(null, null, null);
-  });
-}
-
-setupSlider('slider-match-width', 'value-match-width', 'matchWidth');
-setupSlider('slider-match-height', 'value-match-height', 'matchHeight');
-setupSlider('slider-column-width', 'value-column-width', 'columnWidth');
-setupSlider('slider-row-height', 'value-row-height', 'rowHeight');
-setupSlider('slider-group-gap-y', 'value-group-gap-y', 'groupGapY');
-setupSlider('slider-border-radius', 'value-border-radius', 'borderRadius');
-setupSlider('slider-match-padding', 'value-match-padding', 'matchPadding');
-
-// Visual customization dropdowns
-const fontSizeSelect = document.getElementById('select-font-size');
-if (fontSizeSelect) {
-  fontSizeSelect.addEventListener('change', () => {
-    granularOptions.fontSize = fontSizeSelect.value || undefined;
-    renderCurrentConfig(null, null, null);
-  });
-}
-
-const fontWeightSelect = document.getElementById('select-font-weight');
-if (fontWeightSelect) {
-  fontWeightSelect.addEventListener('change', () => {
-    granularOptions.fontWeight = fontWeightSelect.value || undefined;
-    renderCurrentConfig(null, null, null);
-  });
-}
-
-// Bracket alignment radios
-const alignmentRadios = document.querySelectorAll('input[name="bracket-alignment"]');
-alignmentRadios.forEach(radio => {
-  radio.addEventListener('change', () => {
-    granularOptions.bracketAlignment = radio.value;
-    renderCurrentConfig(null, null, null);
-  });
-});
-
-// Manual reset button
-const resetGranularBtn = document.getElementById('reset-granular-btn');
-if (resetGranularBtn) {
-  resetGranularBtn.addEventListener('click', () => {
-    resetGranularControls();
-    renderCurrentConfig(null, null, null);
+    return {
+      participantId: participant.id,
+      imageUrl: imageUrl,
+    };
   });
 }
 
@@ -278,26 +142,22 @@ function filterViewModelButtons() {
 
 // Initial filter and render
 filterViewModelButtons();
-renderCurrentConfig(buttonsHost.firstElementChild, viewModelHost.firstElementChild, sizingHost.firstElementChild);
+renderCurrentConfig(buttonsHost.firstElementChild, viewModelHost.firstElementChild);
 
 /**
- * Renders the current sample with the current view model and sizing preset
+ * Renders the current sample with the current view model
  *
- * @param {HTMLButtonElement|null} sampleBtn - The sample button that was clicked (null if view model/sizing changed)
- * @param {HTMLButtonElement|null} vmBtn - The view model button that was clicked (null if sample/sizing changed)
- * @param {HTMLButtonElement|null} sizingBtn - The sizing button that was clicked (null if sample/vm changed)
+ * @param {HTMLButtonElement|null} sampleBtn - The sample button that was clicked (null if view model changed)
+ * @param {HTMLButtonElement|null} vmBtn - The view model button that was clicked (null if sample changed)
  * @returns {Promise<void>}
  */
-async function renderCurrentConfig(sampleBtn, vmBtn, sizingBtn) {
+async function renderCurrentConfig(sampleBtn, vmBtn) {
   if (sampleBtn) {
     buttonsHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === sampleBtn));
     filterViewModelButtons();
   }
   if (vmBtn) {
     viewModelHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === vmBtn));
-  }
-  if (sizingBtn) {
-    sizingHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === sizingBtn));
   }
 
   const structure = await loadStructure(currentSample.file);
@@ -309,39 +169,33 @@ async function renderCurrentConfig(sampleBtn, vmBtn, sizingBtn) {
     selector: '#viewer-root',
     clear: true,
     viewModelId: currentViewModel.id,
-    sizing: currentSizing.id,
 
     // Display options from toggles
     showRoundHeaders: displayOptions.showRoundHeaders,
-    showStatusBadges: displayOptions.showStatusBadges,
     showSlotsOrigin: displayOptions.showSlotsOrigin,
     showLowerBracketSlotsOrigin: displayOptions.showLowerBracketSlotsOrigin,
-    showRankingTable: displayOptions.showRankingTable,
     showPopoverOnMatchLabelClick: displayOptions.showPopoverOnMatchLabelClick,
     highlightParticipantOnHover: displayOptions.highlightParticipantOnHover,
-    separatedChildCountLabel: displayOptions.separatedChildCountLabel,
     participantOriginPlacement: displayOptions.participantOriginPlacement,
-
-    // Granular customization parameters (character-creator style)
-    // Only include if user has set them (not undefined)
-    ...(granularOptions.matchWidth !== undefined && { matchWidth: granularOptions.matchWidth }),
-    ...(granularOptions.matchHeight !== undefined && { matchHeight: granularOptions.matchHeight }),
-    ...(granularOptions.columnWidth !== undefined && { columnWidth: granularOptions.columnWidth }),
-    ...(granularOptions.rowHeight !== undefined && { rowHeight: granularOptions.rowHeight }),
-    ...(granularOptions.groupGapY !== undefined && { groupGapY: granularOptions.groupGapY }),
-    ...(granularOptions.bracketAlignment !== undefined && { bracketAlignment: granularOptions.bracketAlignment }),
-    ...(granularOptions.fontSize !== undefined && { fontSize: granularOptions.fontSize }),
-    ...(granularOptions.fontWeight !== undefined && { fontWeight: granularOptions.fontWeight }),
-    ...(granularOptions.borderRadius !== undefined && { borderRadius: granularOptions.borderRadius }),
-    ...(granularOptions.matchPadding !== undefined && { matchPadding: granularOptions.matchPadding }),
+    showConnectors: displayOptions.showConnectors,
+    showMatchMetadata: displayOptions.showMatchMetadata,
   };
 
   console.log('Rendering with config:', config);
   console.log('- Sample:', currentSample.label);
   console.log('- View Model:', currentViewModel.label, '(id:', currentViewModel.id, ')');
-  console.log('- Sizing:', currentSizing.label, '(id:', currentSizing.id, ')');
   console.log('- Display Options:', displayOptions);
-  console.log('- Granular Options:', granularOptions);
+
+  // Set participant images if enabled
+  if (displayOptions.showParticipantImages) {
+    const participantImages = generateParticipantImages(viewerData.participants);
+    window.bracketsViewer.setParticipantImages(participantImages);
+    console.log('- Participant Images:', participantImages.length, 'images set');
+  } else {
+    // Clear images if disabled
+    window.bracketsViewer.setParticipantImages([]);
+    console.log('- Participant Images: disabled');
+  }
 
   await window.bracketsViewer.render(viewerData, config);
 }

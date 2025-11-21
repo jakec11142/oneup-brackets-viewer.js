@@ -150,19 +150,6 @@ export type Side = 'opponent1' | 'opponent2';
  */
 export type DoubleElimMode = 'unified' | 'split';
 
-/**
- * View mode for elimination brackets (SE/DE only).
- * Controls match card sizing and spacing optimized for different use cases.
- *
- * - `default`: Standard sizing (150px wide matches)
- * - `compact`: Tighter spacing (130px wide matches)
- * - `ultra-compact`: Maximum density (120px wide matches)
- * - `spacious`: Extra room (170px wide matches)
- * - `logo`: Larger cards (200px wide matches) with room for team logos
- * - `logo-compact`: Medium cards (180px wide matches) with logos in compact layout
- * - `ultrawide`: Extra-wide layout (300px wide matches) optimized for ultrawide monitors
- */
-export type ViewMode = 'default' | 'compact' | 'ultra-compact' | 'spacious' | 'logo' | 'logo-compact' | 'ultrawide';
 
 /**
  * An optional config to provide to `brackets-viewer.js`
@@ -214,15 +201,6 @@ export interface Config {
     participantOriginPlacement?: Placement,
 
     /**
-     * Whether to show the child count of a BoX match separately in the match label.
-     * - If `false`, the match label and the child count are in the same place. (Example: "M1.1, Bo3")
-     * - If `true`, the match label and the child count are in an opposite place. (Example: "M1.1   (right-->) Bo3")
-     * 
-     * @default false
-     */
-    separatedChildCountLabel?: boolean,
-
-    /**
      * Whether to show the origin of a slot (wherever possible).
      * 
      * @default true
@@ -251,20 +229,23 @@ export interface Config {
     highlightParticipantOnHover?: boolean,
 
     /**
-     * Whether to show a ranking table in each group of a round-robin stage.
-     * 
-     * @default true
+     * Number of teams that qualify (advance) from each Round Robin group.
+     * Used to color-code standings rows with green zone styling.
+     *
+     * @default undefined (no zone coloring)
+     * @example 2 // Top 2 teams advance
      */
-    showRankingTable?: boolean,
+    qualifyingCount?: number,
 
     /**
-     * A formula to compute the ranking of the participants on round-robin stages.
+     * Number of teams that are eliminated from each Round Robin group.
+     * Used to color-code standings rows with red zone styling.
+     * Teams in between qualifying and eliminated are shown in amber "bubble" zone.
      *
-     * See {@link RankingItem} for the possible properties on `item`.
-     *
-     * @default (item) => 3 * item.wins + 1 * item.draws + 0 * item.losses
+     * @default undefined (no zone coloring)
+     * @example 2 // Bottom 2 teams eliminated
      */
-    rankingFormula?: RankingFormula,
+    eliminatedCount?: number,
 
     /**
      * The rendering mode for double elimination brackets.
@@ -283,13 +264,6 @@ export interface Config {
     clear?: boolean
 
     /**
-     * Whether to show status badges on matches (LIVE, upcoming, completed).
-     *
-     * @default true
-     */
-    showStatusBadges?: boolean,
-
-    /**
      * Whether to show semantic round headers (Finals, Semi-Finals, etc).
      *
      * @default true
@@ -297,23 +271,47 @@ export interface Config {
     showRoundHeaders?: boolean,
 
     /**
+     * Whether to show connector lines between matches in bracket stages.
+     *
+     * Connector lines visually link matches to show tournament progression:
+     * - Internal connectors: Standard lines within same bracket
+     * - Cross-bracket connectors: Dashed lines between Winners/Losers brackets
+     * - Grand final connectors: Bold lines to Grand Finals
+     *
+     * Note: Swiss tournaments do not use connectors.
+     *
+     * @default true
+     */
+    showConnectors?: boolean,
+
+    /**
+     * Whether to show inline match metadata above each match.
+     *
+     * Match metadata appears as a strip above match participants showing:
+     * - Round number (e.g., "R1", "R2")
+     * - Best-of format (e.g., "BO1", "BO3")
+     * - Date (if provided)
+     *
+     * @default true
+     */
+    showMatchMetadata?: boolean,
+
+    /**
      * View model preset ID for bracket layout and theme.
      *
      * View models provide preset configurations for:
      * - Layout density (normal, compact, ultra-compact, spacious)
-     * - Theme (default, admin-compact, etc.)
+     * - Theme (default, dark, etc.)
      * - Double elimination mode (unified/split)
      *
      * Available presets:
-     * - Single Elimination: 'se-default', 'se-compact', 'se-ultra-compact', 'se-spacious'
-     * - Double Elimination: 'de-default', 'de-compact', 'de-admin-compact', 'de-split', 'de-spacious'
-     * - Generic: 'default', 'compact', 'admin'
+     * - Generic: 'default', 'broadcast', 'de-split-horizontal'
      *
      * If not specified, an appropriate default is chosen based on the stage type.
      *
      * @example
-     * // Use compact view for admin dashboard
-     * viewer.render(data, { viewModelId: 'de-admin-compact' });
+     * // Use broadcast view with logos
+     * viewer.render(data, { viewModelId: 'broadcast' });
      *
      * @default undefined (auto-selects based on stage type)
      */
@@ -336,60 +334,16 @@ export interface Config {
      */
     layoutOverrides?: Partial<LayoutConfig>,
 
-    /**
-     * Sizing preset for elimination brackets (single/double elimination only).
-     *
-     * Provides quick sizing presets optimized for different use cases:
-     * - `default`: Standard sizing (150px wide matches) - balanced for most displays
-     * - `compact`: Tighter spacing (130px wide matches) - fits more on screen for admin dashboards
-     * - `logo`: Larger cards (200px wide matches) - room for team logos and broadcasts
-     * - `ultrawide`: Extra-wide layout (300px wide matches) - optimized for 21:9 ultrawide monitors
-     *
-     * Note: Only applies to single_elimination and double_elimination stages.
-     * Swiss and round-robin stages are unaffected.
-     *
-     * This parameter works alongside viewModelId - sizing adjusts dimensions while
-     * viewModelId controls the full preset (layout + theme + DE mode).
-     *
-     * @example
-     * // Quick sizing for logos
-     * viewer.render(data, { sizing: 'logo' });
-     *
-     * @example
-     * // Ultrawide mode for 21:9 displays
-     * viewer.render(data, { sizing: 'ultrawide' });
-     *
-     * @example
-     * // Combine with view model
-     * viewer.render(data, {
-     *   viewModelId: 'de-spacious',
-     *   sizing: 'compact'
-     * });
-     *
-     * @default undefined (uses layout from viewModelId or default)
-     */
-    sizing?: ViewMode,
-
-    /**
-     * @deprecated Use `sizing` instead. This parameter will be removed in a future version.
-     *
-     * View mode for elimination brackets (single/double elimination only).
-     * Alias for `sizing` - kept for backward compatibility.
-     *
-     * @default undefined (uses layout from viewModelId or default)
-     */
-    viewMode?: ViewMode,
-
     // ===== GRANULAR LAYOUT DIMENSION CONTROLS =====
     // Character-creator-style customization - direct control over all layout properties
-    // These override values from viewModelId, sizing, and layoutOverrides if provided
+    // These override values from viewModelId and layoutOverrides if provided
 
     /**
      * Width of each match element in pixels.
      * Controls the horizontal size of match cards.
      *
      * @example 150 (default), 200 (logos), 300 (ultrawide)
-     * @default undefined (uses value from viewModelId or sizing)
+     * @default undefined (uses value from viewModelId)
      */
     matchWidth?: number,
 
@@ -398,7 +352,7 @@ export interface Config {
      * Controls the vertical size of match cards.
      *
      * @example 60 (default), 80 (logos), 44 (ultra-compact)
-     * @default undefined (uses value from viewModelId or sizing)
+     * @default undefined (uses value from viewModelId)
      */
     matchHeight?: number,
 
@@ -407,7 +361,7 @@ export interface Config {
      * Controls horizontal spacing between rounds.
      *
      * @example 190 (default), 340 (ultrawide)
-     * @default undefined (uses value from viewModelId or sizing)
+     * @default undefined (uses value from viewModelId)
      */
     columnWidth?: number,
 
@@ -416,9 +370,31 @@ export interface Config {
      * Controls vertical spacing between matches in the same round.
      *
      * @example 80 (default), 100 (spacious), 56 (ultra-compact)
-     * @default undefined (uses value from viewModelId or sizing)
+     * @default undefined (uses value from viewModelId)
      */
     rowHeight?: number,
+
+    /**
+     * Row height specifically for the lower bracket when using split-horizontal alignment.
+     * Allows compressing the lower bracket vertically to reduce scrolling.
+     * Only applies when bracketAlignment is 'split-horizontal'.
+     * If undefined, uses rowHeight for all brackets.
+     *
+     * @example 48 (40% reduction from default 80px), 44 (45% reduction)
+     * @default undefined (uses rowHeight)
+     */
+    lowerBracketRowHeight?: number,
+
+    /**
+     * Row height specifically for the upper bracket when using split-horizontal alignment.
+     * Allows compressing the upper bracket vertically to reduce scrolling.
+     * Only applies when bracketAlignment is 'split-horizontal'.
+     * If undefined, uses rowHeight for all brackets.
+     *
+     * @example 48 (40% reduction from default 80px), 44 (45% reduction)
+     * @default undefined (uses rowHeight)
+     */
+    upperBracketRowHeight?: number,
 
     /**
      * Top padding/offset for the bracket in pixels.
@@ -513,35 +489,6 @@ export interface Config {
      */
     fontSize?: 'small' | 'medium' | 'large',
 
-    /**
-     * Font weight for team names and primary text.
-     *
-     * - `normal`: Standard weight (400)
-     * - `medium`: Semi-bold (500)
-     * - `bold`: Bold text (600)
-     *
-     * @example 'normal' (default)
-     * @default 'normal'
-     */
-    fontWeight?: 'normal' | 'medium' | 'bold',
-
-    /**
-     * Border radius for match cards in pixels.
-     * Controls the roundness of match box corners.
-     *
-     * @example 4 (default - subtle rounding), 0 (sharp corners), 8 (more rounded)
-     * @default 4
-     */
-    borderRadius?: number,
-
-    /**
-     * Inner padding for match cards in pixels.
-     * Controls spacing between match card edges and content.
-     *
-     * @example 8 (default), 4 (compact), 12 (spacious)
-     * @default 8
-     */
-    matchPadding?: number,
 }
 
 /**

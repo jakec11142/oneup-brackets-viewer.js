@@ -136,24 +136,24 @@ export function createConnectorSVG(connectors: ConnectorLine[], width: number, h
             case 'cross-bracket':
                 // Cross-bracket connectors: lower opacity, dashed, thinner
                 polyline.setAttribute('stroke', 'var(--bv-connector-cross-bracket)');
-                polyline.setAttribute('stroke-width', 'var(--bv-connector-width-cross)');
-                polyline.setAttribute('opacity', 'var(--bv-connector-opacity-cross)');
+                polyline.setAttribute('stroke-width', '1.5');
+                polyline.setAttribute('opacity', '0.3');
                 polyline.setAttribute('stroke-dasharray', '4,3');
                 break;
 
             case 'grand-final':
                 // Grand final connectors: bold, full opacity, distinct color
                 polyline.setAttribute('stroke', 'var(--bv-connector-grand-final)');
-                polyline.setAttribute('stroke-width', 'var(--bv-connector-width-grand-final)');
-                polyline.setAttribute('opacity', 'var(--bv-connector-opacity-grand-final)');
+                polyline.setAttribute('stroke-width', '3');
+                polyline.setAttribute('opacity', '1');
                 break;
 
             case 'internal':
             default:
                 // Internal connectors: standard styling
                 polyline.setAttribute('stroke', 'var(--bv-connector-internal)');
-                polyline.setAttribute('stroke-width', 'var(--bv-connector-width-internal)');
-                polyline.setAttribute('opacity', 'var(--bv-connector-opacity-internal)');
+                polyline.setAttribute('stroke-width', '2');
+                polyline.setAttribute('opacity', '0.8');
                 break;
         }
 
@@ -249,19 +249,6 @@ export function createMatchLabel(label: string | undefined, status: string, onCl
     const span = document.createElement('span');
     span.innerText = label || '';
     span.title = status;
-    onClick && span.addEventListener('click', onClick);
-    return span;
-}
-
-/**
- * Creates a container which contains the child count label of a match.
- *
- * @param label The child count label of the match.
- * @param onClick Called when the label is clicked.
- */
-export function createChildCountLabel(label: string, onClick?: (event: MouseEvent) => void): HTMLElement {
-    const span = document.createElement('span');
-    span.innerText = label;
     onClick && span.addEventListener('click', onClick);
     return span;
 }
@@ -446,44 +433,6 @@ export function addParticipantImage(nameContainer: HTMLElement, src: string): vo
 }
 
 /**
- * Returns the connection for a given round in a bracket.
- *
- * @param alwaysConnectFirstRound Whether to always connect the first round with the second round.
- * @param roundNumber Number of the round.
- * @param roundCount Count of rounds.
- * @param match The match to connect to other matches.
- * @param matchLocation Location of the match.
- * @param connectFinal Whether to connect to the final.
- */
-export function getBracketConnection(alwaysConnectFirstRound: boolean, roundNumber: number, roundCount: number, match: Match, matchLocation?: GroupType, connectFinal?: boolean): Connection {
-    const connection: Connection = {
-        connectPrevious: false,
-        connectNext: false,
-    };
-
-    if (matchLocation === 'loser_bracket') {
-        connection.connectPrevious = roundNumber > 1 && (roundNumber % 2 === 1 ? 'square' : 'straight');
-        connection.connectNext = roundNumber < roundCount && (roundNumber % 2 === 0 ? 'square' : 'straight');
-    } else {
-        connection.connectPrevious = roundNumber > 1 && 'square';
-        connection.connectNext = roundNumber < roundCount ? 'square' : (connectFinal ? 'straight' : false);
-    }
-
-    if (alwaysConnectFirstRound || roundNumber !== 2)
-        return connection;
-
-    const upperBracket = matchLocation === 'single_bracket' || matchLocation === 'winner_bracket';
-
-    if (upperBracket && match.opponent1?.position === undefined && match.opponent2?.position === undefined)
-        connection.connectPrevious = false;
-
-    if (matchLocation === 'loser_bracket' && match.opponent2?.position === undefined)
-        connection.connectPrevious = false;
-
-    return connection;
-}
-
-/**
  * Returns the connection for a given round in the final.
  *
  * @param finalType Type of final.
@@ -498,22 +447,117 @@ export function getFinalConnection(finalType: FinalType, roundNumber: number, ma
 }
 
 /**
- * Sets the connection a match containers.
- *
- * @param opponentsContainer The opponents container.
- * @param matchContainer The match container.
- * @param connection The connection to set.
+ * Creates a container for inline match metadata (date, round, etc.)
  */
-export function setupConnection(opponentsContainer: HTMLElement, matchContainer: HTMLElement, connection: Connection): void {
-    if (connection.connectPrevious)
-        opponentsContainer.classList.add('connect-previous');
+export function createMatchMetadataContainer(): HTMLElement {
+    const metadata = document.createElement('div');
+    metadata.classList.add('match-metadata');
+    return metadata;
+}
 
-    if (connection.connectNext)
-        matchContainer.classList.add('connect-next');
+/**
+ * Adds enhanced metadata to the opponents container with status and optional timer
+ *
+ * @param opponentsContainer The opponents container to add metadata to
+ * @param options Metadata options including bestOf, status, and startedAt
+ */
+export function addEnhancedMetadata(
+    opponentsContainer: HTMLElement,
+    options: {
+        bestOf?: string,
+        status?: number,
+        startedAt?: number, // Unix timestamp in ms
+        round?: number,
+    }
+): void {
+    const { bestOf, status, startedAt, round } = options;
+    const metadata = createMatchMetadataContainer();
 
-    if (connection.connectPrevious === 'straight')
-        opponentsContainer.classList.add('straight');
+    // Determine display status
+    // Status enum: Locked=0, Waiting=1, Ready=2, Running=3, Completed=4, Archived=5
+    const isLive = status === 3;
+    const isCompleted = status === 4 || status === 5;
+    const isNotStarted = status === 0 || status === 1 || status === 2;
 
-    if (connection.connectNext === 'straight')
-        matchContainer.classList.add('straight');
+    // Add status class for styling
+    if (isLive) metadata.classList.add('status-live');
+    else if (isCompleted) metadata.classList.add('status-completed');
+    else metadata.classList.add('status-pending');
+
+    // Build content
+    const parts: string[] = [];
+
+    if (round) parts.push(`R${round}`);
+    if (bestOf) parts.push(bestOf);
+
+    // Add status text
+    if (isLive) {
+        parts.push('Live');
+    } else if (isCompleted) {
+        parts.push('Completed');
+    } else if (isNotStarted) {
+        parts.push('Not Started');
+    }
+
+    metadata.innerHTML = parts.join(' <span class="metadata-separator">•</span> ');
+
+    // Add timer for live matches
+    if (isLive && startedAt) {
+        const timerSpan = document.createElement('span');
+        timerSpan.classList.add('live-timer');
+        timerSpan.innerHTML = ' <span class="metadata-separator">•</span> ' + formatElapsedTime(startedAt);
+        metadata.appendChild(timerSpan);
+
+        // Start timer interval
+        const intervalId = setInterval(() => {
+            if (!document.body.contains(metadata)) {
+                clearInterval(intervalId);
+                return;
+            }
+            timerSpan.innerHTML = ' <span class="metadata-separator">•</span> ' + formatElapsedTime(startedAt);
+        }, 1000);
+
+        // Store interval for potential cleanup
+        (metadata as any)._timerInterval = intervalId;
+    }
+
+    // Prepend to show above participants
+    opponentsContainer.insertBefore(metadata, opponentsContainer.firstChild);
+}
+
+/**
+ * Formats elapsed time from a start timestamp
+ */
+function formatElapsedTime(startedAt: number): string {
+    const now = Date.now();
+    const elapsed = Math.floor((now - startedAt) / 1000);
+
+    const hours = Math.floor(elapsed / 3600);
+    const minutes = Math.floor((elapsed % 3600) / 60);
+    const seconds = elapsed % 60;
+
+    if (hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Legacy function - redirects to addEnhancedMetadata
+ * @deprecated Use addEnhancedMetadata instead
+ */
+export function addInlineMetadata(opponentsContainer: HTMLElement, _date?: string, round?: number, bestOf?: string): void {
+    addEnhancedMetadata(opponentsContainer, { bestOf, round });
+}
+
+/**
+ * Creates a bracket section title element (e.g., "Upper Bracket", "Lower Bracket")
+ * @param title The title text to display
+ * @returns An HTMLElement containing the bracket section title
+ */
+export function createBracketSectionTitle(title: string): HTMLElement {
+    const titleElement = document.createElement('div');
+    titleElement.className = 'bracket-section-title';
+    titleElement.textContent = title;
+    return titleElement;
 }

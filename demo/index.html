@@ -3,6 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <title>Brackets Viewer Demo</title>
+  <!-- Load Roboto font (recommended) - consumers can use any font via --bv-font-family -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../dist/brackets-viewer.min.css" />
   <script src="../dist/brackets-viewer.min.js"></script>
   <link rel="stylesheet" href="./themes/light.css" />
@@ -53,107 +57,13 @@
     <h3>Quick Start Preset</h3>
     <nav id="view-model-buttons" class="button-row"></nav>
   </div>
-  <div class="button-group">
-    <h3>Sizing Preset (Quick Dimensions)</h3>
-    <nav id="sizing-buttons" class="button-row"></nav>
-  </div>
 
-  <!-- GRANULAR CUSTOMIZATION PANELS -->
-  <div class="button-group">
-    <h3>Match Dimensions (px) <button type="button" id="reset-granular-btn" style="font-size:12px;padding:4px 12px;margin-left:12px;background:#e0e0e0;border:1px solid #999;border-radius:4px;cursor:pointer;">Reset to Default</button></h3>
-    <div class="slider-container">
-      <div class="slider-item">
-        <label for="slider-match-width">Match Width: <span id="value-match-width">150</span>px</label>
-        <input type="range" id="slider-match-width" min="100" max="400" value="150" step="10" />
-      </div>
-      <div class="slider-item">
-        <label for="slider-match-height">Match Height: <span id="value-match-height">60</span>px</label>
-        <input type="range" id="slider-match-height" min="40" max="120" value="60" step="4" />
-      </div>
-    </div>
-  </div>
-
-  <div class="button-group">
-    <h3>Spacing & Layout (px)</h3>
-    <div class="slider-container">
-      <div class="slider-item">
-        <label for="slider-column-width">Column Width: <span id="value-column-width">190</span>px</label>
-        <input type="range" id="slider-column-width" min="120" max="450" value="190" step="10" />
-      </div>
-      <div class="slider-item">
-        <label for="slider-row-height">Row Height: <span id="value-row-height">80</span>px</label>
-        <input type="range" id="slider-row-height" min="50" max="150" value="80" step="5" />
-      </div>
-      <div class="slider-item">
-        <label for="slider-group-gap-y">Group Gap (Vertical): <span id="value-group-gap-y">100</span>px</label>
-        <input type="range" id="slider-group-gap-y" min="30" max="200" value="100" step="10" />
-      </div>
-    </div>
-  </div>
-
-  <div class="button-group">
-    <h3>Visual Customization</h3>
-    <div class="toggles-container">
-      <div class="toggle-item">
-        <label for="select-font-size">Font Size:</label>
-        <select id="select-font-size">
-          <option value="">Default</option>
-          <option value="small">Small (11px)</option>
-          <option value="medium" selected>Medium (13px)</option>
-          <option value="large">Large (15px)</option>
-        </select>
-      </div>
-      <div class="toggle-item">
-        <label for="select-font-weight">Font Weight:</label>
-        <select id="select-font-weight">
-          <option value="">Default</option>
-          <option value="normal" selected>Normal (400)</option>
-          <option value="medium">Medium (500)</option>
-          <option value="bold">Bold (600)</option>
-        </select>
-      </div>
-      <div class="toggle-item">
-        <label for="slider-border-radius">Border Radius: <span id="value-border-radius">4</span>px</label>
-        <input type="range" id="slider-border-radius" min="0" max="16" value="4" step="1" />
-      </div>
-      <div class="toggle-item">
-        <label for="slider-match-padding">Match Padding: <span id="value-match-padding">8</span>px</label>
-        <input type="range" id="slider-match-padding" min="2" max="20" value="8" step="2" />
-      </div>
-    </div>
-  </div>
-
-  <div class="button-group">
-    <h3>Bracket Alignment (Double Elimination)</h3>
-    <div class="toggles-container">
-      <div class="toggle-item">
-        <input type="radio" name="bracket-alignment" id="align-bottom" value="bottom" checked />
-        <label for="align-bottom">Bottom (Industry Standard)</label>
-      </div>
-      <div class="toggle-item">
-        <input type="radio" name="bracket-alignment" id="align-top" value="top" />
-        <label for="align-top">Top</label>
-      </div>
-      <div class="toggle-item">
-        <input type="radio" name="bracket-alignment" id="align-center" value="center" />
-        <label for="align-center">Center</label>
-      </div>
-      <div class="toggle-item">
-        <input type="radio" name="bracket-alignment" id="align-finals-top" value="finals-top" />
-        <label for="align-finals-top">Finals Top</label>
-      </div>
-    </div>
-  </div>
   <div class="button-group">
     <h3>Display Options</h3>
     <div class="toggles-container">
       <div class="toggle-item">
         <input type="checkbox" id="toggle-round-headers" checked />
         <label for="toggle-round-headers">Show Round Headers</label>
-      </div>
-      <div class="toggle-item">
-        <input type="checkbox" id="toggle-status-badges" checked />
-        <label for="toggle-status-badges">Show Status Badges</label>
       </div>
       <div class="toggle-item">
         <input type="checkbox" id="toggle-slots-origin" checked />
@@ -164,12 +74,20 @@
         <label for="toggle-lower-slots-origin">Show Lower Bracket Slots Origin</label>
       </div>
       <div class="toggle-item">
-        <input type="checkbox" id="toggle-ranking-table" checked />
-        <label for="toggle-ranking-table">Show Ranking Table</label>
-      </div>
-      <div class="toggle-item">
         <input type="checkbox" id="toggle-match-popover" checked />
         <label for="toggle-match-popover">Show Match Popover on Click</label>
+      </div>
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-participant-images" checked />
+        <label for="toggle-participant-images">Show Participant Images</label>
+      </div>
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-connectors" checked />
+        <label for="toggle-connectors">Show Connector Lines</label>
+      </div>
+      <div class="toggle-item">
+        <input type="checkbox" id="toggle-match-metadata" checked />
+        <label for="toggle-match-metadata">Show Match Metadata</label>
       </div>
     </div>
   </div>
@@ -179,10 +97,6 @@
       <div class="toggle-item">
         <input type="checkbox" id="toggle-highlight-hover" checked />
         <label for="toggle-highlight-hover">Highlight Participant on Hover</label>
-      </div>
-      <div class="toggle-item">
-        <input type="checkbox" id="toggle-separate-bestof" checked />
-        <label for="toggle-separate-bestof">Separate Best-of Label</label>
       </div>
     </div>
   </div>

@@ -26,8 +26,8 @@
     }
     
     async function test() {
-      addLog('Loading swissData-layered.json...');
-      const response = await fetch('swissData-layered.json');
+      addLog('Loading swissData.json...');
+      const response = await fetch('swissData.json');
       const structure = await response.json();
       
       const viewerData = window.bracketsViewerDTO.convertStageStructureToViewerData(structure, structure, {

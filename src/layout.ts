@@ -13,7 +13,7 @@ const GROUP_ORDER: BracketGroup[] = [
     'WINNERS_BRACKET',
     'LOSERS_BRACKET',
     'GRAND_FINAL_BRACKET',
-    'PLACEMENT_BRACKET',
+    // PLACEMENT_BRACKET is positioned separately after other brackets to ensure correct ordering
 ];
 
 /**
@@ -99,6 +99,7 @@ export interface BracketLayout {
     headerPositions: RoundHeader[];
     connectors: ConnectorLine[];
     panelPositions?: SwissPanelPosition[]; // Swiss-specific: boxed panel positions
+    groupOffsetY?: Map<BracketGroup, number>; // Y offsets for bracket groups (for section titles)
     totalWidth: number;
     totalHeight: number;
 }
@@ -276,13 +277,23 @@ export function computeLayout(
         }
 
         if (losersColumns > 0) {
-            groupOffsetsX.set('LOSERS_BRACKET', 0);
-            console.log(`  LOSERS_BRACKET: ${losersColumns} rounds → columns 0 to ${losersColumns - 1}`);
+            // Apply losersBracketOffsetX ONLY for split-horizontal alignment
+            const offset = (layout.bracketAlignment === 'split-horizontal' && layout.losersBracketOffsetX)
+                ? layout.losersBracketOffsetX
+                : 0;
+            groupOffsetsX.set('LOSERS_BRACKET', offset);
+            console.log(`  LOSERS_BRACKET: ${losersColumns} rounds → columns ${offset} to ${offset + losersColumns - 1}${offset > 0 ? ` (offset by ${offset})` : ''}`);
         }
 
         // Grand Finals appears after both brackets complete
-        const maxBracketColumn = Math.max(winnersColumns, losersColumns);
-        const finalsColumn = maxBracketColumn + GROUP_GAP_X;
+        // Calculate the rightmost column occupied by either bracket (accounting for offsets)
+        const losersOffset = (layout.bracketAlignment === 'split-horizontal' && layout.losersBracketOffsetX)
+            ? layout.losersBracketOffsetX
+            : 0;
+        const winnersEndColumn = winnersColumns > 0 ? (0 + winnersColumns - 1) : -1;
+        const losersEndColumn = losersColumns > 0 ? (losersOffset + losersColumns - 1) : -1;
+        const maxBracketEndColumn = Math.max(winnersEndColumn, losersEndColumn);
+        const finalsColumn = maxBracketEndColumn + 1 + GROUP_GAP_X;
 
         const finalsRounds = roundsByGroup.get('GRAND_FINAL_BRACKET');
         if (finalsRounds && finalsRounds.size > 0) {
@@ -290,12 +301,26 @@ export function computeLayout(
             console.log(`  GRAND_FINAL_BRACKET: ${finalsRounds.size} rounds → columns ${finalsColumn} to ${finalsColumn + finalsRounds.size - 1} (right-convergence)`);
         }
 
-        // Placement bracket comes after everything
+        // Placement bracket positioning (3rd/4th place match)
+        // Position below the finals in the same column
         const placementRounds = roundsByGroup.get('PLACEMENT_BRACKET');
         if (placementRounds && placementRounds.size > 0) {
-            const placementColumn = finalsColumn + (finalsRounds?.size ?? 0) + GROUP_GAP_X;
+            let placementColumn: number;
+
+            // Check if we have a separate Grand Finals bracket (Double Elimination)
+            const hasGrandFinals = finalsRounds && finalsRounds.size > 0;
+
+            if (hasGrandFinals) {
+                // Double Elimination: align with Grand Finals column (same column, below it)
+                placementColumn = finalsColumn;
+                console.log(`  PLACEMENT_BRACKET: ${placementRounds.size} rounds → columns ${placementColumn} to ${placementColumn + placementRounds.size - 1} (aligned with Grand Finals - DE)`);
+            } else {
+                // Single Elimination: align with Finals column (same column, below it)
+                placementColumn = winnersColumns > 0 ? winnersColumns - 1 : 0;
+                console.log(`  PLACEMENT_BRACKET: ${placementRounds.size} rounds → columns ${placementColumn} to ${placementColumn + placementRounds.size - 1} (aligned with Finals - SE)`);
+            }
+
             groupOffsetsX.set('PLACEMENT_BRACKET', placementColumn);
-            console.log(`  PLACEMENT_BRACKET: ${placementRounds.size} rounds → columns ${placementColumn} to ${placementColumn + placementRounds.size - 1}`);
         }
     }
 
@@ -353,6 +378,30 @@ export function computeLayout(
         });
     }
 
+    // Process PLACEMENT_BRACKET separately (after main brackets)
+    const placementGroupRounds = matchesByGroupRound.get('PLACEMENT_BRACKET');
+    if (placementGroupRounds) {
+        const sortedRounds = Array.from(placementGroupRounds.keys()).sort((a, b) => a - b);
+
+        sortedRounds.forEach((roundNumber, roundIdx) => {
+            const baseCol = groupOffsetsX.get('PLACEMENT_BRACKET');
+            if (baseCol === undefined) return; // Skip if no position assigned
+
+            const col = baseCol + roundIdx;
+            const idsInRound = placementGroupRounds.get(roundNumber) ?? [];
+
+            for (const id of idsInRound) {
+                matchPositions.set(id, {
+                    xRound: col,
+                    yLane: 0, // Will be filled later
+                    xPx: 0,   // Will be filled later
+                    yPx: 0,   // Will be filled later
+                });
+                maxXRound = Math.max(maxXRound, col);
+            }
+        });
+    }
+
     // --- 3. Compute lane floats per group using internal edges only ---
     const laneIndicesByGroup = new Map<BracketGroup, Map<string, number>>();
     const laneCountByGroup = new Map<BracketGroup, number>();
@@ -366,6 +415,8 @@ export function computeLayout(
 
         // Build inbound edges for this group (internal edges only)
         const inEdgesByToId = new Map<string, BracketEdgeResponse[]>();
+        // Also build outbound edges to know where matches feed into
+        const outEdgesByFromId = new Map<string, BracketEdgeResponse[]>();
         for (const edge of edges) {
             const toNode = matchesById.get(String(edge.toMatchId ?? ''));
             const fromNode = matchesById.get(String(edge.fromMatchId ?? ''));
@@ -375,45 +426,88 @@ export function computeLayout(
             if (fromNode.bracketGroup !== group || toNode.bracketGroup !== group) continue;
 
             const toId = String(edge.toMatchId ?? '');
-            if (!inEdgesByToId.has(toId)) 
+            const fromId = String(edge.fromMatchId ?? '');
+            if (!inEdgesByToId.has(toId))
                 inEdgesByToId.set(toId, []);
-            
+            if (!outEdgesByFromId.has(fromId))
+                outEdgesByFromId.set(fromId, []);
+
             inEdgesByToId.get(toId)!.push(edge);
+            outEdgesByFromId.get(fromId)!.push(edge);
         }
 
         // Process rounds in order
         const sortedRounds = Array.from(groupRounds.keys()).sort((a, b) => a - b);
 
-        for (const roundNumber of sortedRounds) {
-            const idsInRound = groupRounds.get(roundNumber) ?? [];
+        // For LOSERS_BRACKET: use convergence-aware lane assignment
+        // Only create step-downs when 2+ matches converge into 1
+        // Matches with single input stay on the same lane (horizontal connection)
+        if (group === 'LOSERS_BRACKET') {
+            // Process all rounds forward, assigning lanes
+            let currentLane = 0;
+            for (const roundNumber of sortedRounds) {
+                const idsInRound = groupRounds.get(roundNumber) ?? [];
+                idsInRound.sort((a, b) => {
+                    const matchA = matchesById.get(a)?.match;
+                    const matchB = matchesById.get(b)?.match;
+                    return (matchA?.number ?? 0) - (matchB?.number ?? 0);
+                });
 
-            // Sort by match number for deterministic ordering
-            idsInRound.sort((a, b) => {
-                const matchA = matchesById.get(a)?.match;
-                const matchB = matchesById.get(b)?.match;
-                return (matchA?.number ?? 0) - (matchB?.number ?? 0);
-            });
+                for (const matchId of idsInRound) {
+                    const inboundEdges = inEdgesByToId.get(matchId) ?? [];
+                    const childLanes: number[] = [];
 
-            for (const matchId of idsInRound) {
-                const inboundEdges = inEdgesByToId.get(matchId) ?? [];
-                const childLanes: number[] = [];
+                    for (const edge of inboundEdges) {
+                        const childId = String(edge.fromMatchId ?? '');
+                        const lane = laneFloatById.get(childId);
+                        if (lane !== undefined)
+                            childLanes.push(lane);
+                    }
 
-                for (const edge of inboundEdges) {
-                    const childId = String(edge.fromMatchId ?? '');
-                    const lane = laneFloatById.get(childId);
-                    if (lane !== undefined) 
-                        childLanes.push(lane);
-                    
+                    if (childLanes.length >= 2) {
+                        // CONVERGENCE: center between children
+                        const avgLane = childLanes.reduce((sum, lane) => sum + lane, 0) / childLanes.length;
+                        laneFloatById.set(matchId, avgLane);
+                    } else if (childLanes.length === 1) {
+                        // Single internal child: SAME lane (horizontal connection)
+                        laneFloatById.set(matchId, childLanes[0]);
+                    } else {
+                        // No internal children: assign sequential lane
+                        laneFloatById.set(matchId, currentLane);
+                        currentLane++;
+                    }
                 }
+            }
+            nextLane = currentLane;
+        } else {
+            // Original algorithm for other brackets (WINNERS, GRAND_FINAL, etc.)
+            for (const roundNumber of sortedRounds) {
+                const idsInRound = groupRounds.get(roundNumber) ?? [];
 
-                if (childLanes.length > 0) {
-                    // Has children: center between them (average)
-                    const avgLane = childLanes.reduce((sum, lane) => sum + lane, 0) / childLanes.length;
-                    laneFloatById.set(matchId, avgLane);
-                } else {
-                    // No internal children: assign next sequential lane
-                    laneFloatById.set(matchId, nextLane);
-                    nextLane += 1;
+                idsInRound.sort((a, b) => {
+                    const matchA = matchesById.get(a)?.match;
+                    const matchB = matchesById.get(b)?.match;
+                    return (matchA?.number ?? 0) - (matchB?.number ?? 0);
+                });
+
+                for (const matchId of idsInRound) {
+                    const inboundEdges = inEdgesByToId.get(matchId) ?? [];
+                    const childLanes: number[] = [];
+
+                    for (const edge of inboundEdges) {
+                        const childId = String(edge.fromMatchId ?? '');
+                        const lane = laneFloatById.get(childId);
+                        if (lane !== undefined)
+                            childLanes.push(lane);
+                    }
+
+                    if (childLanes.length > 0) {
+                        const avgLane = childLanes.reduce((sum, lane) => sum + lane, 0) / childLanes.length;
+                        laneFloatById.set(matchId, avgLane);
+                    } else {
+                        laneFloatById.set(matchId, nextLane);
+                        nextLane += 1;
+                    }
                 }
             }
         }
@@ -464,23 +558,84 @@ export function computeLayout(
             console.log(`   ⚠️ Resolved ${collisionCount} lane collisions via tie-breaking`);
         
 
-        // Normalize float lanes to sorted integer indices 0..N-1
-        const uniqueFloats = Array.from(new Set(laneFloatById.values())).sort((a, b) => a - b);
-        const floatToIndex = new Map<number, number>();
-        uniqueFloats.forEach((val, idx) => floatToIndex.set(val, idx));
+        // For LOSERS_BRACKET: use float lanes but ensure minimum spacing to prevent overlap
+        // For other brackets: normalize to integer indices
+        if (group === 'LOSERS_BRACKET') {
+            // Get unique lanes sorted
+            const uniqueLanes = [...new Set(laneFloatById.values())].sort((a, b) => a - b);
 
+            // Remap lanes to ensure minimum gap between adjacent unique lanes
+            // Min gap 0.5 = 56px with 112px row height (compact like reference)
+            const MIN_LANE_GAP = 0.5;
+            const laneRemap = new Map<number, number>();
+            let currentLane = 0;
+
+            for (let i = 0; i < uniqueLanes.length; i++) {
+                laneRemap.set(uniqueLanes[i], currentLane);
+                if (i < uniqueLanes.length - 1) {
+                    const originalGap = uniqueLanes[i + 1] - uniqueLanes[i];
+                    // Preserve larger gaps (natural grouping), enforce minimum for smaller
+                    currentLane += Math.max(originalGap, MIN_LANE_GAP);
+                }
+            }
+
+            // Apply remapping
+            const normalized = new Map<string, number>();
+            for (const [matchId, lf] of laneFloatById.entries()) {
+                normalized.set(matchId, laneRemap.get(lf) ?? lf);
+            }
+
+            laneIndicesByGroup.set(group, normalized);
+            const maxRemappedLane = Math.max(...normalized.values());
+            laneCountByGroup.set(group, Math.ceil(maxRemappedLane) + 1);
+
+            console.log(`🎯 ${group}: ${laneFloatById.size} matches, ${uniqueLanes.length} unique lanes → remapped max=${maxRemappedLane.toFixed(2)} (${collisionCount} ties resolved)`);
+        } else {
+            // Normalize float lanes to sorted integer indices 0..N-1
+            const uniqueFloats = Array.from(new Set(laneFloatById.values())).sort((a, b) => a - b);
+            const floatToIndex = new Map<number, number>();
+            uniqueFloats.forEach((val, idx) => floatToIndex.set(val, idx));
+
+            const normalized = new Map<string, number>();
+            for (const [matchId, lf] of laneFloatById.entries()) {
+                const idx = floatToIndex.get(lf);
+                if (idx !== undefined)
+                    normalized.set(matchId, idx);
+            }
+
+            laneIndicesByGroup.set(group, normalized);
+            laneCountByGroup.set(group, uniqueFloats.length || 1);
+
+            console.log(`🎯 ${group}: ${laneFloatById.size} matches, ${uniqueFloats.length} unique lanes (${collisionCount} ties resolved)`);
+        }
+    }
+
+    // Process PLACEMENT_BRACKET lanes separately
+    if (placementGroupRounds) {
+        const laneFloatById = new Map<string, number>();
+        let nextLane = 0;
+
+        // Simple lane assignment for placement bracket (typically just 1 match)
+        const sortedRounds = Array.from(placementGroupRounds.keys()).sort((a, b) => a - b);
+        sortedRounds.forEach((roundNumber) => {
+            const idsInRound = placementGroupRounds.get(roundNumber) ?? [];
+            for (const id of idsInRound) {
+                laneFloatById.set(id, nextLane++);
+            }
+        });
+
+        // Normalize to indices
+        const uniqueFloats = Array.from(new Set(laneFloatById.values())).sort((a, b) => a - b);
+        const floatToIdx = new Map(uniqueFloats.map((f, i) => [f, i]));
         const normalized = new Map<string, number>();
-        for (const [matchId, lf] of laneFloatById.entries()) {
-            const idx = floatToIndex.get(lf);
-            if (idx !== undefined) 
-                normalized.set(matchId, idx);
-            
+        for (const [id, lf] of laneFloatById.entries()) {
+            normalized.set(id, floatToIdx.get(lf) ?? 0);
         }
 
-        laneIndicesByGroup.set(group, normalized);
-        laneCountByGroup.set(group, uniqueFloats.length || 1);
+        laneIndicesByGroup.set('PLACEMENT_BRACKET', normalized);
+        laneCountByGroup.set('PLACEMENT_BRACKET', uniqueFloats.length || 1);
 
-        console.log(`🎯 ${group}: ${laneFloatById.size} matches, ${uniqueFloats.length} unique lanes (${collisionCount} ties resolved)`);
+        console.log(`🎯 PLACEMENT_BRACKET: ${laneFloatById.size} matches, ${uniqueFloats.length} unique lanes`);
     }
 
     // --- 4. Compute Y offsets per group and final pixel positions ---
@@ -493,9 +648,28 @@ export function computeLayout(
     for (const group of GROUP_ORDER) {
         const lanesCount = laneCountByGroup.get(group);
         if (!lanesCount) continue;
-        const height = lanesCount * ROW_HEIGHT;
+
+        // Use bracket-specific row heights in split-horizontal mode
+        let effectiveRowHeight = ROW_HEIGHT;
+        if (bracketAlignment === 'split-horizontal') {
+            if (group === 'LOSERS_BRACKET' && layout.lowerBracketRowHeight) {
+                effectiveRowHeight = layout.lowerBracketRowHeight;
+            } else if (group === 'WINNERS_BRACKET' && layout.upperBracketRowHeight) {
+                effectiveRowHeight = layout.upperBracketRowHeight;
+            }
+        }
+
+        const height = lanesCount * effectiveRowHeight;
         groupHeights.set(group, height);
         maxGroupHeight = Math.max(maxGroupHeight, height);
+    }
+
+    // Calculate PLACEMENT_BRACKET height separately
+    const placementLanesCount = laneCountByGroup.get('PLACEMENT_BRACKET');
+    if (placementLanesCount) {
+        const placementHeight = placementLanesCount * ROW_HEIGHT;
+        groupHeights.set('PLACEMENT_BRACKET', placementHeight);
+        // Don't update maxGroupHeight as placement is positioned separately
     }
 
     // Apply alignment strategy
@@ -507,6 +681,7 @@ export function computeLayout(
         // Position Grand Finals and Winners side-by-side at top
         const winnersHeight = groupHeights.get('WINNERS_BRACKET') || 0;
         const finalsHeight = groupHeights.get('GRAND_FINAL_BRACKET') || 0;
+        const placementHeight = groupHeights.get('PLACEMENT_BRACKET') || 0;
 
         if (winnersHeight > 0) {
             groupOffsetY.set('WINNERS_BRACKET', currentY);
@@ -516,19 +691,20 @@ export function computeLayout(
             groupOffsetY.set('GRAND_FINAL_BRACKET', currentY);
         }
 
-        // Move Y down past the taller of Winners or Finals
-        currentY += Math.max(winnersHeight, finalsHeight) + GROUP_GAP_Y;
+        // Position Placement bracket directly below Grand Finals (championship matches grouped)
+        if (placementHeight > 0 && finalsHeight > 0) {
+            const placementY = currentY + finalsHeight + (GROUP_GAP_Y * 0.5);
+            groupOffsetY.set('PLACEMENT_BRACKET', placementY);
+        }
 
-        // Position Losers and Placement below
+        // Move Y down past the tallest of Winners, Finals, or Finals+Placement stack
+        const finalsAndPlacementHeight = finalsHeight + (placementHeight > 0 ? (GROUP_GAP_Y * 0.5) + placementHeight : 0);
+        currentY += Math.max(winnersHeight, finalsAndPlacementHeight) + GROUP_GAP_Y;
+
+        // Position Losers below
         const losersHeight = groupHeights.get('LOSERS_BRACKET') || 0;
         if (losersHeight > 0) {
             groupOffsetY.set('LOSERS_BRACKET', currentY);
-            currentY += losersHeight + GROUP_GAP_Y;
-        }
-
-        const placementHeight = groupHeights.get('PLACEMENT_BRACKET') || 0;
-        if (placementHeight > 0) {
-            groupOffsetY.set('PLACEMENT_BRACKET', currentY);
         }
 
     } else if (bracketAlignment === 'top') {
@@ -537,8 +713,22 @@ export function computeLayout(
         for (const group of GROUP_ORDER) {
             const height = groupHeights.get(group);
             if (!height) continue;
+
             groupOffsetY.set(group, currentY);
             currentY += height + GROUP_GAP_Y;
+        }
+
+        // Position PLACEMENT_BRACKET below GRAND_FINAL_BRACKET (processed separately)
+        const placementHeight = groupHeights.get('PLACEMENT_BRACKET');
+        if (placementHeight) {
+            const finalsY = groupOffsetY.get('GRAND_FINAL_BRACKET');
+            const finalsHeight = groupHeights.get('GRAND_FINAL_BRACKET') || 0;
+            if (finalsY !== undefined && finalsHeight > 0) {
+                groupOffsetY.set('PLACEMENT_BRACKET', finalsY + finalsHeight + (GROUP_GAP_Y * 0.5));
+            } else {
+                // Fallback: position at end if no finals
+                groupOffsetY.set('PLACEMENT_BRACKET', currentY);
+            }
         }
     } else if (bracketAlignment === 'center') {
         // Center-aligned: Center each bracket group within the maximum height
@@ -546,9 +736,65 @@ export function computeLayout(
         for (const group of GROUP_ORDER) {
             const height = groupHeights.get(group);
             if (!height) continue;
+
             const centerOffset = (maxGroupHeight - height) / 2;
             groupOffsetY.set(group, currentY + centerOffset);
             currentY += maxGroupHeight + GROUP_GAP_Y;
+        }
+
+        // Position PLACEMENT_BRACKET below GRAND_FINAL_BRACKET (processed separately)
+        const placementHeight = groupHeights.get('PLACEMENT_BRACKET');
+        if (placementHeight) {
+            const finalsY = groupOffsetY.get('GRAND_FINAL_BRACKET');
+            const finalsHeight = groupHeights.get('GRAND_FINAL_BRACKET') || 0;
+            if (finalsY !== undefined && finalsHeight > 0) {
+                groupOffsetY.set('PLACEMENT_BRACKET', finalsY + finalsHeight + (GROUP_GAP_Y * 0.5));
+            } else {
+                // Fallback: position at end if no finals
+                const centerOffset = (maxGroupHeight - placementHeight) / 2;
+                groupOffsetY.set('PLACEMENT_BRACKET', currentY + centerOffset);
+            }
+        }
+    } else if (bracketAlignment === 'split-horizontal') {
+        // Split horizontal: Upper bracket top, Lower bracket below, Finals to the right (VCT/industry standard)
+        // This is the classic double elimination layout seen in major esports broadcasts
+        const winnersHeight = groupHeights.get('WINNERS_BRACKET') || 0;
+        const losersHeight = groupHeights.get('LOSERS_BRACKET') || 0;
+        const finalsHeight = groupHeights.get('GRAND_FINAL_BRACKET') || 0;
+        const placementHeight = groupHeights.get('PLACEMENT_BRACKET') || 0;
+
+        // Position Winners at top-left
+        if (winnersHeight > 0) {
+            groupOffsetY.set('WINNERS_BRACKET', TOP_OFFSET);
+        }
+
+        // Position Losers below Winners with gap
+        if (losersHeight > 0) {
+            const losersY = TOP_OFFSET + winnersHeight + GROUP_GAP_Y;
+            groupOffsetY.set('LOSERS_BRACKET', losersY);
+        }
+
+        // Position Grand Finals vertically centered between Winners and Losers
+        // Grand Finals will be positioned to the right via X offset (handled in column assignment)
+        if (finalsHeight > 0 && winnersHeight > 0 && losersHeight > 0) {
+            const totalHeight = winnersHeight + GROUP_GAP_Y + losersHeight;
+            const finalsY = TOP_OFFSET + (totalHeight - finalsHeight) / 2;
+            groupOffsetY.set('GRAND_FINAL_BRACKET', finalsY);
+
+            // Position Placement bracket directly below Grand Finals (championship matches grouped)
+            if (placementHeight > 0) {
+                const placementY = finalsY + finalsHeight + (GROUP_GAP_Y * 0.5);
+                groupOffsetY.set('PLACEMENT_BRACKET', placementY);
+            }
+        } else if (finalsHeight > 0) {
+            // Fallback: center vertically if only one bracket exists
+            groupOffsetY.set('GRAND_FINAL_BRACKET', TOP_OFFSET);
+
+            // Position Placement below if exists
+            if (placementHeight > 0) {
+                const placementY = TOP_OFFSET + finalsHeight + (GROUP_GAP_Y * 0.5);
+                groupOffsetY.set('PLACEMENT_BRACKET', placementY);
+            }
         }
     } else {
         // Bottom-aligned (default): Stack brackets naturally with gaps
@@ -580,15 +826,28 @@ export function computeLayout(
             const winnersBottom = TOP_OFFSET + winnersHeight;
             const finalsY = (winnersBottom + losersStartY) / 2 - finalsHeight / 2;
             groupOffsetY.set('GRAND_FINAL_BRACKET', finalsY);
+
+            // Position Placement bracket directly below Grand Finals (championship matches grouped)
+            if (placementHeight > 0) {
+                const placementY = finalsY + finalsHeight + (GROUP_GAP_Y * 0.5);
+                groupOffsetY.set('PLACEMENT_BRACKET', placementY);
+            }
         } else if (finalsHeight > 0) {
             // Fallback: position after other brackets
             groupOffsetY.set('GRAND_FINAL_BRACKET', currentY);
-            currentY += finalsHeight + GROUP_GAP_Y;
-        }
 
-        // Position Placement bracket at the end
-        if (placementHeight > 0) {
-            groupOffsetY.set('PLACEMENT_BRACKET', currentY);
+            // Position Placement below if exists
+            if (placementHeight > 0) {
+                const placementY = currentY + finalsHeight + (GROUP_GAP_Y * 0.5);
+                groupOffsetY.set('PLACEMENT_BRACKET', placementY);
+            }
+        } else {
+            // Fallback for no Grand Finals (e.g., Single Elimination)
+            // Position PLACEMENT_BRACKET after Winners/Losers brackets
+            if (placementHeight > 0) {
+                groupOffsetY.set('PLACEMENT_BRACKET', currentY);
+                console.log(`📍 PLACEMENT_BRACKET positioned at Y=${currentY} (no Grand Finals bracket)`);
+            }
         }
     }
 
@@ -601,10 +860,30 @@ export function computeLayout(
         if (!node) continue;
 
         const group = node.bracketGroup;
-        const laneIdx = laneIndicesByGroup.get(group)?.get(id) ?? 0;
+        let laneIdx = laneIndicesByGroup.get(group)?.get(id) ?? 0;
+
+        // For LOSERS_BRACKET: invert lanes so bracket works UPWARD
+        // R1 matches go to bottom, later rounds trend toward top
+        if (group === 'LOSERS_BRACKET') {
+            const losersLanes = laneIndicesByGroup.get('LOSERS_BRACKET');
+            if (losersLanes && losersLanes.size > 0) {
+                const maxLane = Math.max(...losersLanes.values());
+                laneIdx = maxLane - laneIdx;
+            }
+        }
+
+        // Use bracket-specific row heights in split-horizontal mode
+        let effectiveRowHeight = ROW_HEIGHT;
+        if (bracketAlignment === 'split-horizontal') {
+            if (group === 'LOSERS_BRACKET' && layout.lowerBracketRowHeight) {
+                effectiveRowHeight = layout.lowerBracketRowHeight;
+            } else if (group === 'WINNERS_BRACKET' && layout.upperBracketRowHeight) {
+                effectiveRowHeight = layout.upperBracketRowHeight;
+            }
+        }
 
         const xPx = LEFT_OFFSET + pos.xRound * COLUMN_WIDTH;
-        const yPx = (groupOffsetY.get(group) ?? TOP_OFFSET) + laneIdx * ROW_HEIGHT;
+        const yPx = (groupOffsetY.get(group) ?? TOP_OFFSET) + laneIdx * effectiveRowHeight;
 
         pos.yLane = laneIdx;
         pos.xPx = xPx;
@@ -644,6 +923,7 @@ export function computeLayout(
         matchPositions,
         headerPositions,
         connectors,
+        groupOffsetY, // Y offsets for bracket groups (for section titles)
         totalWidth: maxX + 50, // Add right padding
         totalHeight: maxY + 50, // Add bottom padding
     };
@@ -804,17 +1084,18 @@ export function computeSwissLayout(
     // Extract configuration values (Swiss config takes precedence)
     const ROW_HEIGHT = swissConfig?.rowHeight ?? layout.rowHeight;
     const COLUMN_WIDTH = swissConfig?.columnWidth ?? layout.columnWidth;
-    const COLUMN_GAP_X = swissConfig?.columnGapX ?? (layout.columnWidth - layout.matchWidth);
-    const PANEL_HEADER_HEIGHT = swissConfig?.panelHeaderHeight ?? 60;
-    const PANEL_PADDING = swissConfig?.panelPadding ?? 20;
-    const PANEL_INNER_GAP = swissConfig?.panelInnerGap ?? 10;
-    const LAYER_GAP_FACTOR = swissConfig?.layerGapFactor ?? 1.5;
-    const MIN_LAYER_GAP_PX = swissConfig?.minLayerGapPx ?? (layout.swissLayerStepY ?? ROW_HEIGHT * 1.5);
+    const COLUMN_GAP_X = swissConfig?.columnGapX ?? 24; // Fixed gap between columns (was double-counting)
+    const PANEL_HEADER_HEIGHT = swissConfig?.panelHeaderHeight ?? 40; // Reduced from 60 (simplified header)
+    const PANEL_PADDING = swissConfig?.panelPadding ?? 14; // Reduced from 20
+    const PANEL_INNER_GAP = swissConfig?.panelInnerGap ?? 14; // Match CSS gap
+    const LAYER_GAP_FACTOR = swissConfig?.layerGapFactor ?? 1.2; // Reduced from 1.5
+    const MIN_LAYER_GAP_PX = swissConfig?.minLayerGapPx ?? (layout.swissLayerStepY ?? ROW_HEIGHT * 1.2);
     const COLUMN_MODE = swissConfig?.columnMode ?? 'layer-based';
     const LAYER_GAP_COLUMNS = swissConfig?.layerGapColumns ?? 0;
     const TOP_OFFSET = layout.topOffset;
     const LEFT_OFFSET = layout.leftOffset;
     const MATCH_HEIGHT = layout.matchHeight;
+    const PANEL_GAP = 16; // Gap between panels in same column
 
     // Calculate effective layer step Y (vertical spacing between layers)
     const layerStepY = Math.max(MIN_LAYER_GAP_PX, ROW_HEIGHT * LAYER_GAP_FACTOR);
@@ -1007,8 +1288,8 @@ export function computeSwissLayout(
         // Get current Y position for this column (or start at TOP_OFFSET)
         const currentY = columnYPositions.get(columnIndex) ?? TOP_OFFSET;
 
-        // Calculate this panel's height
-        const panelHeight = PANEL_HEADER_HEIGHT + bucketMatches.length * ROW_HEIGHT + PANEL_PADDING;
+        // Calculate this panel's height (must match match positioning formula)
+        const panelHeight = PANEL_HEADER_HEIGHT + bucketMatches.length * (ROW_HEIGHT + PANEL_INNER_GAP) - PANEL_INNER_GAP + PANEL_PADDING;
 
         // Use column-specific Y for vertical stacking within each column
         const panelY = currentY;
@@ -1054,7 +1335,7 @@ export function computeSwissLayout(
         maxHeight = Math.max(maxHeight, panelY + panelHeight);
 
         // Update Y position for this column (add gap between panels)
-        columnYPositions.set(columnIndex, panelY + panelHeight + 20); // 20px gap between panels
+        columnYPositions.set(columnIndex, panelY + panelHeight + PANEL_GAP);
     });
 
     const totalWidth = LEFT_OFFSET + (maxColumnIndex + 1) * (COLUMN_WIDTH + COLUMN_GAP_X) + layout.matchWidth;
@@ -1077,5 +1358,3 @@ export function computeSwissLayout(
         totalHeight,
     };
 }
-
-// generateSwissConnectors function removed - Swiss now uses boxed panels without connectors

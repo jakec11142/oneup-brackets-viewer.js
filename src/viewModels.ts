@@ -6,14 +6,17 @@
  * modifying the underlying bracket data.
  */
 
+import { debug } from './debug';
+
 /**
  * Vertical alignment strategy for bracket groups in double elimination
  * - 'bottom': Stack naturally (Winners, Losers, Finals) - default
  * - 'top': All brackets start from same Y position
  * - 'center': Center brackets within max height
  * - 'finals-top': Grand Finals at top with Winners, Losers below
+ * - 'split-horizontal': Upper bracket top, Lower bracket below, Finals to the right (VCT/industry standard)
  */
-export type BracketAlignment = 'top' | 'center' | 'bottom' | 'finals-top';
+export type BracketAlignment = 'top' | 'center' | 'bottom' | 'finals-top' | 'split-horizontal';
 
 /**
  * Layout configuration parameters that control spacing and sizing of bracket elements
@@ -23,6 +26,22 @@ export interface LayoutConfig {
   columnWidth: number;
   /** Height of each row (includes match height + vertical gap) */
   rowHeight: number;
+  /**
+   * Row height specifically for the lower bracket when using split-horizontal alignment.
+   * Allows compressing the lower bracket vertically to reduce scrolling.
+   * Only applies when bracketAlignment is 'split-horizontal'.
+   * @default undefined (uses rowHeight)
+   * @example 48 (40% reduction from default 80px)
+   */
+  lowerBracketRowHeight?: number;
+  /**
+   * Row height specifically for the upper bracket when using split-horizontal alignment.
+   * Allows compressing the upper bracket vertically to reduce scrolling.
+   * Only applies when bracketAlignment is 'split-horizontal'.
+   * @default undefined (uses rowHeight)
+   * @example 48 (40% reduction from default 80px)
+   */
+  upperBracketRowHeight?: number;
   /** Actual match element height */
   matchHeight: number;
   /** Actual match element width (for rendering, separate from columnWidth) */
@@ -86,11 +105,6 @@ export type BracketKind = 'single_elimination' | 'double_elimination' | 'round_r
 export type DoubleElimMode = 'unified' | 'split';
 
 /**
- * Swiss view mode presets
- */
-export type SwissViewMode = 'default' | 'compact-admin';
-
-/**
  * Swiss column assignment strategy
  * - 'round-based': One column per round (wins + losses + 1) - matches industry convention
  * - 'layer-based': Columns grouped by layer (wins + losses) with optional gap columns
@@ -148,17 +162,17 @@ export interface ViewModel {
  */
 export const DEFAULT_LAYOUT: LayoutConfig = {
   columnWidth: 190,   // 150px match width + 40px round gap
-  rowHeight: 80,      // 60px match height + 20px vertical gap
+  rowHeight: 64,      // 60px match height + 4px vertical gap (compact)
   matchHeight: 60,    // Actual match min-height
   matchWidth: 150,    // Actual match width
-  topOffset: 50,      // Top padding
+  topOffset: 50,      // Top padding (includes space for round headers)
   leftOffset: 0,      // Left padding
   groupGapX: 1,       // Minimal horizontal gap between groups
-  groupGapY: 100,     // Vertical gap between winner/loser brackets
+  groupGapY: 60,      // Vertical gap between winner/loser brackets (reduced from 100)
   bracketAlignment: 'bottom', // Standard industry alignment: Winners top, Losers bottom, Finals right
   losersBracketOffsetX: 0, // Natural left-alignment for both brackets
-  swissLayerStepY: 120, // Swiss layer spacing (rowHeight * 1.5 = 80 * 1.5)
-  swissBucketGapY: 24, // Vertical gap between Swiss panels in same column
+  swissLayerStepY: 120, // Swiss layer spacing (keep original - panels need more space)
+  swissBucketGapY: 32, // Vertical gap between Swiss panels in same column (increased)
 };
 
 /**
@@ -170,7 +184,7 @@ export const COMPACT_LAYOUT: LayoutConfig = {
   rowHeight: 60,      // 48px match height + 12px vertical gap
   matchHeight: 48,    // Smaller match height
   matchWidth: 130,    // Smaller match width
-  topOffset: 40,      // Reduced top padding
+  topOffset: 50,      // Top padding (includes space for round headers)
   leftOffset: 0,
   groupGapX: 1,
   groupGapY: 60,      // Reduced vertical gap between brackets
@@ -275,22 +289,6 @@ export const ULTRAWIDE_LAYOUT: LayoutConfig = {
   swissBucketGapY: 24, // Vertical gap between Swiss panels in same column
 };
 
-/**
- * View mode layout presets for elimination brackets
- * Provides quick sizing options for SE/DE brackets via the sizing config parameter
- *
- * These are dimension presets that users can combine with any view model or theme.
- * For even more control, use the granular config parameters (matchWidth, etc.)
- */
-export const VIEW_MODE_LAYOUTS = {
-  default: DEFAULT_LAYOUT,
-  compact: COMPACT_LAYOUT,
-  'ultra-compact': ULTRA_COMPACT_LAYOUT,
-  spacious: SPACIOUS_LAYOUT,
-  logo: LAYOUT_WITH_LOGOS,
-  'logo-compact': COMPACT_LAYOUT_WITH_LOGOS,
-  ultrawide: ULTRAWIDE_LAYOUT,
-} as const;
 
 /**
  * Swiss default layout configuration
@@ -301,7 +299,7 @@ export const SWISS_DEFAULT_CONFIG: SwissLayoutConfig = {
   columnWidth: 220,
   columnGapX: 24,
   layerGapFactor: 1.6,
-  minLayerGapPx: 80,
+  minLayerGapPx: 100,      // Increased from 80 for more space between score groups (0-0, 1-0, 0-1, etc.)
   panelInnerGap: 10,
   panelHeaderHeight: 48,
   panelPadding: 12,
@@ -309,22 +307,6 @@ export const SWISS_DEFAULT_CONFIG: SwissLayoutConfig = {
   layerGapColumns: 0,
 };
 
-/**
- * Swiss compact admin layout configuration
- * Dense layout optimized for admin dashboards with many matches
- */
-export const SWISS_COMPACT_ADMIN_CONFIG: SwissLayoutConfig = {
-  rowHeight: 44,
-  columnWidth: 210,
-  columnGapX: 16,
-  layerGapFactor: 1.2,
-  minLayerGapPx: 60,
-  panelInnerGap: 6,
-  panelHeaderHeight: 40,
-  panelPadding: 8,
-  columnMode: 'round-based',
-  layerGapColumns: 0,
-};
 
 /**
  * Swiss default layout (wrapper for compatibility with existing LayoutConfig)
@@ -332,14 +314,6 @@ export const SWISS_COMPACT_ADMIN_CONFIG: SwissLayoutConfig = {
 export const SWISS_DEFAULT_LAYOUT: LayoutConfig = {
   ...DEFAULT_LAYOUT,
   swissConfig: SWISS_DEFAULT_CONFIG,
-};
-
-/**
- * Swiss compact admin layout (wrapper for compatibility with existing LayoutConfig)
- */
-export const SWISS_COMPACT_ADMIN_LAYOUT: LayoutConfig = {
-  ...ULTRA_COMPACT_LAYOUT,
-  swissConfig: SWISS_COMPACT_ADMIN_CONFIG,
 };
 
 /**
@@ -363,20 +337,31 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
     doubleElimMode: 'unified',
   },
 
-  'admin': {
-    id: 'admin',
-    label: 'Admin Dashboard',
-    stageTypes: ['single_elimination', 'double_elimination', 'round_robin', 'swiss'],
-    layout: ULTRA_COMPACT_LAYOUT,
-    theme: { rootClassName: 'bv-theme-admin-compact' },
-    doubleElimMode: 'unified',
-  },
-
   'broadcast': {
     id: 'broadcast',
     label: 'Broadcast / Streaming',
-    stageTypes: ['single_elimination', 'double_elimination', 'round_robin', 'swiss'],
-    layout: LAYOUT_WITH_LOGOS,
+    stageTypes: ['single_elimination', 'double_elimination'],
+    layout: {
+      ...LAYOUT_WITH_LOGOS,
+      rowHeight: 56,  // Compact spacing (vs 100px in LAYOUT_WITH_LOGOS)
+    },
+    theme: { rootClassName: 'bv-theme-default' },
+    doubleElimMode: 'unified',
+  },
+
+  'de-split-horizontal': {
+    id: 'de-split-horizontal',
+    label: 'Double Elim - Split Horizontal (VCT Style)',
+    stageTypes: ['double_elimination'],
+    layout: {
+      ...DEFAULT_LAYOUT,
+      bracketAlignment: 'split-horizontal',
+      groupGapY: 120,  // Vertical gap between upper and lower brackets
+      groupGapX: 2,    // Horizontal gap (in columns) before Grand Finals
+      upperBracketRowHeight: 48,  // Compress upper bracket rows (40% reduction from 80px)
+      lowerBracketRowHeight: 48,  // Compress lower bracket rows (40% reduction from 80px)
+      losersBracketOffsetX: 1,  // Offset lower bracket to align with Upper Round 2
+    },
     theme: { rootClassName: 'bv-theme-default' },
     doubleElimMode: 'unified',
   },
@@ -384,11 +369,11 @@ export const VIEW_MODELS: Record<string, ViewModel> = {
 
 /**
  * Default view model IDs by bracket type
- * All formats now use 'default' as the starting point
+ * All formats now use 'broadcast' as the starting point for better readability
  */
 const DEFAULT_VIEW_MODEL_IDS: Record<BracketKind, string> = {
-  single_elimination: 'default',
-  double_elimination: 'default',
+  single_elimination: 'broadcast',
+  double_elimination: 'broadcast',
   round_robin: 'default',
   swiss: 'default',
 };
@@ -420,7 +405,7 @@ export function getViewModel(
 
   // If viewModelId was provided but invalid, log warning
   if (viewModelId && !VIEW_MODELS[viewModelId]) {
-    console.warn(
+    debug.warn(
       `[BracketsViewer] Unknown viewModelId "${viewModelId}", falling back to "${defaultId}"`,
     );
   }

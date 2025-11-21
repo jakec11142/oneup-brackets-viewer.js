@@ -86,7 +86,6 @@ await renderBracket('#tournament-bracket', viewerData, {
 | `showRankingTable` | `boolean` | `true` | Display ranking tables in round-robin and Swiss stages |
 | `showPopoverOnMatchLabelClick` | `boolean` | `true` | Display a popover when clicking match labels that have child games |
 | `participantOriginPlacement` | `'before' \| 'after' \| 'none'` | `'before'` | Position of participant seed/origin relative to name: `before` = "#1 Team", `after` = "Team (#1)", `none` = hidden |
-| `separatedChildCountLabel` | `boolean` | `false` | Separate match label and child count (Bo3) into opposite corners of the match box |
 | `onMatchClick` | `(match: Match) => void` | `undefined` | Callback fired when a match is clicked |
 | `onMatchLabelClick` | `(match: Match) => void` | `undefined` | Callback fired when a match label is clicked |
 | `customRoundName` | `function` | `undefined` | Custom function to override round names. Use `addLocale()` for simple translations instead |
@@ -120,82 +119,221 @@ View models provide preset configurations that bundle layout density, visual the
 
 ```ts
 await renderBracket('#tournament-bracket', viewerData, {
-  viewModelId: 'de-compact',  // Compact double elimination preset
+  viewModelId: 'broadcast',  // Broadcast preset with room for logos
 });
 ```
 
 **Available Presets:**
 
-| Preset ID | Description | Stage Types | Layout | Theme |
-| --------- | ----------- | ----------- | ------ | ----- |
-| **Single Elimination** |
-| `se-default` | Standard single elimination | SE | 150px × 60px | Default |
-| `se-compact` | Compact for admin dashboards | SE | 130px × 48px | Compact fonts |
-| `se-ultra-compact` | Maximum density | SE | 120px × 44px | Compact fonts |
-| `se-spacious` | Extra room for readability | SE | 170px × 72px | Default |
-| `se-ultrawide` | Optimized for 21:9 monitors | SE | 300px × 60px | Default |
-| `se-with-logos` | Room for team logos | SE | 200px × 80px | Default |
-| `se-compact-logos` | Logos in compact layout | SE | 180px × 64px | Default |
-| **Double Elimination** |
-| `de-default` | Industry standard unified view | DE | 150px × 60px | Default |
-| `de-compact` | Compact unified view | DE | 130px × 48px | Compact fonts |
-| `de-admin-compact` | Maximum density with dark theme | DE | 120px × 44px | Admin dark |
-| `de-split` | Split view (winners/losers separate) | DE | 150px × 60px | Default |
-| `de-spacious` | Extra room for readability | DE | 170px × 72px | Default |
-| `de-ultrawide` | Optimized for 21:9 monitors | DE | 300px × 60px | Default |
-| `de-with-logos` | Room for team logos | DE | 200px × 80px | Default |
-| `de-compact-logos` | Logos in compact layout | DE | 180px × 64px | Default |
-| **Generic (All Stages)** |
-| `default` | Standard layout | All | 150px × 60px | Default |
-| `compact` | Compact layout | All | 130px × 48px | Compact fonts |
-| `admin` | Admin dashboard | All | 120px × 44px | Admin dark |
+| Preset ID | Description | Stage Types | Layout |
+| --------- | ----------- | ----------- | ------ |
+| `default` | Standard layout for all stages | All | 150px × 60px |
+| `broadcast` | Broadcast/streaming with room for logos | SE, DE | 200px × 80px |
+| `de-split-horizontal` | VCT-style split layout | DE | 150px × 60px |
+
+**Default mappings by stage type:**
+- Single/Double Elimination → `broadcast`
+- Round Robin/Swiss → `default`
 
 **When to use:**
-- Admin dashboards: `de-admin-compact` or `admin`
-- Public broadcasts with logos: `se-with-logos` or `de-with-logos`
-- Ultrawide monitors (21:9): `se-ultrawide` or `de-ultrawide`
-- Default case: `se-default` or `de-default` (or omit - auto-selected)
+- Public broadcasts with logos: `broadcast`
+- VCT/esports-style double elimination: `de-split-horizontal` (upper bracket top, lower bracket below, finals to the right)
+- Compact admin dashboards: `default`
 
-### Sizing Presets (Elimination Brackets Only)
+#### Split Horizontal Layout (VCT Style)
 
-For quick dimension adjustments on single/double elimination brackets without changing theme or other settings, use the `sizing` parameter. This overrides the layout from your view model.
-
-**Usage:**
+The `de-split-horizontal` preset renders double elimination in the classic esports broadcast style:
 
 ```ts
 await renderBracket('#tournament-bracket', viewerData, {
-  viewModelId: 'de-default',  // Start with standard preset
-  sizing: 'ultrawide',        // But use ultrawide dimensions
+  viewModelId: 'de-split-horizontal',
 });
 ```
 
-**Available Sizing Options:**
+**Layout characteristics:**
+- **Upper bracket (Winners)**: Positioned at top, flows left → right
+- **Lower bracket (Losers)**: Positioned below upper bracket, flows left → right
+- **Grand Finals**: Positioned to the right, vertically centered between upper and lower brackets
+- **Visual connections**: Lower bracket final connects visibly to Grand Finals
 
-| Sizing | Match Width | Match Height | Best For |
-| ------ | ----------- | ------------ | -------- |
-| `default` | 150px | 60px | Balanced for most displays |
-| `compact` | 130px | 48px | Fits more on screen for admin dashboards |
-| `logo` | 200px | 80px | Room for team logos and broadcasts |
-| `ultrawide` | 300px | 60px | 21:9 ultrawide monitors in fullscreen |
+This layout matches major esports broadcasts like Valorant Champions Tour (VCT), League of Legends Worlds, and other professional tournaments.
 
-**Note:** Sizing presets only work for `single_elimination` and `double_elimination` stages. Swiss and round-robin stages are unaffected.
+### Granular Layout Customization
 
-**Examples:**
+For fine-grained control beyond presets, use `layoutOverrides` to customize specific dimensions:
 
 ```ts
-// Quick sizing without view model
-await renderBracket('#bracket', viewerData, {
-  sizing: 'logo',  // 200px matches
-});
-
-// Combine compact theme with ultrawide sizing
-await renderBracket('#bracket', viewerData, {
-  viewModelId: 'de-compact',  // Compact theme with 130px layout
-  sizing: 'ultrawide',        // Override to 300px for ultrawide display
+await renderBracket('#tournament-bracket', viewerData, {
+  viewModelId: 'default',
+  layoutOverrides: {
+    matchWidth: 180,      // Match card width in pixels
+    matchHeight: 64,      // Match card height in pixels
+    columnWidth: 220,     // Total column width (match + gap)
+    rowHeight: 72,        // Row height for vertical spacing
+    topOffset: 50,        // Top padding
+    groupGapY: 80,        // Vertical gap between bracket groups
+  },
 });
 ```
 
-**Migration Note:** The deprecated `viewMode` parameter is still supported as an alias for `sizing` but will be removed in a future version. Please update your code to use `sizing` instead.
+**Available Layout Options:**
+
+| Option | Type | Default | Description |
+| ------ | ---- | ------- | ----------- |
+| `matchWidth` | `number` | 150 | Match card width in pixels |
+| `matchHeight` | `number` | 60 | Match card height in pixels |
+| `columnWidth` | `number` | 190 | Total column width (match + round gap) |
+| `rowHeight` | `number` | 64 | Row height for vertical spacing |
+| `topOffset` | `number` | 50 | Top padding for the bracket |
+| `leftOffset` | `number` | 0 | Left padding for the bracket |
+| `groupGapX` | `number` | 1 | Horizontal gap between bracket groups |
+| `groupGapY` | `number` | 60 | Vertical gap between bracket groups |
+| `bracketAlignment` | `string` | `'bottom'` | Vertical alignment: `'top'`, `'center'`, `'bottom'`, `'finals-top'` |
+
+---
+
+## Participant Images
+
+Display team logos or avatars to the left of participant names using the `setParticipantImages()` method.
+
+### Usage
+
+Call `setParticipantImages()` **before** rendering the bracket:
+
+```typescript
+const viewer = new BracketsViewer();
+
+// Set participant images
+viewer.setParticipantImages([
+  { participantId: 1, imageUrl: 'https://example.com/team1-logo.png' },
+  { participantId: 2, imageUrl: 'https://example.com/team2-logo.png' },
+  { participantId: 3, imageUrl: 'https://example.com/team3-logo.png' },
+  // ... more participants
+]);
+
+// Then render
+await viewer.render(viewerData, {
+  selector: '.brackets-viewer',
+});
+```
+
+### API
+
+```typescript
+setParticipantImages(images: ParticipantImage[]): void
+
+interface ParticipantImage {
+  participantId: number;  // Must match a participant ID from your data
+  imageUrl: string;       // URL to the image (can be relative or absolute)
+}
+```
+
+### Customization
+
+**Image Size:**
+
+Control the image size using the CSS variable `--bv-participant-image-size`:
+
+```css
+.brackets-viewer {
+  --bv-participant-image-size: 1.5em; /* Default is 1em */
+}
+```
+
+**Recommended View Models:**
+
+For best results with logos/images, use the `broadcast` preset which provides 200px × 80px matches with plenty of room for logos. For compact displays, use `default` with custom `layoutOverrides`.
+
+**Image Guidelines:**
+- Square images (1:1 aspect ratio) work best due to `object-fit: cover`
+- Recommended minimum size: 64px × 64px
+- Supported formats: PNG, JPG, SVG, GIF
+- Images are rendered with 2px border-radius and 4px right margin
+
+### Example with Generated Avatars
+
+You can use services like ui-avatars.com to generate placeholder avatars:
+
+```typescript
+const participantImages = participants.map(p => ({
+  participantId: p.id,
+  imageUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(p.name)}&size=64&background=random&color=fff`,
+}));
+
+viewer.setParticipantImages(participantImages);
+```
+
+---
+
+## CSS Variables Reference
+
+The viewer uses CSS custom properties for theming. Override these in your stylesheet:
+
+### Core Colors
+
+```css
+.brackets-viewer {
+  --bv-bg-color: #fff;              /* Background color */
+  --bv-surface-color: #eceff1;      /* Surface/card background */
+  --bv-match-bg-color: #fff;        /* Match card background */
+  --bv-text-color: #212529;         /* Primary text */
+  --bv-heading-color: #6b6b6b;      /* Headings */
+  --bv-hint-color: #a7a7a7;         /* Secondary text */
+  --bv-border-color: #d9d9d9;       /* Borders */
+  --bv-win-color: #50b649;          /* Winner highlight */
+  --bv-lose-color: #e61a1a;         /* Loser highlight */
+}
+```
+
+### Typography Scale
+
+```css
+.brackets-viewer {
+  --bv-font-family: 'Roboto', sans-serif;
+  --bv-font-size-xs: 0.6875rem;     /* 11px */
+  --bv-font-size-sm: 0.75rem;       /* 12px */
+  --bv-font-size-base: 0.875rem;    /* 14px */
+  --bv-font-size-lg: 1rem;          /* 16px */
+  --bv-font-size-xl: 1.25rem;       /* 20px */
+  --bv-font-size-2xl: 1.5rem;       /* 24px */
+}
+```
+
+### Connector Colors
+
+```css
+.brackets-viewer {
+  --bv-connector-internal: #9e9e9e;      /* Standard bracket lines */
+  --bv-connector-cross-bracket: #b0b0b0; /* Cross-bracket connections */
+  --bv-connector-grand-final: #5c7cfa;   /* Grand finals connector */
+}
+```
+
+### Zone Colors (Round Robin / Swiss)
+
+```css
+.brackets-viewer {
+  --bv-zone-advancing-bg: #ecfdf5;       /* Advancing zone background */
+  --bv-zone-advancing-border: #10b981;   /* Advancing zone border */
+  --bv-zone-bubble-bg: #fffbeb;          /* Bubble zone background */
+  --bv-zone-bubble-border: #f59e0b;      /* Bubble zone border */
+  --bv-zone-eliminated-bg: #fef2f2;      /* Eliminated zone background */
+  --bv-zone-eliminated-border: #ef4444;  /* Eliminated zone border */
+}
+```
+
+### Dark Theme
+
+Apply the dark theme by adding `bv-theme-dark` class or setting `theme: 'dark'` in config:
+
+```css
+.brackets-viewer.bv-theme-dark {
+  --bv-bg-color: #1e1e1e;
+  --bv-surface-color: #2a2a2a;
+  --bv-text-color: #f5f5f5;
+  /* ... other dark overrides */
+}
+```
 
 ---
 

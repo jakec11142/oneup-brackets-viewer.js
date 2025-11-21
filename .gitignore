@@ -5,3 +5,9 @@ package-lock.json
 docs
 dist/*.d.ts
 .test-dist
+
+# Generated demo data files (not used in demo)
+demo/showcase-data.json
+demo/api-data.json
+demo/swissData-with-standings.json
+demo/swissData-layered.json

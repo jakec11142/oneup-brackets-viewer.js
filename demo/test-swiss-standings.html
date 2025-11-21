@@ -41,8 +41,8 @@
 
     async function testSwissStandings() {
       try {
-        log('⏳ Fetching Swiss data with standings...');
-        const response = await fetch('swissData-with-standings.json');
+        log('⏳ Fetching Swiss data...');
+        const response = await fetch('swissData.json');
         const structure = await response.json();
         log('✓ Swiss data loaded', 'success');
 

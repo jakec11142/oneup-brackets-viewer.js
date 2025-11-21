@@ -43,8 +43,8 @@
 
     async function testSwissLayering() {
       try {
-        log('⏳ Fetching Swiss layered data...');
-        const response = await fetch('swissData-layered.json');
+        log('⏳ Fetching Swiss data...');
+        const response = await fetch('swissData.json');
         const structure = await response.json();
         log('✓ Swiss data loaded', 'success');
 

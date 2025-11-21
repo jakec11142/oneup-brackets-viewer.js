@@ -1,5 +1,6 @@
 import './style.scss';
-import { Participant, Match, ParticipantResult, Status, GroupType, FinalType, Id, type RankingItem, StageType } from 'brackets-model';
+import { debug } from './debug';
+import { Participant, Match, ParticipantResult, Status, GroupType, FinalType, Id, StageType } from 'brackets-model';
 import { splitBy, getOriginAbbreviation, findRoot, completeWithBlankMatches, sortBy, isMatchGame, isMatch, splitByWithLeftovers } from './helpers';
 import * as dom from './dom';
 import * as lang from './lang';
@@ -7,8 +8,9 @@ import { Locale } from './lang';
 import { helpers } from 'brackets-manager';
 import { BracketEdgeResponse } from './dto/types';
 import { computeLayout, computeSwissLayout } from './layout';
-import { getViewModel, VIEW_MODE_LAYOUTS, type ViewModel, type LayoutConfig, type BracketKind } from './viewModels';
+import { getViewModel, type ViewModel, type LayoutConfig, type BracketKind } from './viewModels';
 import { detectFormatSize, getDEProfile } from './profiles/deProfiles';
+import { getSemanticRoundLabel } from './round-labels';
 import {
     Config,
     OriginHint,
@@ -40,7 +42,6 @@ export class BracketsViewer {
     private viewModel!: ViewModel;
     private layoutConfig!: LayoutConfig;
     private skipFirstRound = false;
-    private alwaysConnectFirstRound = false;
     private popover!: HTMLElement;
 
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -80,16 +81,13 @@ export class BracketsViewer {
         this.config = {
             customRoundName: config?.customRoundName,
             participantOriginPlacement: config?.participantOriginPlacement ?? 'before',
-            separatedChildCountLabel: config?.separatedChildCountLabel ?? false,
             showSlotsOrigin: config?.showSlotsOrigin ?? true,
             showLowerBracketSlotsOrigin: config?.showLowerBracketSlotsOrigin ?? true,
             showPopoverOnMatchLabelClick: config?.showPopoverOnMatchLabelClick ?? true,
             highlightParticipantOnHover: config?.highlightParticipantOnHover ?? true,
-            showRankingTable: config?.showRankingTable ?? true,
-            showStatusBadges: config?.showStatusBadges ?? true,
             showRoundHeaders: config?.showRoundHeaders ?? true,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            rankingFormula: config?.rankingFormula ?? ((item): number => 3 * item.wins + 1 * item.draws + 0 * item.losses),
+            showConnectors: config?.showConnectors ?? true,
+            showMatchMetadata: config?.showMatchMetadata ?? true,
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             doubleElimMode: config?.doubleElimMode ?? 'unified',
             viewModelId: config?.viewModelId,
@@ -110,26 +108,6 @@ export class BracketsViewer {
             ...this.viewModel.layout,
             ...(config?.layoutOverrides ?? {}),
         };
-
-        // Apply sizing preset for elimination brackets only
-        // Sizing provides quick dimension options (default/compact/logo/ultrawide) for SE/DE
-        // Support both 'sizing' (new) and 'viewMode' (deprecated) for backward compatibility
-        const sizingValue = config?.sizing ?? config?.viewMode;
-
-        if (sizingValue && (firstStageType === 'single_elimination' || firstStageType === 'double_elimination')) {
-            // Log deprecation warning if viewMode is used
-            if (config?.viewMode && !config?.sizing) {
-                console.warn('[BracketsViewer] The "viewMode" parameter is deprecated. Please use "sizing" instead.');
-            }
-
-            const sizingLayout = VIEW_MODE_LAYOUTS[sizingValue];
-            this.layoutConfig = {
-                ...this.layoutConfig,
-                ...sizingLayout,
-                // Preserve user overrides - they take highest priority
-                ...(config?.layoutOverrides ?? {}),
-            };
-        }
 
         // Apply granular layout dimension controls (character-creator style customization)
         // These take highest priority and override everything else
@@ -221,19 +199,6 @@ export class BracketsViewer {
         if (config?.fontSize) {
             const fontSizeMap = { small: '11px', medium: '13px', large: '15px' };
             target.style.setProperty('--bv-font-size', fontSizeMap[config.fontSize]);
-        }
-
-        if (config?.fontWeight) {
-            const fontWeightMap = { normal: '400', medium: '500', bold: '600' };
-            target.style.setProperty('--bv-font-weight', fontWeightMap[config.fontWeight]);
-        }
-
-        if (config?.borderRadius !== undefined) {
-            target.style.setProperty('--bv-border-radius', `${config.borderRadius}px`);
-        }
-
-        if (config?.matchPadding !== undefined) {
-            target.style.setProperty('--bv-match-padding', `${config.matchPadding}px`);
         }
 
         if (config?.clear)
@@ -330,6 +295,8 @@ export class BracketsViewer {
         let groupNumber = 1;
 
         for (const groupMatches of matchesByGroup) {
+            if (!groupMatches?.length) continue;
+
             const groupId = groupMatches[0].group_id;
             const groupContainer = dom.createGroupContainer(groupId, lang.getGroupName(groupNumber++));
             const matchesByRound = splitBy(groupMatches, 'round_id').map(matches => sortBy(matches, 'number'));
@@ -337,12 +304,15 @@ export class BracketsViewer {
             let roundNumber = 1;
 
             for (const roundMatches of matchesByRound) {
+                if (!roundMatches?.length) continue;
+
                 const roundId = roundMatches[0].round_id;
-                const roundName = this.getRoundName({
+                // Use simple "Round N" format for Round Robin (not semantic elimination naming)
+                const roundName = this.config.customRoundName?.({
                     roundNumber,
                     roundCount: 0,
                     groupType: lang.toI18nKey('round_robin'),
-                }, lang.getRoundName);
+                }, lang.t) || lang.t('common.round-name', { roundNumber });
 
                 const roundContainer = dom.createRoundContainer(roundId, roundName);
                 for (const match of roundMatches)
@@ -351,9 +321,6 @@ export class BracketsViewer {
                 groupContainer.append(roundContainer);
                 roundNumber++;
             }
-
-            if (this.config.showRankingTable)
-                groupContainer.append(this.createRanking(groupMatches));
 
             container.append(groupContainer);
         }
@@ -408,8 +375,6 @@ export class BracketsViewer {
                 });
             });
 
-            console.log(`🎯 Rendering Swiss group: ${allMatchesWithMetadata.length} matches`);
-
             // Use computeSwissLayout for record-bucket positioning
             const swissLayout = computeSwissLayout(allMatchesWithMetadata, this.layoutConfig);
 
@@ -426,9 +391,6 @@ export class BracketsViewer {
             });
 
             // Render Swiss panels (boxed columns)
-            let renderedPanels = 0;
-            let renderedMatches = 0;
-
             swissLayout.panelPositions?.forEach(panel => {
                 // Create panel container
                 const panelDiv = document.createElement('div');
@@ -439,41 +401,20 @@ export class BracketsViewer {
                 panelDiv.style.width = `${panel.width}px`;
                 panelDiv.dataset.key = panel.key;
 
-                // Apply zone-based styling for visual hierarchy
-                if (panel.zone === 'advancing') {
-                    panelDiv.style.borderLeft = '3px solid #10b981'; // emerald-500
-                    panelDiv.style.backgroundColor = '#f0fdf4'; // emerald-50
-                } else if (panel.zone === 'eliminated') {
-                    panelDiv.style.borderLeft = '3px solid #ef4444'; // red-500
-                    panelDiv.style.backgroundColor = '#fef2f2'; // red-50
-                    panelDiv.style.opacity = '0.85';
+                // Apply zone styling via data attribute (CSS handles colors)
+                if (panel.zone === 'advancing' || panel.zone === 'eliminated') {
+                    panelDiv.setAttribute('data-zone', panel.zone);
                 }
 
-                // Create panel header with improved layout
+                // Create simplified panel header - only show record
                 const headerDiv = document.createElement('div');
                 headerDiv.className = 'swiss-panel-header';
 
-                // Left: date (if available)
-                if (panel.date) {
-                    const dateSpan = document.createElement('span');
-                    dateSpan.className = 'date';
-                    dateSpan.textContent = panel.date;
-                    headerDiv.appendChild(dateSpan);
-                }
-
-                // Center: record (bold, prominent)
+                // Record only (clean, focused)
                 const recordSpan = document.createElement('span');
                 recordSpan.className = 'record';
                 recordSpan.textContent = panel.record;
                 headerDiv.appendChild(recordSpan);
-
-                // Right: bestOf (if available)
-                if (panel.bestOf) {
-                    const boSpan = document.createElement('span');
-                    boSpan.className = 'bo-label';
-                    boSpan.textContent = panel.bestOf;
-                    headerDiv.appendChild(boSpan);
-                }
 
                 panelDiv.appendChild(headerDiv);
 
@@ -481,32 +422,32 @@ export class BracketsViewer {
                 const bodyDiv = document.createElement('div');
                 bodyDiv.className = 'swiss-panel-body';
 
-                // Render matches within this panel
+                // Calculate body height for proper panel sizing
+                const bodyHeight = panel.height - (this.layoutConfig.swissConfig?.panelHeaderHeight ?? 40);
+                bodyDiv.style.height = `${bodyHeight}px`;
+
+                // Render matches within this panel using computed positions
                 const panelMatches = matchesByRecord.get(panel.key) ?? [];
-                panelMatches.forEach(match => {
+                const rowHeight = this.layoutConfig.swissConfig?.rowHeight ?? this.layoutConfig.rowHeight;
+                const innerGap = this.layoutConfig.swissConfig?.panelInnerGap ?? 14;
+
+                panelMatches.forEach((match, idx) => {
                     const matchEl = this.createBracketMatch(match);
                     matchEl.classList.add('swiss-match-row');
+                    // Position match using computed layout (relative to panel body)
+                    matchEl.style.top = `${idx * (rowHeight + innerGap)}px`;
                     bodyDiv.appendChild(matchEl);
-                    renderedMatches++;
                 });
 
                 panelDiv.appendChild(bodyDiv);
                 roundsContainer.appendChild(panelDiv);
-                renderedPanels++;
             });
-
-            console.log(`✅ Rendered ${renderedPanels} Swiss panels with ${renderedMatches} matches (NO connectors)`);
 
             // Set explicit size on rounds container
             roundsContainer.style.width = `${swissLayout.totalWidth}px`;
             roundsContainer.style.height = `${swissLayout.totalHeight}px`;
-            console.log(`📐 Container dimensions: ${swissLayout.totalWidth}px × ${swissLayout.totalHeight}px`);
 
             bracket.append(roundsContainer);
-
-            if (this.config.showRankingTable)
-                bracket.append(this.createRanking(groupMatches));
-
             container.append(bracket);
         }
 
@@ -570,13 +511,128 @@ export class BracketsViewer {
      * @param matchesByGroup A list of matches for each group.
      */
     private renderSingleElimination(container: HTMLElement, matchesByGroup: MatchWithMetadata[][]): void {
-        const bracketMatches = splitBy(matchesByGroup[0], 'round_id').map(matches => sortBy(matches, 'number'));
-        const { hasFinal, connectFinal, finalMatches } = this.getFinalInfoSingleElimination(matchesByGroup);
+        // Use unified rendering for SE with consolation finals
+        this.renderUnifiedSingleElimination(container, matchesByGroup);
+    }
 
-        this.renderBracket(container, bracketMatches, lang.getRoundName, 'single_bracket', connectFinal);
+    /**
+     * Renders a single elimination stage with unified absolute positioning.
+     *
+     * @param container The container to render into.
+     * @param matchesByGroup A list of matches for each group.
+     */
+    private renderUnifiedSingleElimination(container: HTMLElement, matchesByGroup: MatchWithMetadata[][]): void {
+        // Helper to map group_id to matchLocation
+        const getMatchLocation = (groupId: string): GroupType => {
+            const normalized = groupId.toLowerCase();
+            if (normalized.includes('third') || normalized.includes('3rd') || normalized.includes('placement'))
+                return 'final_group';
+            return 'winner_bracket';
+        };
 
-        if (hasFinal)
-            this.renderFinal(container, 'consolation_final', finalMatches);
+        // Organize and prepare ALL matches with required metadata
+        const allMatchesWithMetadata: MatchWithMetadata[] = [];
+
+        Object.values(matchesByGroup).forEach(groupMatches => {
+            if (!Array.isArray(groupMatches) || groupMatches.length === 0) return;
+
+            // Determine bracket type from first match's group_id
+            const matchLocation = getMatchLocation(String(groupMatches[0].group_id));
+
+            // Organize by round and add metadata
+            const matchesByRound = splitBy(groupMatches, 'round_id')
+                .map(matches => sortBy(matches, 'number'));
+            const roundCount = matchesByRound.length;
+
+            matchesByRound.forEach((roundMatches, roundIndex) => {
+                const roundNumber = roundIndex + 1;
+                const connectFinal = matchLocation === 'winner_bracket' && roundNumber === roundCount;
+
+                roundMatches.forEach(match => {
+                    allMatchesWithMetadata.push({
+                        ...match,
+                        metadata: {
+                            ...match.metadata,
+                            roundNumber,
+                            roundCount,
+                            matchLocation,
+                            connectFinal,
+                        },
+                    });
+                });
+            });
+        });
+
+        // Use ALL edges
+        const allEdges = this.edges;
+
+        debug.log(`🔧 Unified SE: ${allMatchesWithMetadata.length} matches, ${allEdges.length} edges`);
+
+        // Compute layout with all matches + all edges
+        const layout = computeLayout(allMatchesWithMetadata, allEdges, 'winner_bracket', this.layoutConfig);
+
+        // Create bracket structure
+        const bracketContainer = dom.createBracketContainer();
+        const roundsContainer = dom.createRoundsContainer();
+
+        // Render all matches with absolute positioning
+        let renderedCount = 0;
+        let positionedCount = 0;
+
+        for (const match of allMatchesWithMetadata) {
+            const pos = layout.matchPositions.get(String(match.id));
+
+            // Skip matches without positions (filtered out by layout)
+            if (!pos) {
+                debug.log(`⏭️ Skipping match ${match.id} - no position assigned (likely filtered)`);
+                continue;
+            }
+
+            const matchEl = this.createBracketMatch(match);
+            matchEl.style.position = 'absolute';
+            matchEl.style.left = `${pos.xPx}px`;
+            matchEl.style.top = `${pos.yPx}px`;
+
+            roundsContainer.append(matchEl);
+            renderedCount++;
+            positionedCount++;
+        }
+
+        debug.log(`✅ Rendered ${renderedCount} SE matches (${positionedCount} positioned)`);
+
+        // Render round headers with semantic labels (if enabled)
+        if (this.config.showRoundHeaders !== false) {
+            const roundCount = layout.headerPositions.length;
+            layout.headerPositions.forEach(header => {
+                const h3 = document.createElement('h3');
+                h3.classList.add('round-header');
+                // Generate semantic round name (Finals, Semi-Finals, etc.)
+                const roundName = getSemanticRoundLabel(header.roundNumber, roundCount, 'single_bracket');
+                h3.textContent = roundName;
+                h3.style.position = 'absolute';
+                h3.style.left = `${header.xPx}px`;
+                h3.style.top = `${header.yPx}px`;
+                h3.style.width = `var(--bv-match-width)`;
+                roundsContainer.append(h3);
+            });
+        }
+
+        // Set explicit size on rounds container
+        roundsContainer.style.width = `${layout.totalWidth}px`;
+        roundsContainer.style.height = `${layout.totalHeight}px`;
+        debug.log(`📐 SE Container sized to ${layout.totalWidth}x${layout.totalHeight}px`);
+
+        // Add SVG connectors overlay (if enabled)
+        if (this.config.showConnectors !== false) {
+            const svg = dom.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
+            roundsContainer.prepend(svg);
+            debug.log(`🔗 Generated ${layout.connectors.length} connectors`);
+        } else {
+            debug.log(`🔗 Connectors disabled by config (showConnectors: false)`);
+        }
+
+        bracketContainer.append(roundsContainer);
+        container.append(bracketContainer);
     }
 
     /**
@@ -625,6 +681,9 @@ export class BracketsViewer {
             if (normalized.includes('winners-bracket')) return 'winner_bracket';
             if (normalized.includes('losers-bracket')) return 'loser_bracket';
             if (normalized.includes('grand-final')) return 'final_group';
+            // Check for placement/consolation brackets (3rd/4th place matches)
+            if (normalized.includes('placement') || normalized.includes('third') || normalized.includes('3rd'))
+                return 'final_group';
             return 'winner_bracket'; // fallback
         };
 
@@ -664,16 +723,16 @@ export class BracketsViewer {
         // Use ALL edges - NO FILTERING
         const allEdges = this.edges;
 
-        console.log(`🔧 Unified DE: ${allMatchesWithMetadata.length} matches, ${allEdges.length} edges`);
+        debug.log(`🔧 Unified DE: ${allMatchesWithMetadata.length} matches, ${allEdges.length} edges`);
 
         // Detect tournament format size and get appropriate layout profile
         const formatSize = detectFormatSize(allMatchesWithMetadata);
         const deProfile = formatSize ? getDEProfile(formatSize) : undefined;
 
         if (deProfile) {
-            console.log(`📊 Using DE profile: ${deProfile.id} (${deProfile.formatSize}-team format)`);
+            debug.log(`📊 Using DE profile: ${deProfile.id} (${deProfile.formatSize}-team format)`);
         } else {
-            console.log(`📊 No profile detected, using block-based layout`);
+            debug.log(`📊 No profile detected, using block-based layout`);
         }
 
         // Single computeLayout call with all matches + all edges + optional profile
@@ -690,27 +749,29 @@ export class BracketsViewer {
         let positionedCount = 0;
 
         for (const match of allMatchesWithMetadata) {
-            const matchEl = this.createBracketMatch(match);
             const pos = layout.matchPositions.get(String(match.id));
 
-            if (pos) {
-                matchEl.style.position = 'absolute';
-                matchEl.style.left = `${pos.xPx}px`;
-                matchEl.style.top = `${pos.yPx}px`;
-                positionedCount++;
-            } else 
-                console.warn(`⚠️ No position found for match ${match.id}`);
-            
+            // Skip matches without positions (filtered out by layout, e.g., SE consolation finals)
+            if (!pos) {
+                debug.log(`⏭️ Skipping match ${match.id} - no position assigned (likely filtered)`);
+                continue;
+            }
+
+            const matchEl = this.createBracketMatch(match);
+            matchEl.style.position = 'absolute';
+            matchEl.style.left = `${pos.xPx}px`;
+            matchEl.style.top = `${pos.yPx}px`;
 
             roundsContainer.append(matchEl);
             renderedCount++;
+            positionedCount++;
         }
 
-        console.log(`✅ Rendered ${renderedCount} matches (${positionedCount} positioned)`);
+        debug.log(`✅ Rendered ${renderedCount} matches (${positionedCount} positioned)`);
 
         // Render round headers with semantic labels (if enabled)
         // For unified mode, we need to determine bracket type and round count from matches at each column
-        console.log('🎯 Unified DE showRoundHeaders config:', this.config.showRoundHeaders, 'will render?', this.config.showRoundHeaders !== false);
+        debug.log('🎯 Unified DE showRoundHeaders config:', this.config.showRoundHeaders, 'will render?', this.config.showRoundHeaders !== false);
         if (this.config.showRoundHeaders !== false) {
             layout.headerPositions.forEach(header => {
                 // Find matches in this column to determine bracket type and round count
@@ -753,39 +814,46 @@ export class BracketsViewer {
             });
         }
 
+        // Add bracket section titles for split-horizontal layout
+        if (this.layoutConfig.bracketAlignment === 'split-horizontal' && layout.groupOffsetY) {
+            const winnersY = layout.groupOffsetY.get('WINNERS_BRACKET');
+            const losersY = layout.groupOffsetY.get('LOSERS_BRACKET');
+
+            // Upper Bracket title
+            if (winnersY !== undefined) {
+                const upperTitle = dom.createBracketSectionTitle('Upper Bracket');
+                upperTitle.style.position = 'absolute';
+                upperTitle.style.left = `${this.layoutConfig.leftOffset}px`;
+                upperTitle.style.top = `${Math.max(0, winnersY - 40)}px`;
+                roundsContainer.append(upperTitle);
+            }
+
+            // Lower Bracket title
+            if (losersY !== undefined) {
+                const lowerTitle = dom.createBracketSectionTitle('Lower Bracket');
+                lowerTitle.style.position = 'absolute';
+                lowerTitle.style.left = `${this.layoutConfig.leftOffset}px`;
+                lowerTitle.style.top = `${Math.max(0, losersY - 40)}px`;
+                roundsContainer.append(lowerTitle);
+            }
+        }
+
         // Set explicit size on rounds container
         roundsContainer.style.width = `${layout.totalWidth}px`;
         roundsContainer.style.height = `${layout.totalHeight}px`;
-        console.log(`📐 Container sized to ${layout.totalWidth}x${layout.totalHeight}px`);
+        debug.log(`📐 Container sized to ${layout.totalWidth}x${layout.totalHeight}px`);
 
-        // Add SVG connectors overlay
-        const svg = dom.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
-        roundsContainer.prepend(svg);
+        // Add SVG connectors overlay (if enabled)
+        if (this.config.showConnectors !== false) {
+            const svg = dom.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
+            roundsContainer.prepend(svg);
+            debug.log(`🔗 Generated ${layout.connectors.length} connectors`);
+        } else {
+            debug.log(`🔗 Connectors disabled by config (showConnectors: false)`);
+        }
 
         bracketContainer.append(roundsContainer);
         container.append(bracketContainer);
-
-        console.log(`🔗 Generated ${layout.connectors.length} connectors`);
-    }
-
-    /**
-     * Returns information about the final group in single elimination.
-     *
-     * @param matchesByGroup A list of matches for each group.
-     */
-    private getFinalInfoSingleElimination(matchesByGroup: MatchWithMetadata[][]): {
-        hasFinal: boolean,
-        connectFinal: boolean,
-        finalMatches: MatchWithMetadata[]
-    } {
-        const hasFinal = matchesByGroup[1] !== undefined;
-        const finalMatches = sortBy(matchesByGroup[1] ?? [], 'number');
-
-        // In single elimination, the only possible type of final is a consolation final,
-        // and it has to be disconnected from the bracket because it doesn't directly follows its last match.
-        const connectFinal = false;
-
-        return { hasFinal, connectFinal, finalMatches };
     }
 
     /**
@@ -832,8 +900,6 @@ export class BracketsViewer {
 
         const { matches: completedMatches, fromToornament } = completeWithBlankMatches(bracketType, matchesByRound[0], matchesByRound[1]);
 
-        this.alwaysConnectFirstRound = !fromToornament;
-
         // Step 1: Calculate positions for ALL matches (original ordering)
         // This ensures every match has a position for connectors
         const allMatchesForLayout: MatchWithMetadata[] = [];
@@ -866,13 +932,13 @@ export class BracketsViewer {
         const layout = computeLayout(allMatchesForLayout, bracketEdges, bracketType, this.layoutConfig);
 
         // Debug: Log connector count
-        console.log(`[${bracketType}] Matches: ${allMatchesForLayout.length}, Edges: ${bracketEdges.length}, Connectors: ${layout.connectors.length}`);
+        debug.log(`[${bracketType}] Matches: ${allMatchesForLayout.length}, Edges: ${bracketEdges.length}, Connectors: ${layout.connectors.length}`);
         if (layout.connectors.length > 0) 
-            console.log('First connector:', layout.connectors[0]);
+            debug.log('First connector:', layout.connectors[0]);
         
 
         // Render round headers with semantic labels (if enabled)
-        console.log('showRoundHeaders config:', this.config.showRoundHeaders, 'will render?', this.config.showRoundHeaders !== false);
+        debug.log('showRoundHeaders config:', this.config.showRoundHeaders, 'will render?', this.config.showRoundHeaders !== false);
         if (this.config.showRoundHeaders !== false) {
             layout.headerPositions.forEach(header => {
                 const roundInfo = {
@@ -932,7 +998,7 @@ export class BracketsViewer {
                     matchEl.style.top = `${pos.yPx}px`;
                     positionedCount++;
                 } else 
-                    console.warn(`⚠️ No position found for match ${match.id}`);
+                    debug.warn(`⚠️ No position found for match ${match.id}`);
                 
 
                 roundsContainer.append(matchEl);
@@ -940,16 +1006,20 @@ export class BracketsViewer {
             });
         }
 
-        console.log(`✅ Rendered ${renderedCount} matches (${positionedCount} positioned)`);
+        debug.log(`✅ Rendered ${renderedCount} matches (${positionedCount} positioned)`);
 
         // Set explicit size on rounds container to fit all absolutely positioned matches
         roundsContainer.style.width = `${layout.totalWidth}px`;
         roundsContainer.style.height = `${layout.totalHeight}px`;
-        console.log(`📐 Container sized to ${layout.totalWidth}x${layout.totalHeight}px`);
+        debug.log(`📐 Container sized to ${layout.totalWidth}x${layout.totalHeight}px`);
 
-        // Add SVG connectors overlay
-        const svg = dom.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
-        roundsContainer.prepend(svg);
+        // Add SVG connectors overlay (if enabled)
+        if (this.config.showConnectors !== false) {
+            const svg = dom.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
+            roundsContainer.prepend(svg);
+        } else {
+            debug.log(`🔗 Connectors disabled by config (showConnectors: false)`);
+        }
 
         bracketContainer.append(roundsContainer);
         container.append(bracketContainer);
@@ -1000,58 +1070,6 @@ export class BracketsViewer {
             roundContainer.append(this.createFinalMatch(finalType, finalMatch));
             upperBracket.append(roundContainer);
         }
-    }
-
-    /**
-     * Creates a ranking table for a group of a round-robin stage.
-     *
-     * @param matches The list of matches in the group.
-     */
-    private createRanking(matches: Match[]): HTMLElement {
-        const table = dom.createTable();
-        const ranking = helpers.getRanking(matches, this.config.rankingFormula!);
-
-        table.append(dom.createRankingHeaders(ranking));
-
-        for (const item of ranking)
-            table.append(this.createRankingRow(item));
-
-        return table;
-    }
-
-    /**
-     * Creates a row of the ranking table.
-     *
-     * @param item Item of the ranking.
-     */
-    private createRankingRow(item: RankingItem): HTMLElement {
-        const row = dom.createRow();
-        const notRanked = item.played === 0;
-
-        for (const key in item) {
-            const prop = key as keyof RankingItem;
-            const data = item[prop];
-
-            if (prop === 'id') {
-                const participant = this.participants.find(participant => participant.id === data);
-
-                if (participant !== undefined) {
-                    const cell = dom.createCell(participant.name);
-                    this.setupMouseHover(participant.id, cell, true);
-                    row.append(cell);
-                    continue;
-                }
-            }
-
-            if (notRanked && (prop === 'rank' || prop === 'points')) {
-                row.append(dom.createCell('-'));
-                continue;
-            }
-
-            row.append(dom.createCell(data));
-        }
-
-        return row;
     }
 
     /**
@@ -1123,12 +1141,6 @@ export class BracketsViewer {
     private createMatch(match: MatchWithMetadata | MatchGameWithMetadata, propagateHighlight: boolean): HTMLElement {
         const matchContainer = dom.createMatchContainer(match);
 
-        // Add status badge for visual match state indication (if enabled)
-        if (this.config.showStatusBadges !== false) {
-            const statusBadge = dom.createStatusBadge(match.status);
-            matchContainer.append(statusBadge);
-        }
-
         const opponents = isMatch(match)
             ? dom.createOpponentsContainer(() => this._onMatchClick(match))
             : dom.createOpponentsContainer();
@@ -1137,18 +1149,33 @@ export class BracketsViewer {
             match.metadata.originHint = undefined;
 
         if (isMatch(match)) {
-            const { originHint, matchLocation, roundNumber } = match.metadata;
+            const { originHint, matchLocation, roundNumber, roundCount, roundBestOf } = match.metadata;
 
             const participant1 = this.createParticipant(match.opponent1, propagateHighlight, 'opponent1', originHint, matchLocation, roundNumber);
             const participant2 = this.createParticipant(match.opponent2, propagateHighlight, 'opponent2', originHint, matchLocation, roundNumber);
 
             this.renderMatchLabel(opponents, match);
+
             opponents.append(participant1, participant2);
+
+            // Add enhanced metadata with status and optional timer
+            if (this.config.showMatchMetadata !== false) {
+                // Skip round number for standalone placement/consolation finals
+                const shouldShowRoundNumber = !(matchLocation === 'final_group' && roundCount === 1);
+                const displayRoundNumber = shouldShowRoundNumber ? roundNumber : undefined;
+                dom.addEnhancedMetadata(opponents, {
+                    bestOf: roundBestOf,
+                    status: match.status,
+                    startedAt: (match as any).startedAt, // Optional timestamp if provided
+                    round: displayRoundNumber,
+                });
+            }
         } else {
             const participant1 = this.createParticipant(match.opponent1, propagateHighlight, 'opponent1');
             const participant2 = this.createParticipant(match.opponent2, propagateHighlight, 'opponent2');
 
             this.renderMatchLabel(opponents, match);
+
             opponents.append(participant1, participant2);
         }
 
@@ -1251,16 +1278,10 @@ export class BracketsViewer {
             }
         };
 
-        if (this.config.separatedChildCountLabel) {
-            opponents.append(dom.createMatchLabel(label, lang.getMatchStatus(match.status), onClick));
+        // Check if we're showing inline metadata (which includes best-of info)
+        const hasInlineMetadata = isMatch(match) && match.metadata.roundBestOf !== undefined;
 
-            if (match.child_count > 0)
-                opponents.append(dom.createChildCountLabel(lang.t('common.best-of-x', { x: match.child_count }), onClick));
-
-            return;
-        }
-
-        if (match.child_count > 0) {
+        if (match.child_count > 0 && !hasInlineMetadata) {
             const childCountLabel = lang.t('common.best-of-x', { x: match.child_count });
             const joined = label ? `${label}, ${childCountLabel}` : childCountLabel;
             opponents.append(dom.createMatchLabel(joined, lang.getMatchStatus(match.status), onClick));
