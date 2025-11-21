@@ -85,6 +85,11 @@
   --bv-match-border-radius: 0.3em;
   --bv-participant-image-size: 1em;
 
+  /* Swiss format responsive variables */
+  --bv-swiss-column-gap: 14px;
+  --bv-swiss-match-padding-v: 10px;
+  --bv-swiss-match-padding-h: 12px;
+
   // Example theme overrides for consumers to copy/adapt.
   &.bv-theme-dark {
     --bv-bg-color: #1e1e1e;
@@ -679,8 +684,10 @@
     }
   }
 
-  // Swiss panel styles (boxed column layout)
-  .swiss-panel {
+  // Round column styles (Swiss format - BEM naming)
+  // Note: Uses CSS variables for responsive control
+
+  .round-column {
     border: 1px solid var(--bv-border-color);
     border-radius: var(--bv-radius-md);
     background: var(--bv-surface-color);
@@ -688,7 +695,7 @@
     box-shadow: var(--bv-shadow-md);
     transition: background-color 0.15s ease, border-color 0.15s ease;
 
-    // Zone styling via data attributes (shared with Round Robin)
+    // Zone styling via data attributes
     &[data-zone="advancing"] {
       background: var(--bv-zone-advancing-bg);
       border-left: 3px solid var(--bv-zone-advancing-border);
@@ -701,34 +708,129 @@
     }
   }
 
-  .swiss-panel-header {
+  .round-column__header {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 8px 14px;
+    padding: var(--bv-swiss-match-padding-v) var(--bv-swiss-column-gap);
     background: var(--bv-match-bg-color);
     border-bottom: 1px solid var(--bv-border-color);
-    min-height: 32px;
+    min-height: 48px;
+    gap: 2px;
+
+    .round-title {
+      color: var(--bv-text-color);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.25px;
+    }
 
     .record {
-      color: var(--bv-text-color);
-      font-size: var(--bv-font-size-base);
-      font-weight: var(--bv-font-weight-bold);
+      color: var(--bv-text-secondary-color, var(--bv-text-color));
+      font-size: var(--bv-font-size-sm, 0.875rem);
+      font-weight: 500;
       font-variant-numeric: tabular-nums;
-      letter-spacing: 0.5px;
+      opacity: 0.75;
     }
   }
 
-  .swiss-panel-body {
+  .round-column__matches {
     position: relative;
-    padding: 14px;
-    // Use computed positions instead of flex
+    padding: var(--bv-swiss-column-gap);
   }
 
-  .swiss-match-row {
+  .round-column__match {
     position: absolute;
     left: 0;
     width: 100%;
+
+    // Match card styles for Swiss format
+    .opponents {
+      border: 1px solid var(--bv-border-color);
+      border-radius: var(--bv-radius-md, 8px);
+      background: var(--bv-match-bg-color);
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+      &:hover {
+        border-color: var(--bv-border-hover-color);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+      }
+    }
+
+    .participant {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--bv-swiss-match-padding-v) var(--bv-swiss-match-padding-h);
+      background: var(--bv-match-bg-color);
+      border-left: 3px solid transparent;
+      transition: background 0.15s ease;
+
+      // Remove default borders, use card container border instead
+      &:nth-of-type(1) {
+        border-bottom: 1px solid var(--bv-border-color);
+        border-radius: 0;
+        border-top-left-radius: calc(var(--bv-radius-md, 8px) - 1px);
+        border-top-right-radius: calc(var(--bv-radius-md, 8px) - 1px);
+      }
+
+      &:nth-of-type(2) {
+        border-radius: 0;
+        border-bottom-left-radius: calc(var(--bv-radius-md, 8px) - 1px);
+        border-bottom-right-radius: calc(var(--bv-radius-md, 8px) - 1px);
+      }
+
+      .name {
+        font-weight: 400;
+        color: var(--bv-text-color);
+      }
+
+      .result {
+        font-weight: 600;
+        font-size: 1em;
+        min-width: 24px;
+        text-align: center;
+        color: var(--bv-text-color);
+      }
+
+      // Winner styling
+      &.win {
+        background: linear-gradient(90deg, var(--bv-match-bg-color) 0%, rgba(80, 182, 73, 0.12) 100%);
+        border-left-color: var(--bv-win-color);
+
+        .name {
+          font-weight: 700;
+        }
+
+        .result {
+          color: var(--bv-win-color);
+          font-weight: 700;
+        }
+      }
+
+      // Loser styling
+      &.loss {
+        background: var(--bv-match-bg-color);
+        opacity: 1;
+
+        .name {
+          color: var(--bv-hint-color);
+          font-weight: 400;
+        }
+
+        .result {
+          color: var(--bv-hint-color);
+          font-weight: 500;
+        }
+      }
+    }
+
+    // Hide metadata in Swiss cards for cleaner look
+    .match-metadata {
+      display: none;
+    }
   }
 
   [popover] {
@@ -742,5 +844,27 @@
     .match:not(:last-of-type) {
       margin-bottom: 20px;
     }
+  }
+
+  // Horizontal scroll container for brackets on smaller screens
+  .bracket,
+  .round-robin {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    min-width: 0;
+  }
+}
+
+// Mobile responsive breakpoint
+@media (max-width: 600px) {
+  .brackets-viewer {
+    --bv-match-width: 120px;
+    --bv-round-gap: 20px;
+    --bv-swiss-column-gap: 10px;
+    --bv-swiss-match-padding-v: 8px;
+    --bv-swiss-match-padding-h: 10px;
+    --bv-font-size: 0.7rem;
+
+    padding: 10px 16px;
   }
 }
