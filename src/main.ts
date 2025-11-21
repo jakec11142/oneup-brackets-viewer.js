@@ -16,6 +16,8 @@ import { globalLayoutCache, globalPerfMonitor } from './performance';
 import { createPooledConnectorSVG, globalConnectorPool } from './rendering/SVGConnectorPool';
 // Config resolution
 import { resolveConfig, validateViewerData, applyThemeToTarget } from './config/ConfigResolver';
+// Renderers
+import { renderRoundRobin } from './renderers/RoundRobinRenderer';
 import {
     Config,
     OriginHint,
@@ -218,53 +220,10 @@ export class BracketsViewer {
      * @param matchesByGroup A list of matches for each group.
      */
     private renderRoundRobin(root: DocumentFragment, stage: ViewerStage, matchesByGroup: MatchWithMetadata[][]): void {
-        const container = dom.createRoundRobinContainer(stage.id);
-        container.append(dom.createTitle(stage.name));
-
-        let groupNumber = 1;
-
-        for (const groupMatches of matchesByGroup) {
-            if (!groupMatches?.length) continue;
-
-            const groupId = groupMatches[0].group_id;
-
-            // Create card-style wrapper for the entire group
-            const groupSection = dom.createRoundRobinGroupSection();
-            const groupContainer = dom.createGroupContainer(groupId, lang.getGroupName(groupNumber++));
-            const matchesByRound = splitBy(groupMatches, 'round_id').map(matches => sortBy(matches, 'number'));
-
-            let roundNumber = 1;
-
-            for (const roundMatches of matchesByRound) {
-                if (!roundMatches?.length) continue;
-
-                const roundId = roundMatches[0].round_id;
-                // Use simple "Round N" format for Round Robin (not semantic elimination naming)
-                const roundName = this.config.customRoundName?.({
-                    roundNumber,
-                    roundCount: 0,
-                    groupType: lang.toI18nKey('round_robin'),
-                }, lang.t) || lang.t('common.round-name', { roundNumber });
-
-                const roundContainer = dom.createRoundContainer(roundId, roundName);
-
-                // Create match grid container
-                const matchGrid = document.createElement('div');
-                matchGrid.classList.add('round-matches');
-                for (const match of roundMatches)
-                    matchGrid.append(this.createMatch(match, true));
-
-                roundContainer.append(matchGrid);
-                groupContainer.append(roundContainer);
-                roundNumber++;
-            }
-
-            // Wrap the group container in the card-style section
-            groupSection.append(groupContainer);
-            container.append(groupSection);
-        }
-
-        root.append(container);
+        renderRoundRobin(root, stage, matchesByGroup, {
+            config: this.config,
+            createMatch: (match, useCompactView) => this.createMatch(match, useCompactView ?? false),
+        });
     }
 
     /**
