@@ -14,6 +14,8 @@ import { getSemanticRoundLabel } from './round-labels';
 // Performance optimizations
 import { globalLayoutCache, globalPerfMonitor } from './performance';
 import { createPooledConnectorSVG, globalConnectorPool } from './rendering/SVGConnectorPool';
+// Config resolution
+import { resolveConfig, validateViewerData, applyThemeToTarget } from './config/ConfigResolver';
 import {
     Config,
     OriginHint,
@@ -79,93 +81,37 @@ export class BracketsViewer {
         if (typeof data === 'string')
             throw Error('Using a CSS selector as the first argument is deprecated. Please look here: https://github.com/Drarig29/brackets-viewer.js');
 
-        const root = document.createDocumentFragment();
+        // Validate input data
+        validateViewerData(data);
 
-        this.config = {
-            customRoundName: config?.customRoundName,
-            participantOriginPlacement: config?.participantOriginPlacement ?? 'before',
-            showSlotsOrigin: config?.showSlotsOrigin ?? true,
-            showLowerBracketSlotsOrigin: config?.showLowerBracketSlotsOrigin ?? true,
-            showPopoverOnMatchLabelClick: config?.showPopoverOnMatchLabelClick ?? true,
-            highlightParticipantOnHover: config?.highlightParticipantOnHover ?? true,
-            showRoundHeaders: config?.showRoundHeaders ?? true,
-            showConnectors: config?.showConnectors ?? true,
-            showMatchMetadata: config?.showMatchMetadata ?? true,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            doubleElimMode: config?.doubleElimMode ?? 'unified',
-            viewModelId: config?.viewModelId,
-            layoutOverrides: config?.layoutOverrides,
-            // Performance options
-            enableLayoutCache: config?.enableLayoutCache ?? true,
-            enableSVGPooling: config?.enableSVGPooling ?? true,
-            enableVirtualization: config?.enableVirtualization ?? 'auto',
-            virtualizationThreshold: config?.virtualizationThreshold ?? 50,
-        } as Config;
+        // Resolve configuration (merges defaults, view model, and user overrides)
+        const resolved = resolveConfig(config, data);
+        this.config = resolved.config;
+        this.viewModel = resolved.viewModel;
+        this.layoutConfig = resolved.layoutConfig;
 
-        // Resolve view model based on stage type and viewModelId
-        // This determines layout density, theme, and double elim mode preset
-        const firstStageType = data.stages?.[0]?.type;
-        const stageType: BracketKind = firstStageType === 'single_elimination' || firstStageType === 'double_elimination'
-            ? firstStageType
-            : 'single_elimination'; // fallback for round_robin, swiss, etc.
-
-        this.viewModel = getViewModel(config?.viewModelId, stageType);
-
-        // Create final layoutConfig by merging view model preset with user overrides
-        this.layoutConfig = {
-            ...this.viewModel.layout,
-            ...(config?.layoutOverrides ?? {}),
-        };
-
-        // Apply granular layout dimension controls (character-creator style customization)
-        // These take highest priority and override everything else
-        if (config?.matchWidth !== undefined) this.layoutConfig.matchWidth = config.matchWidth;
-        if (config?.matchHeight !== undefined) this.layoutConfig.matchHeight = config.matchHeight;
-        if (config?.columnWidth !== undefined) this.layoutConfig.columnWidth = config.columnWidth;
-        if (config?.rowHeight !== undefined) this.layoutConfig.rowHeight = config.rowHeight;
-        if (config?.topOffset !== undefined) this.layoutConfig.topOffset = config.topOffset;
-        if (config?.leftOffset !== undefined) this.layoutConfig.leftOffset = config.leftOffset;
-        if (config?.groupGapX !== undefined) this.layoutConfig.groupGapX = config.groupGapX;
-        if (config?.groupGapY !== undefined) this.layoutConfig.groupGapY = config.groupGapY;
-        if (config?.bracketAlignment !== undefined) this.layoutConfig.bracketAlignment = config.bracketAlignment;
-        if (config?.losersBracketOffsetX !== undefined) this.layoutConfig.losersBracketOffsetX = config.losersBracketOffsetX;
-        if (config?.swissLayerStepY !== undefined) this.layoutConfig.swissLayerStepY = config.swissLayerStepY;
-        if (config?.swissBucketGapY !== undefined) this.layoutConfig.swissBucketGapY = config.swissBucketGapY;
-
-        // Resolve doubleElimMode with priority: config > viewModel preset > default 'unified'
-        if (!config?.doubleElimMode && this.viewModel.doubleElimMode) {
-            this.config.doubleElimMode = this.viewModel.doubleElimMode;
-        }
-
+        // Set callbacks
         if (config?.onMatchClick)
             this._onMatchClick = config.onMatchClick;
-
         if (config?.onMatchLabelClick)
             this._onMatchLabelClick = config.onMatchLabelClick;
 
-        if (!data.stages?.length)
-            throw Error('The `data.stages` array is either empty or undefined');
-
-        if (!data.participants?.length)
-            throw Error('The `data.participants` array is either empty or undefined');
-
-        if (!data.matches?.length)
-            throw Error('The `data.matches` array is either empty or undefined');
-
+        // Initialize state
         this.participants = data.participants;
         data.participants.forEach(participant => this.participantRefs[participant.id] = []);
-
         this.edges = data.edges ?? [];
 
+        // Create popover element
+        const root = document.createDocumentFragment();
         this.popover = document.createElement('div');
         this.popover.setAttribute('popover', 'auto');
         this.popover.addEventListener('toggle', (event) => {
             if ((event as ToggleEvent).newState === 'closed')
                 this.clearPreviousPopoverSelections();
         });
-
         root.append(this.popover);
 
+        // Render all stages
         data.stages.forEach(stage => this.renderStage(root, {
             ...data,
             stages: [stage],
@@ -180,34 +126,9 @@ export class BracketsViewer {
                 })),
         }));
 
+        // Apply to target element
         const target = findRoot(config?.selector);
-
-        // Apply theme with precedence: config.theme > viewModel.theme.rootClassName
-        Array.from(target.classList)
-            .filter(cls => cls.startsWith('bv-theme-'))
-            .forEach(cls => target.classList.remove(cls));
-
-        // Ensure base class is present
-        if (!target.classList.contains('bv-root'))
-            target.classList.add('bv-root');
-
-        // Apply theme: explicit config.theme takes precedence, otherwise use view model theme
-        const themeClass = config?.theme
-            ? `bv-theme-${config.theme}`
-            : this.viewModel.theme.rootClassName;
-
-        if (themeClass)
-            target.classList.add(themeClass);
-
-        // Set dynamic CSS variables from layout config
-        target.style.setProperty('--bv-match-width', `${this.layoutConfig.matchWidth}px`);
-        target.style.setProperty('--bv-match-height', `${this.layoutConfig.matchHeight}px`);
-
-        // Apply granular visual customization parameters via CSS custom properties
-        if (config?.fontSize) {
-            const fontSizeMap = { small: '11px', medium: '13px', large: '15px' };
-            target.style.setProperty('--bv-font-size', fontSizeMap[config.fontSize]);
-        }
+        applyThemeToTarget(target, this.config, this.viewModel, this.layoutConfig);
 
         if (config?.clear)
             target.innerHTML = '';
