@@ -107,6 +107,8 @@
   --bv-swiss-column-min-width: 140px;
   --bv-swiss-match-padding-v: 10px;
   --bv-swiss-match-padding-h: 12px;
+  --bv-swiss-match-alt-bg: var(--bv-row-alt);
+  --bv-swiss-separator-color: rgba(0, 0, 0, 0.06);
 
   // Example theme overrides for consumers to copy/adapt.
   &.bv-theme-dark {
@@ -139,6 +141,8 @@
     --bv-zone-eliminated-border: #ef4444;
     --bv-row-hover: #374151;
     --bv-row-alt: #262626;
+    --bv-swiss-match-alt-bg: #1f1f1f;
+    --bv-swiss-separator-color: rgba(255, 255, 255, 0.08);
 
     /* Status colors for dark theme */
     --bv-status-win-bg: rgba(111, 191, 115, 0.12);
@@ -842,10 +846,31 @@
     position: absolute;
     left: 0;
     width: 100%;
+    border-radius: var(--bv-radius-md);
 
     // Hide metadata in Swiss cards for cleaner look
     .match-metadata {
       display: none;
+    }
+
+    // Subtle hairline to separate stacked matches without changing spacing
+    &:not(:last-child) {
+      box-shadow: inset 0 -1px var(--bv-swiss-separator-color);
+    }
+
+    // Zebra striping to help matches stand apart inside a column
+    &:nth-of-type(even) .participant {
+      background: var(--bv-swiss-match-alt-bg);
+    }
+
+    // Keep winner gradient while honoring striped base
+    &:nth-of-type(even) .participant.win,
+    &:nth-of-type(even) .match-card__participant--winner {
+      background: linear-gradient(
+        90deg,
+        var(--bv-swiss-match-alt-bg) 0%,
+        var(--bv-status-win-bg) 100%
+      );
     }
   }
 

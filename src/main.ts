@@ -19,6 +19,7 @@ import { resolveConfig, validateViewerData, applyThemeToTarget } from './config/
 // Renderers
 import { renderRoundRobin } from './renderers/RoundRobinRenderer';
 import { renderSwiss } from './renderers/SwissRenderer';
+import { renderUnifiedSingleElimination, renderUnifiedDoubleElimination } from './renderers/EliminationRenderer';
 import {
     Config,
     OriginHint,
@@ -310,117 +311,14 @@ export class BracketsViewer {
      * @param matchesByGroup A list of matches for each group.
      */
     private renderUnifiedSingleElimination(container: HTMLElement, matchesByGroup: MatchWithMetadata[][]): void {
-        // Helper to map group_id to matchLocation
-        const getMatchLocation = (groupId: string): GroupType => {
-            const normalized = groupId.toLowerCase();
-            if (normalized.includes('third') || normalized.includes('3rd') || normalized.includes('placement'))
-                return 'final_group';
-            return 'winner_bracket';
-        };
-
-        // Organize and prepare ALL matches with required metadata
-        const allMatchesWithMetadata: MatchWithMetadata[] = [];
-
-        Object.values(matchesByGroup).forEach(groupMatches => {
-            if (!Array.isArray(groupMatches) || groupMatches.length === 0) return;
-
-            // Determine bracket type from first match's group_id
-            const matchLocation = getMatchLocation(String(groupMatches[0].group_id));
-
-            // Organize by round and add metadata
-            const matchesByRound = splitBy(groupMatches, 'round_id')
-                .map(matches => sortBy(matches, 'number'));
-            const roundCount = matchesByRound.length;
-
-            matchesByRound.forEach((roundMatches, roundIndex) => {
-                const roundNumber = roundIndex + 1;
-                const connectFinal = matchLocation === 'winner_bracket' && roundNumber === roundCount;
-
-                roundMatches.forEach(match => {
-                    allMatchesWithMetadata.push({
-                        ...match,
-                        metadata: {
-                            ...match.metadata,
-                            roundNumber,
-                            roundCount,
-                            matchLocation,
-                            connectFinal,
-                        },
-                    });
-                });
-            });
+        renderUnifiedSingleElimination(container, matchesByGroup, {
+            config: this.config,
+            layoutConfig: this.layoutConfig,
+            edges: this.edges,
+            stage: this.stage,
+            createBracketMatch: (match) => this.createBracketMatch(match),
+            createConnectorSVG: (connectors, width, height) => this.createConnectorSVG(connectors, width, height),
         });
-
-        // Use ALL edges
-        const allEdges = this.edges;
-
-        debug.log(`🔧 Unified SE: ${allMatchesWithMetadata.length} matches, ${allEdges.length} edges`);
-
-        // Compute layout with all matches + all edges
-        const layout = computeLayout(allMatchesWithMetadata, allEdges, 'winner_bracket', this.layoutConfig);
-
-        // Create bracket structure
-        const bracketContainer = dom.createBracketContainer();
-        const roundsContainer = dom.createRoundsContainer();
-
-        // Render all matches with absolute positioning
-        let renderedCount = 0;
-        let positionedCount = 0;
-
-        for (const match of allMatchesWithMetadata) {
-            const pos = layout.matchPositions.get(String(match.id));
-
-            // Skip matches without positions (filtered out by layout)
-            if (!pos) {
-                debug.log(`⏭️ Skipping match ${match.id} - no position assigned (likely filtered)`);
-                continue;
-            }
-
-            const matchEl = this.createBracketMatch(match);
-            matchEl.style.position = 'absolute';
-            matchEl.style.left = `${pos.xPx}px`;
-            matchEl.style.top = `${pos.yPx}px`;
-
-            roundsContainer.append(matchEl);
-            renderedCount++;
-            positionedCount++;
-        }
-
-        debug.log(`✅ Rendered ${renderedCount} SE matches (${positionedCount} positioned)`);
-
-        // Render round headers with semantic labels (if enabled)
-        if (this.config.showRoundHeaders !== false) {
-            const roundCount = layout.headerPositions.length;
-            layout.headerPositions.forEach(header => {
-                const h3 = document.createElement('h3');
-                h3.classList.add('round-header');
-                // Generate semantic round name (Finals, Semi-Finals, etc.)
-                const roundName = getSemanticRoundLabel(header.roundNumber, roundCount, 'single_bracket');
-                h3.textContent = roundName;
-                h3.style.position = 'absolute';
-                h3.style.left = `${header.xPx}px`;
-                h3.style.top = `${header.yPx}px`;
-                h3.style.width = `var(--bv-match-width)`;
-                roundsContainer.append(h3);
-            });
-        }
-
-        // Set explicit size on rounds container
-        roundsContainer.style.width = `${layout.totalWidth}px`;
-        roundsContainer.style.height = `${layout.totalHeight}px`;
-        debug.log(`📐 SE Container sized to ${layout.totalWidth}x${layout.totalHeight}px`);
-
-        // Add SVG connectors overlay (if enabled)
-        if (this.config.showConnectors !== false) {
-            const svg = this.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
-            roundsContainer.prepend(svg);
-            debug.log(`🔗 Generated ${layout.connectors.length} connectors`);
-        } else {
-            debug.log(`🔗 Connectors disabled by config (showConnectors: false)`);
-        }
-
-        bracketContainer.append(roundsContainer);
-        container.append(bracketContainer);
     }
 
     /**
@@ -463,185 +361,14 @@ export class BracketsViewer {
      * @param matchesByGroup A list of matches for each group.
      */
     private renderUnifiedDoubleElimination(container: HTMLElement, matchesByGroup: MatchWithMetadata[][]): void {
-        // Helper to map group_id to matchLocation
-        const getMatchLocation = (groupId: string): GroupType => {
-            const normalized = groupId.toLowerCase();
-            if (normalized.includes('winners-bracket')) return 'winner_bracket';
-            if (normalized.includes('losers-bracket')) return 'loser_bracket';
-            if (normalized.includes('grand-final')) return 'final_group';
-            // Check for placement/consolation brackets (3rd/4th place matches)
-            if (normalized.includes('placement') || normalized.includes('third') || normalized.includes('3rd'))
-                return 'final_group';
-            return 'winner_bracket'; // fallback
-        };
-
-        // Organize and prepare ALL matches with required metadata
-        const allMatchesWithMetadata: MatchWithMetadata[] = [];
-
-        Object.values(matchesByGroup).forEach(groupMatches => {
-            if (!Array.isArray(groupMatches) || groupMatches.length === 0) return;
-
-            // Determine bracket type from first match's group_id
-            const matchLocation = getMatchLocation(String(groupMatches[0].group_id));
-
-            // Organize by round and add metadata
-            const matchesByRound = splitBy(groupMatches, 'round_id')
-                .map(matches => sortBy(matches, 'number'));
-            const roundCount = matchesByRound.length;
-
-            matchesByRound.forEach((roundMatches, roundIndex) => {
-                const roundNumber = roundIndex + 1;
-                const connectFinal = matchLocation === 'winner_bracket' && roundNumber === roundCount;
-
-                roundMatches.forEach(match => {
-                    allMatchesWithMetadata.push({
-                        ...match,
-                        metadata: {
-                            ...match.metadata,
-                            roundNumber,
-                            roundCount,
-                            matchLocation,
-                            connectFinal,
-                        },
-                    });
-                });
-            });
+        renderUnifiedDoubleElimination(container, matchesByGroup, {
+            config: this.config,
+            layoutConfig: this.layoutConfig,
+            edges: this.edges,
+            stage: this.stage,
+            createBracketMatch: (match) => this.createBracketMatch(match),
+            createConnectorSVG: (connectors, width, height) => this.createConnectorSVG(connectors, width, height),
         });
-
-        // Use ALL edges - NO FILTERING
-        const allEdges = this.edges;
-
-        debug.log(`🔧 Unified DE: ${allMatchesWithMetadata.length} matches, ${allEdges.length} edges`);
-
-        // Detect tournament format size and get appropriate layout profile
-        const formatSize = detectFormatSize(allMatchesWithMetadata);
-        const deProfile = formatSize ? getDEProfile(formatSize) : undefined;
-
-        if (deProfile) {
-            debug.log(`📊 Using DE profile: ${deProfile.id} (${deProfile.formatSize}-team format)`);
-        } else {
-            debug.log(`📊 No profile detected, using block-based layout`);
-        }
-
-        // Single computeLayout call with all matches + all edges + optional profile
-        // Use 'winner_bracket' as the type (it's used mainly for logging)
-        const layout = computeLayout(allMatchesWithMetadata, allEdges, 'winner_bracket', this.layoutConfig, deProfile);
-
-        // Create bracket container for unified view
-        const groupId = allMatchesWithMetadata[0]?.group_id ?? 'unified-de';
-        const bracketContainer = dom.createBracketContainer(groupId, lang.getBracketName(this.stage, 'winner_bracket'));
-        const roundsContainer = dom.createRoundsContainer();
-
-        // Render all matches with absolute positioning
-        let renderedCount = 0;
-        let positionedCount = 0;
-
-        for (const match of allMatchesWithMetadata) {
-            const pos = layout.matchPositions.get(String(match.id));
-
-            // Skip matches without positions (filtered out by layout, e.g., SE consolation finals)
-            if (!pos) {
-                debug.log(`⏭️ Skipping match ${match.id} - no position assigned (likely filtered)`);
-                continue;
-            }
-
-            const matchEl = this.createBracketMatch(match);
-            matchEl.style.position = 'absolute';
-            matchEl.style.left = `${pos.xPx}px`;
-            matchEl.style.top = `${pos.yPx}px`;
-
-            roundsContainer.append(matchEl);
-            renderedCount++;
-            positionedCount++;
-        }
-
-        debug.log(`✅ Rendered ${renderedCount} matches (${positionedCount} positioned)`);
-
-        // Render round headers with semantic labels (if enabled)
-        // For unified mode, we need to determine bracket type and round count from matches at each column
-        debug.log('🎯 Unified DE showRoundHeaders config:', this.config.showRoundHeaders, 'will render?', this.config.showRoundHeaders !== false);
-        if (this.config.showRoundHeaders !== false) {
-            layout.headerPositions.forEach(header => {
-                // Find matches in this column to determine bracket type and round count
-                const matchesInColumn = allMatchesWithMetadata.filter(m => {
-                    const pos = layout.matchPositions.get(String(m.id));
-                    return pos && pos.xRound === header.columnIndex;
-                });
-
-                if (matchesInColumn.length === 0) return;
-
-                // Use metadata from first match in column
-                const sampleMatch = matchesInColumn[0];
-                const bracketType = sampleMatch.metadata?.matchLocation ?? 'winner_bracket';
-                const roundCount = sampleMatch.metadata?.roundCount ?? header.roundNumber;
-
-                const roundInfo = {
-                    roundNumber: header.roundNumber,
-                    roundCount,
-                };
-
-                let roundName: string;
-
-                if (bracketType === 'winner_bracket') {
-                    roundName = lang.getWinnerBracketRoundName(roundInfo, lang.t);
-                } else if (bracketType === 'loser_bracket') {
-                    roundName = lang.getLoserBracketRoundName(roundInfo, lang.t);
-                } else if (bracketType === 'final_group') {
-                    roundName = 'Grand Finals';
-                } else {
-                    roundName = lang.getRoundName(roundInfo, lang.t);
-                }
-
-                const h3 = document.createElement('h3');
-                h3.innerText = roundName;
-                h3.style.position = 'absolute';
-                h3.style.left = `${header.xPx}px`;
-                h3.style.top = `${header.yPx}px`;
-                h3.style.width = `var(--bv-match-width)`;
-                roundsContainer.append(h3);
-            });
-        }
-
-        // Add bracket section titles for split-horizontal layout
-        if (this.layoutConfig.bracketAlignment === 'split-horizontal' && layout.groupOffsetY) {
-            const winnersY = layout.groupOffsetY.get('WINNERS_BRACKET');
-            const losersY = layout.groupOffsetY.get('LOSERS_BRACKET');
-
-            // Upper Bracket title
-            if (winnersY !== undefined) {
-                const upperTitle = dom.createBracketSectionTitle('Upper Bracket');
-                upperTitle.style.position = 'absolute';
-                upperTitle.style.left = `${this.layoutConfig.leftOffset}px`;
-                upperTitle.style.top = `${Math.max(0, winnersY - 40)}px`;
-                roundsContainer.append(upperTitle);
-            }
-
-            // Lower Bracket title
-            if (losersY !== undefined) {
-                const lowerTitle = dom.createBracketSectionTitle('Lower Bracket');
-                lowerTitle.style.position = 'absolute';
-                lowerTitle.style.left = `${this.layoutConfig.leftOffset}px`;
-                lowerTitle.style.top = `${Math.max(0, losersY - 40)}px`;
-                roundsContainer.append(lowerTitle);
-            }
-        }
-
-        // Set explicit size on rounds container
-        roundsContainer.style.width = `${layout.totalWidth}px`;
-        roundsContainer.style.height = `${layout.totalHeight}px`;
-        debug.log(`📐 Container sized to ${layout.totalWidth}x${layout.totalHeight}px`);
-
-        // Add SVG connectors overlay (if enabled)
-        if (this.config.showConnectors !== false) {
-            const svg = this.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
-            roundsContainer.prepend(svg);
-            debug.log(`🔗 Generated ${layout.connectors.length} connectors`);
-        } else {
-            debug.log(`🔗 Connectors disabled by config (showConnectors: false)`);
-        }
-
-        bracketContainer.append(roundsContainer);
-        container.append(bracketContainer);
     }
 
     /**
