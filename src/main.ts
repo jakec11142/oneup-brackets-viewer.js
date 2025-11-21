@@ -11,6 +11,9 @@ import { computeLayout, computeSwissLayout } from './layout';
 import { getViewModel, type ViewModel, type LayoutConfig, type BracketKind } from './viewModels';
 import { detectFormatSize, getDEProfile } from './profiles/deProfiles';
 import { getSemanticRoundLabel } from './round-labels';
+// Performance optimizations
+import { globalLayoutCache, globalPerfMonitor } from './performance';
+import { createPooledConnectorSVG, globalConnectorPool } from './rendering/SVGConnectorPool';
 import {
     Config,
     OriginHint,
@@ -92,6 +95,11 @@ export class BracketsViewer {
             doubleElimMode: config?.doubleElimMode ?? 'unified',
             viewModelId: config?.viewModelId,
             layoutOverrides: config?.layoutOverrides,
+            // Performance options
+            enableLayoutCache: config?.enableLayoutCache ?? true,
+            enableSVGPooling: config?.enableSVGPooling ?? true,
+            enableVirtualization: config?.enableVirtualization ?? 'auto',
+            virtualizationThreshold: config?.virtualizationThreshold ?? 50,
         } as Config;
 
         // Resolve view model based on stage type and viewModelId
@@ -673,7 +681,7 @@ export class BracketsViewer {
 
         // Add SVG connectors overlay (if enabled)
         if (this.config.showConnectors !== false) {
-            const svg = dom.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
+            const svg = this.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
             roundsContainer.prepend(svg);
             debug.log(`🔗 Generated ${layout.connectors.length} connectors`);
         } else {
@@ -894,7 +902,7 @@ export class BracketsViewer {
 
         // Add SVG connectors overlay (if enabled)
         if (this.config.showConnectors !== false) {
-            const svg = dom.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
+            const svg = this.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
             roundsContainer.prepend(svg);
             debug.log(`🔗 Generated ${layout.connectors.length} connectors`);
         } else {
@@ -1064,7 +1072,7 @@ export class BracketsViewer {
 
         // Add SVG connectors overlay (if enabled)
         if (this.config.showConnectors !== false) {
-            const svg = dom.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
+            const svg = this.createConnectorSVG(layout.connectors, layout.totalWidth, layout.totalHeight);
             roundsContainer.prepend(svg);
         } else {
             debug.log(`🔗 Connectors disabled by config (showConnectors: false)`);
@@ -1452,5 +1460,19 @@ export class BracketsViewer {
      */
     private clearPreviousPopoverSelections(): void {
         document.querySelector('.opponents.popover-selected')?.classList.remove('popover-selected');
+    }
+
+    /**
+     * Creates an SVG element for connectors, using pooling if enabled.
+     *
+     * @param connectors Array of connector lines to render
+     * @param width Total width of the SVG canvas
+     * @param height Total height of the SVG canvas
+     */
+    private createConnectorSVG(connectors: import('./layout').ConnectorLine[], width: number, height: number): SVGElement {
+        if (this.config.enableSVGPooling) {
+            return createPooledConnectorSVG(connectors, width, height);
+        }
+        return dom.createConnectorSVG(connectors, width, height);
     }
 }

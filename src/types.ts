@@ -489,6 +489,44 @@ export interface Config {
      */
     fontSize?: 'small' | 'medium' | 'large',
 
+    // ===== PERFORMANCE OPTIONS =====
+
+    /**
+     * Enable layout caching for faster re-renders.
+     * Cached layouts are reused when match data hasn't changed.
+     *
+     * @default true
+     */
+    enableLayoutCache?: boolean,
+
+    /**
+     * Enable SVG connector element pooling.
+     * Reduces memory churn by reusing SVG elements instead of recreating them.
+     *
+     * @default true
+     */
+    enableSVGPooling?: boolean,
+
+    /**
+     * Enable virtual scrolling for large brackets.
+     * Only renders visible matches + buffer zone for optimal performance.
+     *
+     * - `true`: Always enabled
+     * - `false`: Always disabled
+     * - `'auto'`: Enabled for 50+ matches (recommended)
+     *
+     * @default 'auto'
+     */
+    enableVirtualization?: boolean | 'auto',
+
+    /**
+     * Threshold for auto-enabling virtualization.
+     * Only applies when enableVirtualization is 'auto'.
+     *
+     * @default 50
+     */
+    virtualizationThreshold?: number,
+
 }
 
 /**
