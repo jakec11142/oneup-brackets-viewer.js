@@ -117,16 +117,21 @@ export class VirtualBracketManager {
         this.viewportWidth = this.config.viewportWidth || container.clientWidth || window.innerWidth;
         this.viewportHeight = this.config.viewportHeight || container.clientHeight || window.innerHeight;
 
+        // Get initial scroll position (should be 0,0 but just in case)
+        this.scrollLeft = container.scrollLeft || 0;
+        this.scrollTop = container.scrollTop || 0;
+
         // Initialize virtual items from layout
         this.initializeVirtualItems();
 
         // Set up scroll listener
         this.setupScrollListener();
 
-        // Initial render
-        this.scheduleUpdate();
+        // IMPORTANT: Force initial render of visible items
+        this.updateVisibility();
 
         this.log(`Initialized with ${matches.length} matches, viewport: ${this.viewportWidth}x${this.viewportHeight}`);
+        this.log(`Initial scroll position: ${this.scrollLeft}, ${this.scrollTop}`);
     }
 
     /**

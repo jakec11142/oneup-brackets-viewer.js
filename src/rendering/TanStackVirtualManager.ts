@@ -1,0 +1,183 @@
+/**
+ * TanStack Virtual Manager - Proper virtualization for large brackets.
+ *
+ * Uses @tanstack/virtual-core for efficient rendering of large tournament brackets.
+ */
+
+import {
+    Virtualizer,
+    observeElementRect,
+    observeElementOffset,
+    elementScroll,
+    type VirtualizerOptions,
+} from '@tanstack/virtual-core';
+import type { MatchPosition, BracketLayout } from '../layout';
+import type { MatchWithMetadata } from '../types';
+
+/**
+ * Configuration for TanStack virtual bracket rendering
+ */
+export interface TanStackVirtualConfig {
+    /** Enable virtualization (default: auto - enabled for 50+ matches) */
+    enabled?: boolean | 'auto';
+    /** Threshold for auto-enabling virtualization (default: 50) */
+    autoThreshold?: number;
+    /** Number of items to render outside visible area (default: 3) */
+    overscan?: number;
+    /** Enable debug logging (default: false) */
+    debug?: boolean;
+}
+
+const DEFAULT_CONFIG: Required<TanStackVirtualConfig> = {
+    enabled: 'auto',
+    autoThreshold: 50,
+    overscan: 3,
+    debug: false,
+};
+
+/**
+ * TanStack Virtual Manager for efficient large bracket rendering.
+ */
+export class TanStackVirtualManager {
+    private config: Required<TanStackVirtualConfig>;
+    private container: HTMLElement | null = null;
+    private layout: BracketLayout | null = null;
+    private matches: MatchWithMetadata[] = [];
+    private virtualizer: Virtualizer<HTMLElement, HTMLElement> | null = null;
+    private renderMatch: ((match: MatchWithMetadata) => HTMLElement) | null = null;
+    private renderedElements: Map<string, HTMLElement> = new Map();
+
+    constructor(config: TanStackVirtualConfig = {}) {
+        this.config = { ...DEFAULT_CONFIG, ...config };
+    }
+
+    /**
+     * Initializes the virtual bracket with container, layout, and render callback.
+     */
+    initialize(
+        container: HTMLElement,
+        layout: BracketLayout,
+        matches: MatchWithMetadata[],
+        renderMatch: (match: MatchWithMetadata) => HTMLElement,
+    ): void {
+        this.container = container;
+        this.layout = layout;
+        this.matches = matches;
+        this.renderMatch = renderMatch;
+
+        // Create an inner container for virtual items
+        const innerContainer = document.createElement('div');
+        innerContainer.style.position = 'relative';
+        innerContainer.style.width = '100%';
+        innerContainer.style.height = '100%';
+        container.appendChild(innerContainer);
+
+        // Get match positions as an array sorted by Y position
+        const matchItems = matches.map(match => {
+            const pos = layout.matchPositions.get(String(match.id));
+            return {
+                match,
+                position: pos,
+                id: String(match.id)
+            };
+        }).filter(item => item.position !== undefined);
+
+        // Sort by Y position for vertical virtualization
+        matchItems.sort((a, b) => (a.position?.yPx || 0) - (b.position?.yPx || 0));
+
+        // Create the virtualizer
+        this.virtualizer = new Virtualizer({
+            count: matchItems.length,
+            getScrollElement: () => container,
+            estimateSize: () => 80, // Estimated match height
+            overscan: this.config.overscan,
+            observeElementRect: observeElementRect,
+            observeElementOffset: observeElementOffset,
+            scrollToFn: elementScroll,
+        });
+
+        // Initial update to render visible items
+        this.updateVirtualItems(innerContainer, matchItems);
+
+        // Set up scroll listener for updates
+        container.addEventListener('scroll', () => {
+            this.updateVirtualItems(innerContainer, matchItems);
+        }, { passive: true });
+
+        // Force initial render
+        this.virtualizer._willUpdate();
+
+        this.log(`Initialized TanStack Virtual with ${matches.length} matches`);
+    }
+
+    /**
+     * Updates the virtual items based on current scroll position.
+     */
+    private updateVirtualItems(innerContainer: HTMLElement, matchItems: any[]): void {
+        if (!this.virtualizer || !this.renderMatch) return;
+
+        const virtualItems = this.virtualizer.getVirtualItems();
+
+        // Remove items that are no longer visible
+        const visibleIds = new Set(virtualItems.map(vi => matchItems[vi.index].id));
+        for (const [id, element] of this.renderedElements) {
+            if (!visibleIds.has(id)) {
+                element.remove();
+                this.renderedElements.delete(id);
+            }
+        }
+
+        // Render visible items
+        for (const virtualItem of virtualItems) {
+            const item = matchItems[virtualItem.index];
+            if (!item || this.renderedElements.has(item.id)) continue;
+
+            const element = this.renderMatch(item.match);
+            element.style.position = 'absolute';
+            element.style.left = `${item.position.xPx}px`;
+            element.style.top = `${item.position.yPx}px`;
+            element.setAttribute('data-virtual', 'true');
+
+            innerContainer.appendChild(element);
+            this.renderedElements.set(item.id, element);
+        }
+
+        // Update container height to match total size
+        const totalHeight = this.layout?.totalHeight || 0;
+        innerContainer.style.height = `${totalHeight}px`;
+
+        const stats = this.getStats();
+        this.log(`Updated: ${stats.renderedMatches}/${stats.totalMatches} matches visible`);
+    }
+
+    /**
+     * Returns current visibility statistics.
+     */
+    getStats(): {
+        totalMatches: number;
+        renderedMatches: number;
+    } {
+        return {
+            totalMatches: this.matches.length,
+            renderedMatches: this.renderedElements.size,
+        };
+    }
+
+    /**
+     * Cleans up resources.
+     */
+    destroy(): void {
+        this.renderedElements.forEach(el => el.remove());
+        this.renderedElements.clear();
+        this.virtualizer = null;
+        this.container = null;
+        this.layout = null;
+        this.renderMatch = null;
+    }
+
+    private log(message: string): void {
+        if (this.config.debug) {
+            console.log(`[TanStackVirtual] ${message}`);
+        }
+    }
+}
