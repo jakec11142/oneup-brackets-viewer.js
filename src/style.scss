@@ -471,7 +471,7 @@
     display: flex;
     align-items: center;
     width: var(--bv-match-width);
-    min-height: 60px;
+    min-height: 68px;
     position: relative; // Ensure matches can have z-index
     z-index: 1; // Render above connectors
     // Position is set via inline styles by layout engine
@@ -539,7 +539,7 @@
     border: var(--bv-match-border-width) solid var(--bv-match-card-border);
     border-radius: var(--bv-radius-md, 8px);
     background: var(--bv-match-bg-color);
-    overflow: hidden;
+    overflow: visible;
     box-shadow: var(--bv-shadow-sm);
 
     &:hover {
@@ -554,70 +554,37 @@
       box-shadow: 0 0 0 1px var(--bv-match-card-highlight);
     }
 
+    // Match label (e.g. WB R1) - positioned top-left
     & > span {
       position: absolute;
-      top: -10px;
-      font-size: 0.8em;
-      padding: 0 5px;
-      color: var(--bv-label-color);
-      background: var(--bv-bg-color);
-      border-radius: 3px;
-    }
-
-    // Match hint (e.g. WB 1.1, Bo3)
-    & > span:nth-of-type(1) {
-      left: 3px;
+      top: var(--bv-metadata-top-offset, -1.2em);
+      left: 0;
+      font-size: var(--bv-font-size-xs);
+      font-weight: var(--bv-font-weight-medium);
+      color: var(--bv-hint-color);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
   }
 
-  // Enhanced metadata display with status (Best of, Status, Timer)
+  // Minimal metadata text (positioned above match)
   .match-metadata {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3px 6px;
-    margin-bottom: 2px;
-    font-size: 0.75em;
+    position: absolute;
+    top: var(--bv-metadata-top-offset, -1.4em);
+    right: 8px;
+    font-size: var(--bv-font-size-xs);
+    font-weight: var(--bv-font-weight-medium);
     color: var(--bv-hint-color);
-    background: var(--bv-surface-color);
-    border-bottom: 1px solid var(--bv-border-color);
-    border-top-left-radius: var(--bv-match-border-radius);
-    border-top-right-radius: var(--bv-match-border-radius);
-    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    gap: 2px;
+    z-index: 2;
+    pointer-events: none;
 
-    .metadata-separator {
-      opacity: 0.5;
-      margin: 0 2px;
-    }
-
-    // Live status styling - only color the status text, not the whole box
+    // Live status - make it stand out
     &.status-live {
-      .status-text {
-        color: #dc2626;
-        font-weight: 600;
-      }
-    }
-
-    // Completed status styling - only color the status text
-    &.status-completed {
-      .status-text {
-        color: #16a34a;
-      }
-    }
-
-    // Pending/Not started styling (default)
-    &.status-pending {
-      color: var(--bv-hint-color);
-    }
-
-    // Live timer styling
-    .live-timer {
-      font-variant-numeric: tabular-nums;
-      font-weight: 600;
+      color: var(--bv-status-live);
+      font-weight: var(--bv-font-weight-semibold);
     }
   }
 

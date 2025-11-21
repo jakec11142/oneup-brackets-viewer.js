@@ -194,8 +194,8 @@ export interface ViewModel {
  */
 export const DEFAULT_LAYOUT: LayoutConfig = {
   columnWidth: 190,   // 150px match width + 40px round gap
-  rowHeight: 64,      // 60px match height + 4px vertical gap (compact)
-  matchHeight: 60,    // Actual match min-height
+  rowHeight: 72,      // 68px match height + 4px vertical gap
+  matchHeight: 68,    // Actual match height (Swiss-style padding: 10px per participant)
   matchWidth: 150,    // Actual match width
   topOffset: 50,      // Top padding (includes space for round headers)
   leftOffset: 0,      // Left padding

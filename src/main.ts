@@ -298,6 +298,9 @@ export class BracketsViewer {
             if (!groupMatches?.length) continue;
 
             const groupId = groupMatches[0].group_id;
+
+            // Create card-style wrapper for the entire group
+            const groupSection = dom.createRoundRobinGroupSection();
             const groupContainer = dom.createGroupContainer(groupId, lang.getGroupName(groupNumber++));
             const matchesByRound = splitBy(groupMatches, 'round_id').map(matches => sortBy(matches, 'number'));
 
@@ -322,7 +325,9 @@ export class BracketsViewer {
                 roundNumber++;
             }
 
-            container.append(groupContainer);
+            // Wrap the group container in the card-style section
+            groupSection.append(groupContainer);
+            container.append(groupSection);
         }
 
         root.append(container);
@@ -1208,7 +1213,7 @@ export class BracketsViewer {
                 const shouldShowRoundNumber = !(matchLocation === 'final_group' && roundCount === 1);
                 const displayRoundNumber = shouldShowRoundNumber ? roundNumber : undefined;
                 dom.addEnhancedMetadata(opponents, {
-                    bestOf: roundBestOf,
+                    bestOf: roundBestOf || 'Bo3', // Default to Bo3 if not specified
                     status: match.status,
                     startedAt: (match as any).startedAt, // Optional timestamp if provided
                     round: displayRoundNumber,

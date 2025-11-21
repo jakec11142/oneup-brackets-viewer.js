@@ -522,59 +522,47 @@ export function addEnhancedMetadata(
         round?: number,
     }
 ): void {
-    const { bestOf, status, startedAt, round } = options;
+    const { bestOf, status, startedAt } = options;
     const metadata = createMatchMetadataContainer();
 
     // Determine display status
     // Status enum: Locked=0, Waiting=1, Ready=2, Running=3, Completed=4, Archived=5
     const isLive = status === 3;
-    const isCompleted = status === 4 || status === 5;
-    const isNotStarted = status === 0 || status === 1 || status === 2;
 
-    // Add status class for styling
-    if (isLive) metadata.classList.add('status-live');
-    else if (isCompleted) metadata.classList.add('status-completed');
-    else metadata.classList.add('status-pending');
-
-    // Build content
-    const parts: string[] = [];
-
-    if (round) parts.push(`R${round}`);
-    if (bestOf) parts.push(bestOf);
-
-    // Add status text (wrapped in span for targeted styling)
+    // Add status class for styling (only live gets special treatment)
     if (isLive) {
-        parts.push('<span class="status-text">Live</span>');
-    } else if (isCompleted) {
-        parts.push('<span class="status-text">Completed</span>');
-    } else if (isNotStarted) {
-        parts.push('<span class="status-text">Not Started</span>');
+        metadata.classList.add('status-live');
+        metadata.innerText = 'LIVE';
+
+        // Add timer for live matches
+        if (startedAt) {
+            const timerSpan = document.createElement('span');
+            timerSpan.classList.add('live-timer');
+            timerSpan.innerText = ' ' + formatElapsedTime(startedAt);
+            metadata.appendChild(timerSpan);
+
+            // Start timer interval
+            const intervalId = setInterval(() => {
+                if (!document.body.contains(metadata)) {
+                    clearInterval(intervalId);
+                    return;
+                }
+                timerSpan.innerText = ' ' + formatElapsedTime(startedAt);
+            }, 1000);
+
+            // Store interval for potential cleanup
+            (metadata as any)._timerInterval = intervalId;
+        }
+    } else if (bestOf) {
+        // For non-live matches, just show bestOf (e.g., "Bo3")
+        metadata.innerText = bestOf;
+    } else {
+        // No content to show, don't add metadata
+        return;
     }
 
-    metadata.innerHTML = parts.join(' <span class="metadata-separator">•</span> ');
-
-    // Add timer for live matches
-    if (isLive && startedAt) {
-        const timerSpan = document.createElement('span');
-        timerSpan.classList.add('live-timer');
-        timerSpan.innerHTML = ' <span class="metadata-separator">•</span> ' + formatElapsedTime(startedAt);
-        metadata.appendChild(timerSpan);
-
-        // Start timer interval
-        const intervalId = setInterval(() => {
-            if (!document.body.contains(metadata)) {
-                clearInterval(intervalId);
-                return;
-            }
-            timerSpan.innerHTML = ' <span class="metadata-separator">•</span> ' + formatElapsedTime(startedAt);
-        }, 1000);
-
-        // Store interval for potential cleanup
-        (metadata as any)._timerInterval = intervalId;
-    }
-
-    // Prepend to show above participants
-    opponentsContainer.insertBefore(metadata, opponentsContainer.firstChild);
+    // Append to opponents container (positioned absolute in corner via CSS)
+    opponentsContainer.appendChild(metadata);
 }
 
 /**
