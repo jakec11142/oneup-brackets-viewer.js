@@ -43,16 +43,25 @@ export async function renderBracket(container: HTMLElement | string, data: Viewe
     return viewer.getBracketDimensions();
 }
 
-window.bracketsViewer = viewer;
-window.bracketsViewer.render = async (data: ViewerData, cfg?: Partial<Config>): Promise<void> => {
-    await renderBracket('.brackets-viewer', data, cfg ?? {});
-};
-window.bracketsViewerDTO = {
-    convertStageStructureToViewerData,
-};
-window.inMemoryDatabase = new InMemoryDatabase();
-window.bracketsManager = new BracketsManager(window.inMemoryDatabase);
+// SSR guard — window assignments only in browser environments
+if (typeof window !== 'undefined') {
+    window.bracketsViewer = viewer;
+    window.bracketsViewer.render = async (data: ViewerData, cfg?: Partial<Config>): Promise<void> => {
+        await renderBracket('.brackets-viewer', data, cfg ?? {});
+    };
+    window.bracketsViewerDTO = {
+        convertStageStructureToViewerData,
+    };
+    window.inMemoryDatabase = new InMemoryDatabase();
+    window.bracketsManager = new BracketsManager(window.inMemoryDatabase);
+}
 
 export { BracketsViewer };
 export * from './types';
 export * from './dto';
+
+// Headless layout API (SSR-safe, no DOM dependencies)
+export { computeBracketLayout } from './computeBracketLayout';
+export type { BracketLayoutResult, BracketMatchNode, ResolvedOpponent } from './layout/BracketLayoutResult';
+export type { RoundHeader, ConnectorLine, MatchPosition, SwissPanelPosition, Point, ConnectorType } from './layout/types';
+export type { LayoutConfig } from './viewModels';

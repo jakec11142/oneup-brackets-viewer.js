@@ -1,77 +1,9 @@
-import { Match, GroupType, MatchGame, RankingItem } from 'brackets-model';
-import { RankingHeader, Side, MatchWithMetadata } from './types';
+import { GroupType, RankingItem } from 'brackets-model';
+import { RankingHeader, Side } from './types';
 import { t } from './lang';
 
-/**
- * Splits an array of objects based on their values at a given key.
- *
- * @param objects The array to split.
- * @param key The key of T.
- */
-export function splitBy<
-    T extends Record<string, unknown>,
-    K extends keyof T,
-    U extends Record<K, string | number>
->(objects: U[], key: K): U[][] {
-    const map = {} as Record<string | number, U[]>;
-
-    for (const obj of objects) {
-        const commonValue = obj[key];
-
-        if (!map[commonValue])
-            map[commonValue] = [];
-
-        map[commonValue].push(obj);
-    }
-
-    return Object.values(map);
-}
-
-/**
- * Splits an array of objects based on their values at a given key.
- * Objects without a value at the given key will be set under a `-1` index.
- *
- * @param objects The array to split.
- * @param key The key of T.
- */
-export function splitByWithLeftovers<
-    T extends Record<string, unknown>,
-    K extends keyof T,
-    U extends Record<K, string | number>
->(objects: U[], key: K): U[][] {
-    const map = {} as Record<string | number, U[]>;
-
-    for (const obj of objects) {
-        const commonValue = obj[key] ?? '-1'; // Object keys are converted to a string.
-
-        if (!map[commonValue])
-            map[commonValue] = [];
-
-        map[commonValue].push(obj);
-    }
-
-    const withoutLeftovers = Object.entries(map)
-        .filter(([key]) => key !== '-1')
-        .map(([_, value]) => value);
-
-    const result = [...withoutLeftovers];
-    result[-1] = map[-1];
-    return result;
-}
-
-/**
- * Sorts the objects in the given array by a given key.
- *
- * @param array The array to sort.
- * @param key The key of T.
- */
-export function sortBy<
-    T extends Record<string, unknown>,
-    K extends keyof T,
-    U extends Record<K, number>
->(array: U[], key: K): U[] {
-    return [...array].sort((a, b) => a[key] - b[key]);
-}
+// Re-export pure utilities from SSR-safe module for backward compatibility
+export { splitBy, splitByWithLeftovers, sortBy, completeWithBlankMatches, isMatch, isMatchGame } from './utils/pure';
 
 /**
  * Finds the root element
@@ -93,41 +25,6 @@ export function findRoot(selector?: string): HTMLElement {
         throw Error('The selected root must have a `.brackets-viewer` class.');
 
     return root;
-}
-
-/**
- * Completes a list of matches with blank matches based on the next matches.
- * 
- * Toornament can generate first rounds with an odd number of matches and the seeding is partially distributed in the second round.
- * This function adds a blank match in the first round as if it was the source match of a seeded match of the second round.
- * 
- * @param bracketType Type of the bracket.
- * @param matches The list of first round matches.
- * @param nextMatches The list of second round matches.
- */
-export function completeWithBlankMatches(bracketType: GroupType, matches: MatchWithMetadata[], nextMatches?: MatchWithMetadata[]): {
-    matches: (MatchWithMetadata | null)[],
-    fromToornament: boolean,
-} {
-    if (!nextMatches)
-        return { matches, fromToornament: false };
-
-    let sources: (number | null)[] = [];
-
-    if (bracketType === 'single_bracket' || bracketType === 'winner_bracket')
-        sources = nextMatches.map(match => [match.opponent1?.position || null, match.opponent2?.position || null]).flat();
-
-    if (bracketType === 'loser_bracket')
-        sources = nextMatches.map(match => match.opponent2?.position || null);
-
-    // The manager does not set positions where the Toornament layer does.
-    if (sources.filter(source => source !== null).length === 0)
-        return { matches, fromToornament: false };
-
-    return {
-        matches: sources.map(source => source && matches.find(match => match.number === source) || null),
-        fromToornament: true,
-    };
 }
 
 /**
@@ -169,25 +66,6 @@ export function isMajorRound(roundNumber: number): boolean {
  */
 export function rankingHeader(itemName: keyof RankingItem): RankingHeader {
     return t(`ranking.${itemName}`, { returnObjects: true }) as RankingHeader;
-}
-
-/**
- * Indicates whether the input is a match.
- * 
- * @param input A match or a match game.
- */
-export function isMatch(input: Match | MatchGame): input is Match {
-    return 'child_count' in input;
-}
-
-
-/**
- * Indicates whether the input is a match game.
- *
- * @param input A match or a match game.
- */
-export function isMatchGame(input: Match | MatchGame): input is MatchGame {
-    return !isMatch(input);
 }
 
 /**
