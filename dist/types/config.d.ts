@@ -358,4 +358,35 @@ export interface Config {
      * @default true
      */
     enableSVGPooling?: boolean;
+    /**
+     * Automatically scale the bracket to fit within its container.
+     * Uses CSS transform to scale content to fit, preventing scrollbars.
+     *
+     * - `true` or `'width'`: Scale to fit container width (maintains aspect ratio)
+     * - `'both'`: Scale to fit both width and height
+     * - `false` or `undefined`: No auto-fit (default, current behavior)
+     *
+     * @default undefined (no auto-fit)
+     */
+    autoFit?: boolean | 'width' | 'both';
+    /**
+     * Whether to include default padding around the bracket.
+     * Set to false for embedded use where the parent controls padding.
+     *
+     * @default true
+     */
+    includePadding?: boolean;
+}
+/**
+ * Layout dimensions for the rendered bracket.
+ * Exposed to consumers so they can calculate scale factors,
+ * center content, or implement custom viewport behavior.
+ */
+export interface BracketDimensions {
+    /** Natural content width in pixels (unscaled) */
+    contentWidth: number;
+    /** Natural content height in pixels (unscaled) */
+    contentHeight: number;
+    /** Current scale factor applied (1 = no scaling) */
+    scale: number;
 }

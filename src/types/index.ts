@@ -19,4 +19,5 @@ export {
     type RoundNameGetter,
     type MatchClickCallback,
     type Config,
+    type BracketDimensions,
 } from './config';

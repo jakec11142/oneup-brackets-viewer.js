@@ -24,6 +24,8 @@ const CONFIG_DEFAULTS: Partial<Config> = {
     // Performance defaults
     enableLayoutCache: true,
     enableSVGPooling: true,
+    // Container defaults
+    includePadding: true,
 };
 
 /**
@@ -106,6 +108,9 @@ export function resolveConfig(
         swissLayerStepY: userConfig?.swissLayerStepY,
         swissBucketGapY: userConfig?.swissBucketGapY,
         fontSize: userConfig?.fontSize,
+        // Container & viewport options
+        autoFit: userConfig?.autoFit,
+        includePadding: userConfig?.includePadding ?? CONFIG_DEFAULTS.includePadding,
     } as Config;
 
     // Step 2: Resolve view model based on stage type
@@ -218,6 +223,9 @@ export function applyThemeToTarget(
     if (themeClass) {
         target.classList.add(themeClass);
     }
+
+    // Apply no-padding class when includePadding is false
+    target.classList.toggle('bv-no-padding', config.includePadding === false);
 
     // Set dynamic CSS variables from layout config
     target.style.setProperty('--bv-match-width', `${layoutConfig.matchWidth}px`);

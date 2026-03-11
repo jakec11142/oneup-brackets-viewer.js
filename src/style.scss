@@ -187,28 +187,27 @@
   flex-direction: column;
   align-items: flex-start;
 
-  // Fixed viewport for predictable scrolling (industry standard)
-  height: 80vh;
-  max-height: 800px;
-  min-height: 400px;
-  max-width: calc(100vw - 40px); // Account for body margins
-
-  // Improved scroll behavior
-  overflow: auto;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-
-  // Zoom stability
-  transform-origin: top left;
+  // Size to content — parent container handles overflow/scrolling
+  width: fit-content;
+  overflow: visible;
 
   user-select: none;
   margin: 0 auto;
   padding: 10px 50px;
 
+  &.bv-no-padding {
+    padding: 0;
+  }
+
   *,
   ::after,
   ::before {
     box-sizing: border-box;
+    // Counteract Tailwind Preflight's border reset (*, ::before, ::after { border-width: 0 })
+    // This ensures bracket-viewer controls its own border defaults
+    border-style: solid;
+    border-width: 0;
+    border-color: var(--bv-border-color);
   }
 
   h1,
@@ -217,6 +216,7 @@
     margin-bottom: 0.5em;
     font-weight: 500;
     line-height: 1.2;
+    font-size: 1em; // Base size; prevents Tailwind's font-size: inherit from collapsing headings
   }
 
   h1 {
@@ -908,13 +908,6 @@
     }
   }
 
-  // Horizontal scroll container for brackets on smaller screens
-  .bracket,
-  .round-robin {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    min-width: 0;
-  }
 }
 
 // Tablet responsive breakpoint
@@ -924,12 +917,15 @@
     --bv-swiss-column-gap: 0.75rem; /* 12px */
     --bv-swiss-column-min-width: 8.125rem; /* 130px */
     --bv-font-size: 0.72rem;
-
-    // Adjust viewport for tablets
-    height: 70vh;
-    max-height: 600px;
-
     padding: 0.625rem 1.5rem; /* 10px 24px */
+
+    // Horizontal scroll container for brackets on smaller screens
+    .bracket,
+    .round-robin {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      min-width: 0;
+    }
   }
 }
 
@@ -943,40 +939,10 @@
     --bv-swiss-match-padding-v: 0.5rem; /* 8px */
     --bv-swiss-match-padding-h: 0.625rem; /* 10px */
     --bv-font-size: 0.7rem;
-
-    // Adjust viewport for mobile
-    height: 60vh;
-    max-height: 500px;
-
     padding: 0.625rem 1rem; /* 10px 16px */
   }
 }
 
-// Improved scrollbar styling for consistency
-.brackets-viewer {
-  &::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: var(--bv-surface-color);
-    border-radius: 6px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--bv-border-color);
-    border-radius: 6px;
-
-    &:hover {
-      background: var(--bv-border-hover-color);
-    }
-  }
-
-  // Firefox scrollbar styling
-  scrollbar-width: thin;
-  scrollbar-color: var(--bv-border-color) var(--bv-surface-color);
-}
 
 // High-DPI / Zoom detection for fine-tuning
 @media (-webkit-min-device-pixel-ratio: 1.5),

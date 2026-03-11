@@ -23,6 +23,7 @@ export {
     type RoundNameGetter,
     type MatchClickCallback,
     type Config,
+    type BracketDimensions,
 } from './types/config';
 
 export type { ToI18nKey, TFunction };

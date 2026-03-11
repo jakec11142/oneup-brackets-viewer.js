@@ -36,6 +36,7 @@ import {
     ToggleEvent,
     ViewerStage,
     DoubleElimMode,
+    BracketDimensions,
 } from './types';
 
 export class BracketsViewer {
@@ -52,6 +53,8 @@ export class BracketsViewer {
     private layoutConfig!: LayoutConfig;
     private skipFirstRound = false;
     private popover!: HTMLElement;
+    private _lastDimensions: BracketDimensions | null = null;
+    private _currentScale: number = 1;
 
     // eslint-disable-next-line jsdoc/require-jsdoc
     private getRoundName(info: RoundNameInfo, fallbackGetter: RoundNameGetter): string {
@@ -138,6 +141,79 @@ export class BracketsViewer {
             target.innerHTML = '';
 
         target.append(root);
+
+        // Store natural dimensions before any scaling
+        this._lastDimensions = {
+            contentWidth: target.scrollWidth,
+            contentHeight: target.scrollHeight,
+            scale: 1,
+        };
+
+        // Apply auto-fit if configured
+        if (this.config.autoFit) {
+            this.applyAutoFit(target);
+        }
+    }
+
+    /**
+     * Returns the natural (unscaled) dimensions of the last rendered bracket.
+     * Use these to calculate scale factors for custom zoom/viewport implementations.
+     *
+     * @example
+     * await viewer.render(data, config);
+     * const dims = viewer.getBracketDimensions();
+     * if (dims) {
+     *     const scale = Math.min(containerWidth / dims.contentWidth, 1);
+     *     viewer.setScale(scale);
+     * }
+     */
+    public getBracketDimensions(): BracketDimensions | null {
+        return this._lastDimensions ? { ...this._lastDimensions } : null;
+    }
+
+    /**
+     * Programmatically set the bracket scale (for external zoom controls).
+     *
+     * @param scale Scale factor (1 = 100%, 0.5 = 50%, etc.)
+     * @param selector Optional selector to find the target element.
+     */
+    public setScale(scale: number, selector?: string): void {
+        const target = findRoot(selector ?? this.config?.selector);
+        this._currentScale = scale;
+        target.style.transform = scale === 1 ? '' : `scale(${scale})`;
+        target.style.transformOrigin = 'top center';
+
+        // Adjust container height to match scaled content (eliminates dead space)
+        if (this._lastDimensions) {
+            target.style.height = scale === 1 ? '' : `${this._lastDimensions.contentHeight * scale}px`;
+            this._lastDimensions.scale = scale;
+        }
+    }
+
+    /**
+     * Applies auto-fit scaling to make the bracket fit within its container.
+     */
+    private applyAutoFit(target: HTMLElement): void {
+        const parent = target.parentElement;
+        if (!parent) return;
+
+        const contentWidth = target.scrollWidth;
+        const contentHeight = target.scrollHeight;
+        const containerWidth = parent.clientWidth;
+        const containerHeight = parent.clientHeight;
+
+        if (contentWidth <= 0 || containerWidth <= 0) return;
+
+        let scale: number;
+        if (this.config.autoFit === 'both' && containerHeight > 0) {
+            scale = Math.min(containerWidth / contentWidth, containerHeight / contentHeight, 1);
+        } else {
+            scale = Math.min(containerWidth / contentWidth, 1);
+        }
+
+        if (scale < 1) {
+            this.setScale(scale);
+        }
     }
 
     /**
