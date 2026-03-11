@@ -6,17 +6,14 @@ const SAMPLES = [
 ];
 
 const VIEW_MODELS = [
-  { id: 'default', label: 'Default', formats: ['single', 'double', 'roundRobin', 'swiss'] },
   { id: 'broadcast', label: 'Broadcast / Streaming', formats: ['single', 'double', 'roundRobin', 'swiss'] },
-  { id: 'de-split-horizontal', label: 'DE Split Horizontal (VCT)', formats: ['double'] },
 ];
 
 const buttonsHost = document.querySelector('#format-buttons');
-const viewModelHost = document.querySelector('#view-model-buttons');
 const cache = new Map();
 
 let currentSample = SAMPLES[0];
-let currentViewModel = VIEW_MODELS.find(vm => vm.id === 'broadcast') || VIEW_MODELS[0];
+let currentViewModel = VIEW_MODELS[0];
 
 // Display options state (defaults to all enabled)
 const displayOptions = {
@@ -38,23 +35,11 @@ SAMPLES.forEach(sample => {
   btn.dataset.sample = sample.id;
   btn.addEventListener('click', () => {
     currentSample = sample;
-    renderCurrentConfig(btn, null);
+    renderCurrentConfig(btn);
   });
   buttonsHost.appendChild(btn);
 });
 
-VIEW_MODELS.forEach(vm => {
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.textContent = vm.label;
-  btn.dataset.viewModel = vm.id;
-  btn.dataset.formats = JSON.stringify(vm.formats);
-  btn.addEventListener('click', () => {
-    currentViewModel = vm;
-    renderCurrentConfig(null, btn);
-  });
-  viewModelHost.appendChild(btn);
-});
 
 // Set up display option toggles
 const toggles = {
@@ -72,7 +57,7 @@ Object.entries(toggles).forEach(([toggleId, optionKey]) => {
   if (checkbox) {
     checkbox.addEventListener('change', () => {
       displayOptions[optionKey] = checkbox.checked;
-      renderCurrentConfig(null, null);
+      renderCurrentConfig(null);
     });
   }
 });
@@ -81,28 +66,16 @@ const highlightHoverCheckbox = document.getElementById('toggle-highlight-hover')
 if (highlightHoverCheckbox) {
   highlightHoverCheckbox.addEventListener('change', () => {
     displayOptions.highlightParticipantOnHover = highlightHoverCheckbox.checked;
-    renderCurrentConfig(null, null);
+    renderCurrentConfig(null);
   });
 }
 
-// Dark mode toggle
-const darkModeCheckbox = document.getElementById('toggle-dark-mode');
-if (darkModeCheckbox) {
-  darkModeCheckbox.addEventListener('change', () => {
-    const isDark = darkModeCheckbox.checked;
-    document.body.classList.toggle('dark', isDark);
-    const viewer = document.querySelector('#viewer-root');
-    if (viewer) {
-      viewer.classList.toggle('bv-theme-dark', isDark);
-    }
-  });
-}
 
 const positionRadios = document.querySelectorAll('input[name="participant-position"]');
 positionRadios.forEach(radio => {
   radio.addEventListener('change', () => {
     displayOptions.participantOriginPlacement = radio.value;
-    renderCurrentConfig(null, null);
+    renderCurrentConfig(null);
   });
 });
 
@@ -137,40 +110,18 @@ function generateParticipantImages(participants) {
   });
 }
 
-/**
- * Filters view model buttons to show only those compatible with the current format
- */
-function filterViewModelButtons() {
-  const currentFormatId = currentSample.id;
-
-  viewModelHost.querySelectorAll('button').forEach(btn => {
-    const formats = JSON.parse(btn.dataset.formats || '[]');
-    if (formats.includes(currentFormatId)) {
-      btn.style.display = '';
-    } else {
-      btn.style.display = 'none';
-    }
-  });
-}
-
-// Initial filter and render
-filterViewModelButtons();
-renderCurrentConfig(buttonsHost.firstElementChild, viewModelHost.firstElementChild);
+// Initial render
+renderCurrentConfig(buttonsHost.firstElementChild);
 
 /**
  * Renders the current sample with the current view model
  *
- * @param {HTMLButtonElement|null} sampleBtn - The sample button that was clicked (null if view model changed)
- * @param {HTMLButtonElement|null} vmBtn - The view model button that was clicked (null if sample changed)
+ * @param {HTMLButtonElement|null} sampleBtn - The sample button that was clicked
  * @returns {Promise<void>}
  */
-async function renderCurrentConfig(sampleBtn, vmBtn) {
+async function renderCurrentConfig(sampleBtn) {
   if (sampleBtn) {
     buttonsHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === sampleBtn));
-    filterViewModelButtons();
-  }
-  if (vmBtn) {
-    viewModelHost.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b === vmBtn));
   }
 
   const structure = await loadStructure(currentSample.file);

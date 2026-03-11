@@ -1,16 +1,16 @@
 // Default integrated theme and structural styles.
 .brackets-viewer {
   /* Theme tokens */
-  --bv-bg-color: #fff;
-  --bv-surface-color: #eceff1;
-  --bv-match-bg-color: var(--bv-bg-color);
-  --bv-text-color: #212529;
-  --bv-heading-color: #6b6b6b;
-  --bv-win-color: #50b649;
-  --bv-lose-color: #e61a1a;
-  --bv-label-color: grey;
-  --bv-hint-color: #a7a7a7;
-  --bv-connector-color: #9e9e9e;
+  --bv-bg-color: #1e1e1e;
+  --bv-surface-color: #2a2a2a;
+  --bv-match-bg-color: #232323;
+  --bv-text-color: #f5f5f5;
+  --bv-heading-color: #c5c5c5;
+  --bv-win-color: #6fbf73;
+  --bv-lose-color: #e57373;
+  --bv-label-color: #c5c5c5;
+  --bv-hint-color: #9aa0a6;
+  --bv-connector-color: #4c4c4c;
 
   /* Font family (override with --bv-font-family to use custom fonts) */
   --bv-font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
@@ -41,28 +41,28 @@
   --bv-color-accent: var(--bv-win-color);
 
   /* Shared zone colors (Round Robin + Swiss) */
-  --bv-zone-advancing-bg: #ecfdf5;
+  --bv-zone-advancing-bg: rgba(16, 185, 129, 0.15);
   --bv-zone-advancing-border: #10b981;
-  --bv-zone-bubble-bg: #fffbeb;
+  --bv-zone-bubble-bg: rgba(245, 158, 11, 0.15);
   --bv-zone-bubble-border: #f59e0b;
-  --bv-zone-eliminated-bg: #fef2f2;
+  --bv-zone-eliminated-bg: rgba(239, 68, 68, 0.15);
   --bv-zone-eliminated-border: #ef4444;
-  --bv-row-hover: #f3f4f6;
-  --bv-row-alt: #fafafa;
+  --bv-row-hover: #374151;
+  --bv-row-alt: #262626;
 
   /* Status colors (match results, badges, gradients) */
-  --bv-status-win-bg: rgba(80, 182, 73, 0.08);
-  --bv-status-win-gradient: rgba(80, 182, 73, 0.12);
-  --bv-status-lose-bg: rgba(230, 26, 26, 0.04);
-  --bv-status-lose-gradient: rgba(230, 26, 26, 0.08);
-  --bv-status-live: #10b981;
-  --bv-status-upcoming: #3b82f6;
-  --bv-status-completed: #6b7280;
+  --bv-status-win-bg: rgba(111, 191, 115, 0.12);
+  --bv-status-win-gradient: rgba(111, 191, 115, 0.18);
+  --bv-status-lose-bg: rgba(229, 115, 115, 0.08);
+  --bv-status-lose-gradient: rgba(229, 115, 115, 0.12);
+  --bv-status-live: #34d399;
+  --bv-status-upcoming: #60a5fa;
+  --bv-status-completed: #9ca3af;
 
   /* Shadows */
-  --bv-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --bv-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.08);
-  --bv-shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.12);
+  --bv-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --bv-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --bv-shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.4);
 
   /* Spacing scale */
   --bv-space-xs: 4px;
@@ -77,17 +77,17 @@
   --bv-radius-lg: 12px;
 
   /* Connector type-specific colors */
-  --bv-connector-internal: #9e9e9e;
-  --bv-connector-cross-bracket: #9e9e9e;
-  --bv-connector-grand-final: #9e9e9e;
+  --bv-connector-internal: #5a5a5a;
+  --bv-connector-cross-bracket: #5a5a5a;
+  --bv-connector-grand-final: #5a5a5a;
 
-  --bv-border-color: #d9d9d9;
-  --bv-border-hover-color: #b6b5b5;
-  --bv-border-selected-color: rgb(60, 60, 60);
+  --bv-border-color: #3a3a3a;
+  --bv-border-hover-color: #5f5f5f;
+  --bv-border-selected-color: #9ca3af;
 
   /* Match card state colors */
   --bv-match-card-border: var(--bv-border-color);
-  --bv-match-card-highlight: #3b82f6;
+  --bv-match-card-highlight: #60a5fa;
   --bv-match-winner-accent: var(--bv-win-color);
   --bv-match-loser-muted: var(--bv-hint-color);
 
@@ -107,63 +107,8 @@
   --bv-swiss-column-min-width: 8.75rem; /* 140px */
   --bv-swiss-match-padding-v: 0.625rem; /* 10px */
   --bv-swiss-match-padding-h: 0.75rem; /* 12px */
-  --bv-swiss-match-alt-bg: var(--bv-row-alt);
-  --bv-swiss-separator-color: var(--bv-border-color);
-
-  // Example theme overrides for consumers to copy/adapt.
-  &.bv-theme-dark {
-    --bv-bg-color: #1e1e1e;
-    --bv-surface-color: #2a2a2a;
-    --bv-match-bg-color: #232323;
-    --bv-text-color: #f5f5f5;
-    --bv-heading-color: #c5c5c5;
-    --bv-label-color: #c5c5c5;
-    --bv-hint-color: #9aa0a6;
-    --bv-border-color: #3a3a3a;
-    --bv-border-hover-color: #5f5f5f;
-    --bv-border-selected-color: #9ca3af;
-    --bv-connector-color: #4c4c4c;
-
-    /* Connector type-specific colors for dark theme */
-    --bv-connector-internal: #5a5a5a;
-    --bv-connector-cross-bracket: #5a5a5a;
-    --bv-connector-grand-final: #5a5a5a;
-
-    --bv-win-color: #6fbf73;
-    --bv-lose-color: #e57373;
-
-    /* Shared zone colors for dark theme */
-    --bv-zone-advancing-bg: rgba(16, 185, 129, 0.15);
-    --bv-zone-advancing-border: #10b981;
-    --bv-zone-bubble-bg: rgba(245, 158, 11, 0.15);
-    --bv-zone-bubble-border: #f59e0b;
-    --bv-zone-eliminated-bg: rgba(239, 68, 68, 0.15);
-    --bv-zone-eliminated-border: #ef4444;
-    --bv-row-hover: #374151;
-    --bv-row-alt: #262626;
-    --bv-swiss-match-alt-bg: #1f1f1f;
-    --bv-swiss-separator-color: rgba(255, 255, 255, 0.5);
-
-    /* Status colors for dark theme */
-    --bv-status-win-bg: rgba(111, 191, 115, 0.12);
-    --bv-status-win-gradient: rgba(111, 191, 115, 0.18);
-    --bv-status-lose-bg: rgba(229, 115, 115, 0.08);
-    --bv-status-lose-gradient: rgba(229, 115, 115, 0.12);
-    --bv-status-live: #34d399;
-    --bv-status-upcoming: #60a5fa;
-    --bv-status-completed: #9ca3af;
-
-    /* Match card state colors for dark theme */
-    --bv-match-card-border: var(--bv-border-color);
-    --bv-match-card-highlight: #60a5fa;
-    --bv-match-winner-accent: var(--bv-win-color);
-    --bv-match-loser-muted: var(--bv-hint-color);
-
-    /* Shadows for dark theme */
-    --bv-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-    --bv-shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3);
-    --bv-shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.4);
-  }
+  --bv-swiss-match-alt-bg: #1f1f1f;
+  --bv-swiss-separator-color: rgba(255, 255, 255, 0.5);
 
   // Default theme (explicit, uses default CSS variables)
   &.bv-theme-default {
